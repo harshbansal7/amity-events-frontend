@@ -21,7 +21,12 @@ export const login = async (credentials) => {
 };
 
 export const register = async (userData) => {
-  const response = await api.post('/auth/register', userData);
+  const formattedData = {
+    ...userData,
+    year: parseInt(userData.year, 10)
+  };
+  
+  const response = await api.post('/auth/register', formattedData);
   return response.data;
 };
 
@@ -91,6 +96,36 @@ export const getRegisteredEvents = async () => {
 export const getCreatedEvents = async () => {
   const response = await api.get('/events/created');
   return response.data.events;
+};
+
+export const getEventParticipants = async (eventId) => {
+  const response = await api.get(`/events/${eventId}/participants`);
+  return response.data;
+};
+
+export const downloadParticipantsPDF = async (eventId, options = {}) => {
+  const response = await api.get(`/events/${eventId}/participants/pdf`, {
+    params: {
+      fields_printed: options.fields_printed.join(',')
+    },
+    responseType: 'blob'
+  });
+  return response.data;
+};
+
+export const downloadParticipantsExcel = async (eventId, options = {}) => {
+  const response = await api.get(`/events/${eventId}/participants/excel`, {
+    params: {
+      fields_printed: options.fields_printed.join(',')
+    },
+    responseType: 'blob'
+  });
+  return response.data;
+};
+
+export const removeParticipant = async (eventId, enrollmentNumber) => {
+  const response = await api.delete(`/events/${eventId}/participants/${enrollmentNumber}`);
+  return response.data;
 };
 
 export default api; 

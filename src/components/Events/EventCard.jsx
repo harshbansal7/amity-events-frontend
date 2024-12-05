@@ -7,20 +7,25 @@ import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import PeopleIcon from '@mui/icons-material/People';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import AdminTools from './AdminTools';
 
 const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
   const [openDetails, setOpenDetails] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [isUnregistering, setIsUnregistering] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
   const currentUserId = getCurrentUserId();
   const isCreator = currentUserId === event.creator_id;
 
   const handleRegister = async () => {
     try {
+      setIsRegistering(true);
       await registerForEvent(event._id);
       if (onRegister) onRegister();
     } catch (error) {
       console.error('Failed to register:', error);
+    } finally {
+      setIsRegistering(false);
     }
   };
 
@@ -62,7 +67,8 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
       <div className="relative group">
         <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300">
           {isCreator && (
-            <div className="absolute top-4 right-4 z-10 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="absolute top-4 right-4 z-10 flex space-x-2">
+              <AdminTools event={event} onParticipantRemoved={onRegister} />
               <button 
                 onClick={() => setOpenDetails(true)}
                 className="p-2 bg-white/90 hover:bg-white rounded-full shadow-md hover:shadow-lg transition-all"
@@ -119,7 +125,8 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
                 isPastEvent() ||
                 (event.participants.length >= event.max_participants && 
                 !event.participants.includes(currentUserId)) || 
-                isUnregistering
+                isUnregistering ||
+                isRegistering
               }
               className={`mt-6 w-full py-2 px-4 rounded-lg font-medium transition-colors duration-300
                 ${
@@ -131,7 +138,9 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
                         ? isUnregistering
                           ? 'bg-gray-400 cursor-not-allowed'
                           : 'bg-red-600 text-white hover:bg-red-700'
-                        : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                        : isRegistering
+                          ? 'bg-gray-400 cursor-not-allowed'
+                          : 'bg-indigo-600 text-white hover:bg-indigo-700'
                 }`}
             >
               {
@@ -143,7 +152,9 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
                       ? isUnregistering
                         ? 'Unregistering...'
                         : 'Unregister'
-                      : 'Register'
+                      : isRegistering
+                        ? 'Registering...'
+                        : 'Register'
               }
             </button>
           </div>

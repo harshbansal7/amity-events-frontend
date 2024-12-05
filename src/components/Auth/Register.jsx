@@ -8,6 +8,10 @@ const Register = () => {
     enrollment_number: '',
     password: '',
     confirmPassword: '',
+    name: '',
+    email: '',
+    branch: '',
+    year: '',
     agreeToTerms: false
   });
   const [error, setError] = useState('');
@@ -112,6 +116,95 @@ const Register = () => {
                            focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 placeholder="Confirm your password"
               />
+            </div>
+
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                Full Name
+              </label>
+              <input
+                id="name"
+                type="text"
+                required
+                value={userData.name}
+                onChange={(e) => setUserData({
+                  ...userData,
+                  name: e.target.value
+                })}
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 
+                           placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none 
+                           focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                placeholder="Enter your full name"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                Email Address
+              </label>
+              <input
+                id="email"
+                type="email"
+                required
+                value={userData.email}
+                onChange={(e) => setUserData({
+                  ...userData,
+                  email: e.target.value
+                })}
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 
+                           placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none 
+                           focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                placeholder="Enter your email address"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="branch" className="block text-sm font-medium text-gray-700">
+                Branch
+              </label>
+              <select
+                id="branch"
+                required
+                value={userData.branch}
+                onChange={(e) => setUserData({
+                  ...userData,
+                  branch: e.target.value
+                })}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 
+                         bg-white rounded-lg shadow-sm focus:outline-none 
+                         focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              >
+                <option value="">Select your branch</option>
+                <option value="CSE">Computer Science</option>
+                <option value="ECE">Electronics</option>
+                <option value="ME">Mechanical</option>
+                <option value="CE">Civil</option>
+                {/* Add more branches as needed */}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="year" className="block text-sm font-medium text-gray-700">
+                Year
+              </label>
+              <select
+                id="year"
+                required
+                value={userData.year}
+                onChange={(e) => setUserData({
+                  ...userData,
+                  year: e.target.value
+                })}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 
+                         bg-white rounded-lg shadow-sm focus:outline-none 
+                         focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              >
+                <option value="">Select your year</option>
+                <option value="1">1st Year</option>
+                <option value="2">2nd Year</option>
+                <option value="3">3rd Year</option>
+                <option value="4">4th Year</option>
+              </select>
             </div>
 
             <div className="flex items-center">
