@@ -3,21 +3,44 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { CameraIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { STATIC_URL } from '../../services/api';
+import { TextField } from '@mui/material';
+
 const EditEventForm = ({ editedEvent, setEditedEvent, event, error }) => {
+  const handleRemoveImage = () => {
+    setEditedEvent({ 
+      ...editedEvent, 
+      image: null,
+      image_url: null
+    });
+  };
+
+  const textFieldStyle = {
+    '& .MuiOutlinedInput-root': {
+      '&:hover fieldset': {
+        borderColor: '#6366f1',
+      },
+      '&.Mui-focused fieldset': {
+        borderColor: '#4f46e5',
+      },
+    },
+    '& .MuiInputLabel-root.Mui-focused': {
+      color: '#4f46e5',
+    },
+  };
+
   return (
     <div className="space-y-6">
       {/* Image Upload */}
       <div className="space-y-4">
-        {event.image_url && (
+        {(event.image_url || editedEvent.image) && (
           <div className="relative w-full h-48 rounded-lg overflow-hidden">
             <img
-              src={event.image_url.startsWith('/') ? `${STATIC_URL}${event.image_url}` : event.image_url}
+              src={editedEvent.image ? URL.createObjectURL(editedEvent.image) : event.image_url}
               alt={event.name}
               className="w-full h-full object-cover"
             />
             <button
-              onClick={() => setEditedEvent({ ...editedEvent, image_url: null })}
+              onClick={handleRemoveImage}
               className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-lg hover:bg-gray-100"
             >
               <XMarkIcon className="h-5 w-5 text-gray-600" />
@@ -32,7 +55,11 @@ const EditEventForm = ({ editedEvent, setEditedEvent, event, error }) => {
               accept="image/*"
               onChange={(e) => {
                 if (e.target.files[0]) {
-                  setEditedEvent({ ...editedEvent, image: e.target.files[0] });
+                  setEditedEvent({ 
+                    ...editedEvent, 
+                    image: e.target.files[0],
+                    image_url: null
+                  });
                 }
               }}
               className="hidden"
@@ -45,122 +72,108 @@ const EditEventForm = ({ editedEvent, setEditedEvent, event, error }) => {
         </div>
       </div>
 
+      {error && (
+        <div className="text-red-500 text-md">{error}</div>
+      )}
+
       {/* Form Fields */}
       <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Event Name
-          </label>
-          <input
-            type="text"
-            value={editedEvent.name}
-            onChange={(e) => setEditedEvent({ ...editedEvent, name: e.target.value })}
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            required
+        <TextField
+          fullWidth
+          label="Event Name"
+          value={editedEvent.name}
+          onChange={(e) => setEditedEvent({ ...editedEvent, name: e.target.value })}
+          required
+          variant="outlined"
+          sx={textFieldStyle}
+        />
+
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <DateTimePicker
+            label="Event Date & Time"
+            value={editedEvent.date}
+            onChange={(newValue) => setEditedEvent({ ...editedEvent, date: newValue })}
+            className="w-full"
+            renderInput={(params) => <TextField {...params} fullWidth required sx={textFieldStyle} />}
           />
-        </div>
+        </LocalizationProvider>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Date & Time
-          </label>
-          <LocalizationProvider dateAdapter={AdapterDateFns}>
-            <DateTimePicker
-              value={editedEvent.date}
-              onChange={(newValue) => setEditedEvent({ ...editedEvent, date: newValue })}
-              renderInput={(params) => (
-                <input
-                  {...params}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              )}
-            />
-          </LocalizationProvider>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Duration (hours)
-            </label>
-            <input
-              type="number"
-              value={editedEvent.duration_hours}
-              onChange={(e) => setEditedEvent({ ...editedEvent, duration_hours: e.target.value })}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Duration (minutes)
-            </label>
-            <input
-              type="number"
-              value={editedEvent.duration_minutes}
-              onChange={(e) => setEditedEvent({ ...editedEvent, duration_minutes: e.target.value })}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Maximum Participants
-          </label>
-          <input
+        <div className="grid grid-cols-3 gap-4">
+          <TextField
             type="number"
-            value={editedEvent.max_participants}
-            onChange={(e) => setEditedEvent({ ...editedEvent, max_participants: e.target.value })}
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            required
+            label="Days"
+            value={editedEvent.duration_days}
+            onChange={(e) => setEditedEvent({ ...editedEvent, duration_days: e.target.value })}
+            slotProps={{ htmlInput: { min: 0, max: 365 } }}
+            variant="outlined"
+            fullWidth
+            sx={textFieldStyle}
+          />
+          <TextField
+            type="number"
+            label="Hours"
+            value={editedEvent.duration_hours}
+            onChange={(e) => setEditedEvent({ ...editedEvent, duration_hours: e.target.value })}
+            slotProps={{ htmlInput: { min: 0, max: 23 } }}
+            variant="outlined"
+            fullWidth
+            sx={textFieldStyle}
+          />
+          <TextField
+            type="number"
+            label="Minutes"
+            value={editedEvent.duration_minutes}
+            onChange={(e) => setEditedEvent({ ...editedEvent, duration_minutes: e.target.value })}
+            slotProps={{ htmlInput: { min: 0, max: 59 } }}
+            variant="outlined"
+            fullWidth
+            sx={textFieldStyle}
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Venue
-          </label>
-          <input
-            type="text"
-            value={editedEvent.venue}
-            onChange={(e) => setEditedEvent({ ...editedEvent, venue: e.target.value })}
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            required
-          />
-        </div>
+        <TextField
+          type="number"
+          label="Maximum Participants"
+          value={editedEvent.max_participants}
+          onChange={(e) => setEditedEvent({ ...editedEvent, max_participants: e.target.value })}
+          required
+          slotProps={{ htmlInput: { min: 0, max: 100000 } }}
+          variant="outlined"
+          fullWidth
+          sx={textFieldStyle}
+        />
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Description
-          </label>
-          <textarea
-            value={editedEvent.description}
-            onChange={(e) => setEditedEvent({ ...editedEvent, description: e.target.value })}
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            rows="4"
-            required
-          />
-        </div>
+        <TextField
+          label="Venue"
+          value={editedEvent.venue}
+          onChange={(e) => setEditedEvent({ ...editedEvent, venue: e.target.value })}
+          required
+          variant="outlined"
+          fullWidth
+          sx={textFieldStyle}
+        />
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Prizes (comma-separated)
-          </label>
-          <input
-            type="text"
-            value={editedEvent.prizes}
-            onChange={(e) => setEditedEvent({ ...editedEvent, prizes: e.target.value })}
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            placeholder="First Prize, Second Prize, Third Prize"
-          />
-        </div>
+        <TextField
+          label="Description"
+          value={editedEvent.description}
+          onChange={(e) => setEditedEvent({ ...editedEvent, description: e.target.value })}
+          variant="outlined"
+          fullWidth
+          multiline
+          rows={4}
+          sx={textFieldStyle}
+        />
+
+        <TextField
+          label="Prizes (comma-separated)"
+          value={editedEvent.prizes}
+          onChange={(e) => setEditedEvent({ ...editedEvent, prizes: e.target.value })}
+          variant="outlined"
+          fullWidth
+          placeholder="First Prize, Second Prize, Third Prize"
+          sx={textFieldStyle}
+        />
       </div>
-
-      {error && (
-        <div className="mt-4 p-4 bg-red-50 text-red-800 rounded-lg">
-          {error}
-        </div>
-      )}
     </div>
   );
 };

@@ -5,11 +5,13 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { createEvent } from '../../services/api';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import CloseIcon from '@mui/icons-material/Close';
+import { TextField } from '@mui/material';
 
 const CreateEventForm = ({ onSuccess, onCancel }) => {
   const [eventData, setEventData] = useState({
     name: '',
     date: new Date(),
+    duration_days: '',
     duration_hours: '',
     duration_minutes: '',
     max_participants: '',
@@ -31,6 +33,11 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleRemoveImage = () => {
+    setImage(null);
+    setImagePreview(null);
   };
 
   const handleSubmit = async (e) => {
@@ -59,6 +66,21 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
     }
   };
 
+  // Add these theme overrides if needed
+  const textFieldStyle = {
+    '& .MuiOutlinedInput-root': {
+      '&:hover fieldset': {
+        borderColor: '#6366f1', // indigo-500
+      },
+      '&.Mui-focused fieldset': {
+        borderColor: '#4f46e5', // indigo-600
+      },
+    },
+    '& .MuiInputLabel-root.Mui-focused': {
+      color: '#4f46e5', // indigo-600
+    },
+  };
+
   return (
     <div className="relative bg-white rounded-lg shadow-xl max-h-[90vh] flex flex-col">
       {/* Header */}
@@ -75,6 +97,7 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
       {/* Form */}
       <div className="overflow-y-auto flex-1">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          
           {/* Image Upload Section */}
           <div className="space-y-4">
             {imagePreview && (
@@ -86,10 +109,7 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
                 />
                 <button
                   type="button"
-                  onClick={() => {
-                    setImage(null);
-                    setImagePreview(null);
-                  }}
+                  onClick={handleRemoveImage}
                   className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-md hover:bg-gray-100"
                 >
                   <CloseIcon className="text-gray-600" />
@@ -112,16 +132,19 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
               </label>
             </div>
           </div>
-
+          {error && (
+            <div className="text-red-500 text-md">{error}</div>
+          )}
           {/* Event Details */}
           <div className="space-y-4">
-            <input
-              type="text"
-              placeholder="Event Name"
+            <TextField
+              fullWidth
+              label="Event Name"
               value={eventData.name}
               onChange={(e) => setEventData({ ...eventData, name: e.target.value })}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               required
+              variant="outlined"
+              sx={textFieldStyle}
             />
 
             <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -130,71 +153,86 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
                 value={eventData.date}
                 onChange={(newValue) => setEventData({ ...eventData, date: newValue })}
                 className="w-full"
-                renderInput={(params) => (
-                  <input
-                    {...params}
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                )}
+                renderInput={(params) => <TextField {...params} fullWidth required sx={textFieldStyle} />}
               />
             </LocalizationProvider>
 
-            <div className="grid grid-cols-2 gap-4">
-              <input
+            <div className="grid grid-cols-3 gap-4">
+              <TextField
                 type="number"
-                placeholder="Duration (hours)"
+                label="Days"
+                value={eventData.duration_days}
+                onChange={(e) => setEventData({ ...eventData, duration_days: e.target.value })}
+                slotProps={{ htmlInput: { min: 0, max: 365 } }}
+                variant="outlined"
+                fullWidth
+                sx={textFieldStyle}
+              />
+              <TextField
+                type="number"
+                label="Hours"
                 value={eventData.duration_hours}
                 onChange={(e) => setEventData({ ...eventData, duration_hours: e.target.value })}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                slotProps={{ htmlInput: { min: 0, max: 23 } }}
+                variant="outlined"
+                fullWidth
+                sx={textFieldStyle}
               />
-              <input
+              <TextField
                 type="number"
-                placeholder="Duration (minutes)"
+                label="Minutes"
                 value={eventData.duration_minutes}
                 onChange={(e) => setEventData({ ...eventData, duration_minutes: e.target.value })}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                slotProps={{ htmlInput: { min: 0, max: 59 } }}
+                variant="outlined"
+                fullWidth
+                sx={textFieldStyle}
               />
             </div>
 
-            <input
+            <TextField
               type="number"
-              placeholder="Maximum Participants"
+              label="Maximum Participants"
               value={eventData.max_participants}
               onChange={(e) => setEventData({ ...eventData, max_participants: e.target.value })}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               required
+              slotProps={{ htmlInput: { min: 0, max: 100000 } }}
+              variant="outlined"
+              fullWidth
+              sx={textFieldStyle}
             />
 
-            <input
-              type="text"
-              placeholder="Venue"
+            <TextField
+              label="Venue"
               value={eventData.venue}
               onChange={(e) => setEventData({ ...eventData, venue: e.target.value })}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               required
+              variant="outlined"
+              fullWidth
+              sx={textFieldStyle}
             />
 
-            <textarea
-              placeholder="Description"
+            <TextField
+              label="Description"
               value={eventData.description}
               onChange={(e) => setEventData({ ...eventData, description: e.target.value })}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              rows="4"
-              required
+              variant="outlined"
+              fullWidth
+              multiline
+              rows={4}
+              sx={textFieldStyle}
             />
 
-            <input
-              type="text"
-              placeholder="Prizes (comma-separated)"
+            <TextField
+              label="Prizes (comma-separated)"
               value={eventData.prizes}
               onChange={(e) => setEventData({ ...eventData, prizes: e.target.value })}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              variant="outlined"
+              fullWidth
+              placeholder="First Prize, Second Prize, Third Prize"
+              sx={textFieldStyle}
             />
           </div>
-
-          {error && (
-            <div className="text-red-500 text-sm">{error}</div>
-          )}
         </form>
       </div>
 

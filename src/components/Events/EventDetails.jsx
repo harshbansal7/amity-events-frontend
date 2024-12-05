@@ -17,6 +17,7 @@ const EventDetails = ({ event, open, onClose, isCreator, onUpdate }) => {
       setEditedEvent({
         name: event.name,
         date: new Date(event.date),
+        duration_days: event.duration?.days || 0,
         duration_hours: event.duration?.hours || 0,
         duration_minutes: event.duration?.minutes || 0,
         max_participants: event.max_participants,
@@ -102,9 +103,12 @@ const EventDetails = ({ event, open, onClose, isCreator, onUpdate }) => {
                 {event.image_url && (
                   <div className="w-full h-64 rounded-lg overflow-hidden">
                     <img
-                      src={event.image_url.startsWith('/') ? `${STATIC_URL}${event.image_url}` : event.image_url}
+                      src={event.image_url}
                       alt={event.name}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.src = 'https://next-images.123rf.com/index/_next/image/?url=https://assets-cdn.123rf.com/index/static/assets/top-section-bg.jpeg&w=3840&q=75';
+                      }}
                     />
                   </div>
                 )}
@@ -130,7 +134,10 @@ const EventDetails = ({ event, open, onClose, isCreator, onUpdate }) => {
                     <ClockIcon className="h-5 w-5 text-indigo-500" />
                     <div>
                       <p className="text-sm text-gray-600">Duration</p>
-                      <p className="font-medium">{event.duration.hours}h {event.duration.minutes}m</p>
+                      <p className="font-medium">
+                        {event.duration.days > 0 && `${event.duration.days}d `}
+                        {event.duration.hours}h {event.duration.minutes}m
+                      </p>
                     </div>
                   </div>
 

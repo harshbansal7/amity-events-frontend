@@ -15,16 +15,6 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
   const currentUserId = getCurrentUserId();
   const isCreator = currentUserId === event.creator_id;
 
-  const getImageUrl = (imageUrl) => {
-    if (!imageUrl) {
-      return 'https://next-images.123rf.com/index/_next/image/?url=https://assets-cdn.123rf.com/index/static/assets/top-section-bg.jpeg&w=3840&q=75';
-    }
-    if (imageUrl.startsWith('/')) {
-      return `${STATIC_URL}${imageUrl}`;
-    }
-    return imageUrl;
-  };
-
   const handleRegister = async () => {
     try {
       await registerForEvent(event._id);
@@ -89,7 +79,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
           )}
 
           <img
-            src={getImageUrl(event.image_url)}
+            src={event.image_url || 'https://next-images.123rf.com/index/_next/image/?url=https://assets-cdn.123rf.com/index/static/assets/top-section-bg.jpeg&w=3840&q=75'}
             alt={event.name}
             className="w-full h-48 object-cover"
           />
