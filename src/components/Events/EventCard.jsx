@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { format } from 'date-fns';
-import {STATIC_URL, registerForEvent, deleteEvent, getCurrentUserId, unregisterFromEvent } from '../../services/api';
+import {registerForEvent, deleteEvent, getCurrentUserId, unregisterFromEvent } from '../../services/api';
 import EventDetails from './EventDetails';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
