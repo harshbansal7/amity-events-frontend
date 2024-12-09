@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import Navbar from './Navbar';
-import jwt_decode from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
@@ -21,7 +21,7 @@ const ProtectedRoute = ({ children }) => {
 
 const isTokenExpired = (token) => {
   try {
-    const decoded = jwt_decode(token);
+    const decoded = jwtDecode(token);
     const currentTime = Date.now() / 1000;
     return decoded.exp < currentTime;
   } catch (error) {
