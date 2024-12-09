@@ -91,11 +91,11 @@ const ParticipantsModal = ({ event, onClose, onParticipantRemoved }) => {
                         Year
                       </th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Email
+                        Amity Email
                       </th>
-                      {/* <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Registered On
-                      </th> */}
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Phone
+                      </th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Actions
                       </th>
@@ -117,13 +117,11 @@ const ParticipantsModal = ({ event, onClose, onParticipantRemoved }) => {
                           <div className="text-sm text-gray-500">{participant.year}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-500">{participant.email}</div>
+                          <div className="text-sm text-gray-500">{participant.amity_email}</div>
                         </td>
-                        {/* <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-500">
-                            {format(new Date(participant.registered_at), 'PPp')}
-                          </div>
-                        </td> */}
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-500">{participant.phone_number}</div>
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <button
                             onClick={() => handleRemoveParticipant(participant.enrollment_number)}
@@ -150,19 +148,21 @@ const FieldSelectionModal = ({ onClose, onConfirm, title }) => {
   const [selectedFields, setSelectedFields] = useState({
     name: true,
     enrollment_number: true,
-    email: true,
+    amity_email: true,
+    phone_number: true,
     branch: true,
     year: true,
-    registered_at: false
+    registered_at: true
   });
 
   const fields = [
     { id: 'name', label: 'Name' },
     { id: 'enrollment_number', label: 'Enrollment Number' },
-    { id: 'email', label: 'Email' },
+    { id: 'amity_email', label: 'Amity Email' },
+    { id: 'phone_number', label: 'Phone Number' },
     { id: 'branch', label: 'Branch' },
     { id: 'year', label: 'Year' },
-    // { id: 'registered_at', label: 'Registration Date' }
+    { id: 'registered_at', label: 'Registration Date' }
   ];
 
   const handleToggleField = (fieldId) => {
@@ -243,6 +243,7 @@ const FieldSelectionModal = ({ onClose, onConfirm, title }) => {
 };
 
 const AdminTools = ({ event, onParticipantRemoved }) => {
+  const [participants, setParticipants] = useState([]);
   const [showMenu, setShowMenu] = useState(false);
   const [showParticipants, setShowParticipants] = useState(false);
   const [showFieldSelection, setShowFieldSelection] = useState(false);

@@ -1,265 +1,236 @@
 import React, { useState } from 'react';
-import { register } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
-import { UserPlusIcon } from '@heroicons/react/24/solid';
+import { register } from '../../services/api';
+import EmailVerification from './EmailVerification';
+import Toast from '../UI/Toast';
 
 const Register = () => {
+  const navigate = useNavigate();
+  const [step, setStep] = useState(1);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [userData, setUserData] = useState({
+    name: '',
+    amity_email: '',
     enrollment_number: '',
     password: '',
-    confirmPassword: '',
-    name: '',
-    email: '',
+    confirm_password: '',
     branch: '',
     year: '',
-    agreeToTerms: false
+    phone_number: ''
   });
-  const [error, setError] = useState('');
-  const navigate = useNavigate();
+
+  const handleEmailVerification = (verifiedEmail) => {
+    setUserData(prev => ({ ...prev, amity_email: verifiedEmail }));
+    setStep(2);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (userData.password !== userData.confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
+    setError('');
+    setLoading(true);
 
-    if (!userData.agreeToTerms) {
-      setError('Please agree to the Terms of Service');
+    // Validate passwords match
+    if (userData.password !== userData.confirm_password) {
+      setError('Passwords do not match');
+      setLoading(false);
       return;
     }
 
     try {
-      const { confirmPassword, agreeToTerms, ...registrationData } = userData;
-      await register(registrationData);
-      navigate('/login');
+      await register(userData);
+      navigate('/login', { state: { message: 'Registration successful! Please login.' } });
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed');
+      setError(err.response?.data?.error || 'Registration failed');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
-        {/* Header */}
-        <div className="text-center">
-          <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-indigo-100">
-            <UserPlusIcon className="h-6 w-6 text-indigo-600" />
-          </div>
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-            Create Account
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Create your account
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Sign up to start participating in events
-          </p>
         </div>
 
-        {/* Form */}
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm space-y-4">
-            <div>
-              <label htmlFor="enrollment" className="block text-sm font-medium text-gray-700">
-                Enrollment Number
-              </label>
-              <input
-                id="enrollment"
-                type="text"
-                required
-                value={userData.enrollment_number}
-                onChange={(e) => setUserData({
-                  ...userData,
-                  enrollment_number: e.target.value
-                })}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 
+        {error && <Toast message={error} type="error" onClose={() => setError('')} />}
+
+        {step === 1 ? (
+          <EmailVerification onVerificationComplete={handleEmailVerification} />
+        ) : (
+          <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+            <div className="rounded-md shadow-sm space-y-4">
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                  Full Name
+                </label>
+                <input
+                  id="name"
+                  type="text"
+                  required
+                  value={userData.name}
+                  onChange={(e) => setUserData({
+                    ...userData,
+                    name: e.target.value
+                  })}
+                  className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 
                            placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none 
                            focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                placeholder="Enter your enrollment number"
-              />
-            </div>
+                  placeholder="Enter your full name"
+                />
+              </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                required
-                value={userData.password}
-                onChange={(e) => setUserData({
-                  ...userData,
-                  password: e.target.value
-                })}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 
+              <div>
+                <label htmlFor="enrollment" className="block text-sm font-medium text-gray-700">
+                  Enrollment Number
+                </label>
+                <input
+                  id="enrollment"
+                  type="text"
+                  required
+                  value={userData.enrollment_number}
+                  onChange={(e) => setUserData({
+                    ...userData,
+                    enrollment_number: e.target.value
+                  })}
+                  className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 
                            placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none 
                            focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                placeholder="Choose a password"
-              />
-            </div>
+                  placeholder="Enter your enrollment number"
+                />
+              </div>
 
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                Confirm Password
-              </label>
-              <input
-                id="confirmPassword"
-                type="password"
-                required
-                value={userData.confirmPassword}
-                onChange={(e) => setUserData({
-                  ...userData,
-                  confirmPassword: e.target.value
-                })}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  Password
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  required
+                  value={userData.password}
+                  onChange={(e) => setUserData({
+                    ...userData,
+                    password: e.target.value
+                  })}
+                  className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 
                            placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none 
                            focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                placeholder="Confirm your password"
-              />
-            </div>
+                  placeholder="Create a password"
+                />
+              </div>
 
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Full Name
-              </label>
-              <input
-                id="name"
-                type="text"
-                required
-                value={userData.name}
-                onChange={(e) => setUserData({
-                  ...userData,
-                  name: e.target.value
-                })}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 
+              <div>
+                <label htmlFor="confirm_password" className="block text-sm font-medium text-gray-700">
+                  Confirm Password
+                </label>
+                <input
+                  id="confirm_password"
+                  type="password"
+                  required
+                  value={userData.confirm_password}
+                  onChange={(e) => setUserData({
+                    ...userData,
+                    confirm_password: e.target.value
+                  })}
+                  className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 
                            placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none 
                            focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                placeholder="Enter your full name"
-              />
-            </div>
+                  placeholder="Confirm your password"
+                />
+              </div>
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email Address
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={userData.email}
-                onChange={(e) => setUserData({
-                  ...userData,
-                  email: e.target.value
-                })}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 
-                           placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none 
-                           focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                placeholder="Enter your email address"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="branch" className="block text-sm font-medium text-gray-700">
-                Branch
-              </label>
-              <select
-                id="branch"
-                required
-                value={userData.branch}
-                onChange={(e) => setUserData({
-                  ...userData,
-                  branch: e.target.value
-                })}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 
+              <div>
+                <label htmlFor="branch" className="block text-sm font-medium text-gray-700">
+                  Branch
+                </label>
+                <select
+                  id="branch"
+                  required
+                  value={userData.branch}
+                  onChange={(e) => setUserData({
+                    ...userData,
+                    branch: e.target.value
+                  })}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 
                          bg-white rounded-lg shadow-sm focus:outline-none 
                          focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              >
-                <option value="">Select your branch</option>
-                <option value="CSE">Computer Science</option>
-                <option value="ECE">Electronics</option>
-                <option value="ME">Mechanical</option>
-                <option value="CE">Civil</option>
-                {/* Add more branches as needed */}
-              </select>
-            </div>
+                >
+                  <option value="">Select your branch</option>
+                  <option value="CSE">Computer Science</option>
+                  <option value="ECE">Electronics</option>
+                  <option value="ME">Mechanical</option>
+                  <option value="CE">Civil</option>
+                </select>
+              </div>
 
-            <div>
-              <label htmlFor="year" className="block text-sm font-medium text-gray-700">
-                Year
-              </label>
-              <select
-                id="year"
-                required
-                value={userData.year}
-                onChange={(e) => setUserData({
-                  ...userData,
-                  year: e.target.value
-                })}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 
+              <div>
+                <label htmlFor="year" className="block text-sm font-medium text-gray-700">
+                  Year
+                </label>
+                <select
+                  id="year"
+                  required
+                  value={userData.year}
+                  onChange={(e) => setUserData({
+                    ...userData,
+                    year: e.target.value
+                  })}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 
                          bg-white rounded-lg shadow-sm focus:outline-none 
                          focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              >
-                <option value="">Select your year</option>
-                <option value="1">1st Year</option>
-                <option value="2">2nd Year</option>
-                <option value="3">3rd Year</option>
-                <option value="4">4th Year</option>
-              </select>
-            </div>
+                >
+                  <option value="">Select your year</option>
+                  <option value="1">1st Year</option>
+                  <option value="2">2nd Year</option>
+                  <option value="3">3rd Year</option>
+                  <option value="4">4th Year</option>
+                </select>
+              </div>
 
-            <div className="flex items-center">
-              <input
-                id="terms"
-                type="checkbox"
-                checked={userData.agreeToTerms}
-                onChange={(e) => setUserData({
-                  ...userData,
-                  agreeToTerms: e.target.checked
-                })}
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-              />
-              <label htmlFor="terms" className="ml-2 block text-sm text-gray-900">
-                I agree to the{' '}
-                <a href="/terms" className="text-indigo-600 hover:text-indigo-500">
-                  Terms of Service
-                </a>
-              </label>
-            </div>
-          </div>
-
-          {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <div className="flex">
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">
-                    {error}
-                  </h3>
-                </div>
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                  Phone Number
+                </label>
+                <input
+                  id="phone"
+                  type="tel"
+                  required
+                  value={userData.phone_number}
+                  onChange={(e) => setUserData({
+                    ...userData,
+                    phone_number: e.target.value
+                  })}
+                  className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 
+                           placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none 
+                           focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  placeholder="Enter your phone number"
+                  pattern="[0-9]{10}"
+                  title="Please enter a valid 10-digit phone number"
+                />
               </div>
             </div>
-          )}
 
-          <div>
-            <button
-              type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent 
-                         text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 
-                         focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 
-                         transition-colors duration-200"
-            >
-              Create Account
-            </button>
-          </div>
+            <div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                {loading ? 'Creating Account...' : 'Create Account'}
+              </button>
+            </div>
+          </form>
+        )}
 
-          <div className="text-center">
-            <a 
-              href="/login" 
-              className="font-medium text-indigo-600 hover:text-indigo-500 text-sm"
-            >
-              Already have an account? Sign In
-            </a>
-          </div>
-        </form>
+        <div className="text-sm text-center">
+          <a href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+            Already have an account? Sign in
+          </a>
+        </div>
       </div>
     </div>
   );

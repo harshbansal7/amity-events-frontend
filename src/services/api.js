@@ -15,8 +15,26 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Response interceptor to handle token expiration
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 && 
+        error.response?.data?.error === 'Token has expired') {
+      // Clear the expired token
+      localStorage.removeItem('token');
+      // Redirect to login
+      window.location.href = '/login?expired=true';
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const login = async (credentials) => {
   const response = await api.post('/auth/login', credentials);
+  if (response.data.token) {
+    localStorage.setItem('token', response.data.token);
+  }
   return response.data;
 };
 
@@ -125,6 +143,16 @@ export const downloadParticipantsExcel = async (eventId, options = {}) => {
 
 export const removeParticipant = async (eventId, enrollmentNumber) => {
   const response = await api.delete(`/events/${eventId}/participants/${enrollmentNumber}`);
+  return response.data;
+};
+
+export const verifyEmail = async (data) => {
+  const response = await api.post('/auth/verify-email', data);
+  return response.data;
+};
+
+export const verifyOTP = async (data) => {
+  const response = await api.post('/auth/verify-otp', data);
   return response.data;
 };
 

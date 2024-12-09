@@ -17,6 +17,11 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
   const currentUserId = getCurrentUserId();
   const isCreator = currentUserId === event.creator_id;
 
+  const isRegistered = event.participants.some(
+    p => (typeof p === 'string' && p === currentUserId) || 
+         (typeof p === 'object' && p.enrollment_number === currentUserId)
+  );
+
   const handleRegister = async () => {
     try {
       setIsRegistering(true);
@@ -68,7 +73,10 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
         <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300">
           {isCreator && (
             <div className="absolute top-4 right-4 z-10 flex space-x-2">
-              <AdminTools event={event} onParticipantRemoved={onRegister} />
+              <AdminTools 
+                event={event}
+                onParticipantRemoved={onRegister}
+              />
               <button 
                 onClick={() => setOpenDetails(true)}
                 className="p-2 bg-white/90 hover:bg-white rounded-full shadow-md hover:shadow-lg transition-all"
@@ -120,11 +128,10 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
             </div>
 
             <button
-              onClick={event.participants.includes(currentUserId) ? handleUnregister : handleRegister}
+              onClick={isRegistered ? handleUnregister : handleRegister}
               disabled={
                 isPastEvent() ||
-                (event.participants.length >= event.max_participants && 
-                !event.participants.includes(currentUserId)) || 
+                (event.participants.length >= event.max_participants && !isRegistered) || 
                 isUnregistering ||
                 isRegistering
               }
@@ -132,9 +139,9 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
                 ${
                   isPastEvent() 
                     ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                    : event.participants.length >= event.max_participants && !event.participants.includes(currentUserId)
+                    : event.participants.length >= event.max_participants && !isRegistered
                       ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                      : event.participants.includes(currentUserId)
+                      : isRegistered
                         ? isUnregistering
                           ? 'bg-gray-400 cursor-not-allowed'
                           : 'bg-red-600 text-white hover:bg-red-700'
@@ -146,9 +153,9 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
               {
                 isPastEvent()
                   ? 'Event Ended'
-                  : event.participants.length >= event.max_participants && !event.participants.includes(currentUserId)
+                  : event.participants.length >= event.max_participants && !isRegistered
                     ? 'Full'
-                    : event.participants.includes(currentUserId)
+                    : isRegistered
                       ? isUnregistering
                         ? 'Unregistering...'
                         : 'Unregister'
