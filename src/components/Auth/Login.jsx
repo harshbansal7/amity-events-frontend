@@ -47,13 +47,13 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-blue-50">
-      <div className="max-w-md w-full space-y-8 bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-xl">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-blue-50 px-4 py-6">
+      <div className="max-w-md w-full space-y-6 bg-white/80 backdrop-blur-sm p-6 sm:p-8 rounded-2xl shadow-xl">
         <div className="text-center space-y-2">
           <img
             src="/assets/amity-logo.png"
             alt="Amity Events"
-            className="h-20 mx-auto mb-2 drop-shadow-xl"
+            className="h-16 sm:h-20 mx-auto mb-2 drop-shadow-xl"
           />
           <h2 className="text-3xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
             Sign in to your account
@@ -66,7 +66,7 @@ const Login = () => {
         {error && <Toast message={error} type="error" onClose={() => setError('')} />}
         {message && <Toast message={message} type="success" onClose={() => setMessage('')} />}
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form className="mt-6 space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-5">
             <div>
               <label htmlFor="enrollment" className="block text-sm font-medium text-gray-700">
