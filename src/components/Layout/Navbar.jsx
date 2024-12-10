@@ -16,6 +16,7 @@ const Navbar = () => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 10);
     };
+    handleScroll();
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -35,9 +36,8 @@ const Navbar = () => {
   return (
     <>
       <nav className={`fixed w-full top-0 z-50 transition-all duration-300 
-        ${scrolled 
-          ? 'bg-white/80 backdrop-blur-sm shadow-lg' 
-          : 'bg-transparent'}`}>
+        bg-white/80 backdrop-blur-sm
+        ${scrolled ? 'shadow-lg' : ''}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo/Brand */}
