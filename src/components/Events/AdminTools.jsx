@@ -22,7 +22,8 @@ import Toast from '../UI/Toast';
 const ParticipantsModal = ({ event, onClose, onParticipantRemoved }) => {
   const [participants, setParticipants] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [markingAttendance, setMarkingAttendance] = useState(false);
+  const [savingAttendance, setSavingAttendance] = useState(false);
+  const [unsavedChanges, setUnsavedChanges] = useState(false);
 
   React.useEffect(() => {
     const fetchParticipants = async () => {
@@ -51,19 +52,37 @@ const ParticipantsModal = ({ event, onClose, onParticipantRemoved }) => {
     }
   };
 
-  const handleAttendanceChange = async (enrollmentNumber, currentStatus) => {
+  const handleAttendanceChange = (enrollmentNumber, currentStatus) => {
+    setParticipants(participants.map(p => 
+      p.enrollment_number === enrollmentNumber 
+        ? {...p, attendance: !currentStatus, attendanceModified: true}
+        : p
+    ));
+    setUnsavedChanges(true);
+  };
+
+  const handleSaveAttendance = async () => {
     try {
-      setMarkingAttendance(true);
-      await markAttendance(event._id, enrollmentNumber, !currentStatus);
-      setParticipants(participants.map(p => 
-        p.enrollment_number === enrollmentNumber 
-          ? {...p, attendance: !currentStatus}
-          : p
-      ));
+      setSavingAttendance(true);
+      const modifiedAttendance = participants
+        .filter(p => p.attendanceModified)
+        .map(p => ({
+          enrollment_number: p.enrollment_number,
+          attendance: p.attendance
+        }));
+
+      await markAttendance(event._id, modifiedAttendance);
+      
+      // Clear modification flags after successful save
+      setParticipants(participants.map(p => ({
+        ...p,
+        attendanceModified: false
+      })));
+      setUnsavedChanges(false);
     } catch (error) {
-      console.error('Failed to mark attendance:', error);
+      console.error('Failed to save attendance:', error);
     } finally {
-      setMarkingAttendance(false);
+      setSavingAttendance(false);
     }
   };
 
@@ -79,10 +98,16 @@ const ParticipantsModal = ({ event, onClose, onParticipantRemoved }) => {
                 <h3 className="text-2xl font-semibold text-gray-800">Event Participants</h3>
                 <p className="text-gray-600 mt-1">{event.name}</p>
               </div>
-              <button
-                onClick={onClose}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              >
+              {unsavedChanges && (
+                <button
+                  onClick={handleSaveAttendance}
+                  disabled={savingAttendance}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+                >
+                  {savingAttendance ? 'Saving...' : 'Save Attendance'}
+                </button>
+              )}
+              <button onClick={onClose}>
                 <X className="h-6 w-6 text-gray-500" />
               </button>
             </div>
@@ -149,12 +174,13 @@ const ParticipantsModal = ({ event, onClose, onParticipantRemoved }) => {
                               participant.enrollment_number,
                               participant.attendance
                             )}
-                            disabled={markingAttendance}
                             className={`px-3 py-1 rounded-full text-sm font-medium 
                               ${participant.attendance 
                                 ? 'bg-green-100 text-green-800 hover:bg-green-200' 
                                 : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                              } transition-colors`}
+                              } transition-colors
+                              ${participant.attendanceModified ? 'ring-2 ring-indigo-500' : ''}
+                            `}
                           >
                             {participant.attendance ? 'Present' : 'Absent'}
                           </button>

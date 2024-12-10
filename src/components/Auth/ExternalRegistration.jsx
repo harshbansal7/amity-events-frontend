@@ -54,38 +54,66 @@ const ExternalRegistration = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      <div className="max-w-md w-full space-y-6 bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-xl">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            External Participant Registration
-          </h2>
+          <div className="text-center space-y-3 mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-indigo-600 to-blue-600 mb-2">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+              </svg>
+            </div>
+            <h2 className="text-3xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
+              External Participant Registration
+            </h2>
+            <p className="text-gray-500">
+              Join events with your external registration code
+            </p>
+          </div>
         </div>
 
         {error && <Toast message={error} type="error" onClose={() => setError('')} />}
         {success && <Toast message={success} type="success" onClose={() => setSuccess('')} />}
 
         {step === 1 && (
-          <form onSubmit={handleEventCodeSubmit} className="mt-8 space-y-6">
+          <form onSubmit={handleEventCodeSubmit} className="space-y-6">
             <div>
-              <label htmlFor="event_code" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="event_code" className="block text-sm font-medium text-gray-700 mb-2">
                 Event Code
               </label>
-              <input
-                id="event_code"
-                type="text"
-                required
-                value={eventCode}
-                onChange={(e) => setEventCode(e.target.value.toUpperCase())}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="Enter event code"
-                maxLength={6}
-              />
+              <div className="relative">
+                <input
+                  id="event_code"
+                  type="text"
+                  required
+                  value={eventCode}
+                  onChange={(e) => setEventCode(e.target.value.toUpperCase())}
+                  className="block w-full px-4 py-3 bg-white/50 border border-gray-300 
+                          rounded-xl shadow-sm placeholder-gray-400 
+                          focus:outline-none focus:ring-2 focus:ring-indigo-500 
+                          focus:border-indigo-500 transition-all duration-200
+                          text-center uppercase tracking-widest font-mono text-lg"
+                  placeholder="Enter event code"
+                  maxLength={6}
+                />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                  </svg>
+                </div>
+              </div>
             </div>
+
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+              className="w-full flex justify-center py-3 px-4 border border-transparent 
+                      text-sm font-semibold rounded-xl text-white 
+                      bg-gradient-to-r from-indigo-600 to-blue-600 
+                      hover:from-indigo-700 hover:to-blue-700 
+                      focus:outline-none focus:ring-2 focus:ring-offset-2 
+                      focus:ring-indigo-500 transition-all duration-200
+                      disabled:opacity-50 shadow-lg hover:shadow-xl"
             >
               {loading ? 'Verifying...' : 'Verify Event Code'}
             </button>
@@ -93,12 +121,19 @@ const ExternalRegistration = () => {
         )}
 
         {step === 2 && (
-          <form onSubmit={handleRegistrationSubmit} className="mt-8 space-y-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-              <p className="text-blue-800">Registering for: {eventName}</p>
+          <form onSubmit={handleRegistrationSubmit} className="space-y-6">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <p className="text-blue-800">Registering for: {eventName}</p>
+              </div>
             </div>
             
-            <div className="space-y-4">
+            <div className="space-y-5">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700">
                   Full Name
@@ -154,12 +189,12 @@ const ExternalRegistration = () => {
         )}
 
         {step === 3 && credentials && (
-          <div className="mt-8 space-y-6">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+          <div className="space-y-6">
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6">
               <h3 className="text-lg font-medium text-green-900 mb-4">Registration Successful!</h3>
               <div className="space-y-3">
                 <p className="text-green-800">Please save your login credentials:</p>
-                <div className="bg-white p-4 rounded border border-green-200">
+                <div className="bg-white/50 backdrop-blur-sm p-4 rounded-xl border border-green-200 font-mono">
                   <p className="font-mono">
                     Enrollment Number: {credentials.enrollment_number}
                   </p>
@@ -172,21 +207,19 @@ const ExternalRegistration = () => {
                 </p>
               </div>
             </div>
-            <button
-              onClick={() => navigate('/login')}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Go to Login
-            </button>
           </div>
         )}
 
         <div className="text-center">
           <button
             onClick={() => navigate('/login')}
-            className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+            className="text-sm font-medium text-gray-600 hover:text-indigo-600 
+                    transition-colors duration-200 flex items-center justify-center space-x-1"
           >
-            Back to Login
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            <span>Back to Login</span>
           </button>
         </div>
       </div>

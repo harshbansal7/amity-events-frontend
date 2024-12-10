@@ -101,6 +101,20 @@ export const getCurrentUserId = () => {
   }
 };
 
+export const getCurrentUserName = () => {
+  const token = localStorage.getItem('token');
+  if (!token) return null;
+  
+  try {
+    const payload = token.split('.')[1];
+    const decodedPayload = JSON.parse(atob(payload));
+    return decodedPayload.name;
+  } catch (error) {
+    console.error('Error decoding token:', error);
+    return null;
+  }
+};
+
 export const isExternalUser = () => {
   const token = localStorage.getItem('token');
   if (!token) return false;
@@ -180,10 +194,10 @@ export const registerExternal = async (data) => {
   return response.data;
 };
 
-export const markAttendance = async (eventId, enrollmentNumber, status) => {
+export const markAttendance = async (eventId, attendanceData) => {
   const response = await api.post(
-    `/events/${eventId}/participants/${enrollmentNumber}/attendance`,
-    { status }
+    `/events/${eventId}/attendance`,
+    { attendance: attendanceData }
   );
   return response.data;
 };

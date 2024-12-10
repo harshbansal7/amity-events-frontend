@@ -47,19 +47,27 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-blue-50">
+      <div className="max-w-md w-full space-y-8 bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-xl">
+        <div className="text-center space-y-2">
+          <img
+            src="/assets/amity-logo.png"
+            alt="Amity Events"
+            className="h-20 mx-auto mb-2 drop-shadow-xl"
+          />
+          <h2 className="text-3xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
             Sign in to your account
           </h2>
+          <p className="text-gray-500">
+            Welcome back! Please enter your details.
+          </p>
         </div>
 
         {error && <Toast message={error} type="error" onClose={() => setError('')} />}
         {message && <Toast message={message} type="success" onClose={() => setMessage('')} />}
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm space-y-4">
+          <div className="space-y-5">
             <div>
               <label htmlFor="enrollment" className="block text-sm font-medium text-gray-700">
                 Enrollment Number
@@ -73,9 +81,10 @@ const Login = () => {
                   ...credentials,
                   enrollment_number: e.target.value
                 })}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 
-                         placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none 
-                         focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="mt-1 block w-full px-4 py-3 bg-white/50 border border-gray-300 
+                        rounded-xl shadow-sm placeholder-gray-400 
+                        focus:outline-none focus:ring-2 focus:ring-indigo-500 
+                        focus:border-indigo-500 transition-all duration-200"
                 placeholder="Enter your enrollment number"
               />
             </div>
@@ -93,9 +102,10 @@ const Login = () => {
                   ...credentials,
                   password: e.target.value
                 })}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 
-                         placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none 
-                         focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="mt-1 block w-full px-4 py-3 bg-white/50 border border-gray-300 
+                        rounded-xl shadow-sm placeholder-gray-400 
+                        focus:outline-none focus:ring-2 focus:ring-indigo-500 
+                        focus:border-indigo-500 transition-all duration-200"
                 placeholder="Enter your password"
               />
             </div>
@@ -105,27 +115,46 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent 
-                       text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 
-                       focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 
-                       disabled:opacity-50"
+              className="w-full flex justify-center py-3 px-4 border border-transparent 
+                      text-sm font-semibold rounded-xl text-white 
+                      bg-gradient-to-r from-indigo-600 to-blue-600 
+                      hover:from-indigo-700 hover:to-blue-700 
+                      focus:outline-none focus:ring-2 focus:ring-offset-2 
+                      focus:ring-indigo-500 transition-all duration-200
+                      disabled:opacity-50 shadow-lg hover:shadow-xl"
             >
               {loading ? 'Signing in...' : 'Sign in'}
             </button>
           </div>
 
-          <div className="flex items-center justify-between">
+          <div className="pt-6 space-y-4">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white/80 text-gray-500">or</span>
+              </div>
+            </div>
+            
             <div className="text-sm">
-              <a href="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
+              <a
+                href="/register"
+                className="w-full flex items-center justify-center px-4 py-3 
+                        border border-indigo-600 text-indigo-600 
+                        rounded-xl hover:bg-indigo-50 
+                        transition-all duration-200 font-medium"
+              >
                 Don't have an account? Sign up
               </a>
             </div>
-            <div className="text-sm">
+            <div className="text-center">
               <button
                 onClick={() => navigate('/external-register')}
-                className="font-medium text-indigo-600 hover:text-indigo-500"
+                className="text-sm text-gray-600 hover:text-indigo-600 
+                        transition-colors duration-200 underline"
               >
-                External Participant Registration
+                Register as External Participant →
               </button>
             </div>
           </div>

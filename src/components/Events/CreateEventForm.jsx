@@ -19,6 +19,8 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
     description: '',
     prizes: '',
     allow_external: false,
+    use_existing_code: false,
+    existing_event_code: '',
     image: null
   });
   const [image, setImage] = useState(null);
@@ -238,24 +240,62 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
             />
 
             {/* External Event Option */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
               <input
                 type="checkbox"
                 id="allow_external"
                 checked={formData.allow_external}
                 onChange={(e) => setFormData({ ...formData, allow_external: e.target.checked })}
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                className="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
               />
-              <label htmlFor="allow_external" className="text-sm text-gray-700">
-                Allow External Participants
-              </label>
+              <div>
+                <label htmlFor="allow_external" className="font-medium text-gray-700 block">
+                  Allow External Participants
+                </label>
+                <p className="text-sm text-gray-500 mt-1">
+                  Enable this to allow non-Amity participants to register
+                </p>
+              </div>
             </div>
 
             {formData.allow_external && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-blue-800">
-                  An event code will be generated automatically. External participants can use this code to register.
-                </p>
+              <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="checkbox"
+                    id="use_existing_code"
+                    checked={formData.use_existing_code}
+                    onChange={(e) => setFormData({ ...formData, use_existing_code: e.target.checked })}
+                    className="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="use_existing_code" className="font-medium text-gray-700">
+                    Use Existing Event Code
+                  </label>
+                </div>
+                
+                {formData.use_existing_code ? (
+                  <div>
+                    <label htmlFor="existing_event_code" className="block text-sm font-medium text-gray-700">
+                      Enter Existing Event Code
+                    </label>
+                    <input
+                      type="text"
+                      id="existing_event_code"
+                      value={formData.existing_event_code}
+                      onChange={(e) => setFormData({ 
+                        ...formData, 
+                        existing_event_code: e.target.value.toUpperCase() 
+                      })}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="Enter event code"
+                      maxLength={6}
+                    />
+                  </div>
+                ) : (
+                  <p className="text-sm text-blue-800">
+                    A new event code will be generated automatically
+                  </p>
+                )}
               </div>
             )}
           </div>

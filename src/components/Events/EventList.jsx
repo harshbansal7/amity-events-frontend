@@ -47,20 +47,41 @@ const EventList = () => {
   const pastEvents = events.filter(event => new Date(event.date) < currentDate);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 pt-20 pb-12">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-100 py-8">
       <div className="container mx-auto px-4">
-        <h2 className="text-4xl font-bold text-center mb-4 text-indigo-900">
-          Campus Events
-        </h2>
+        <div className="text-center mb-6">
+          <h2 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
+            Campus Events
+          </h2>
+          <p className="mt-2 text-gray-600">
+            Discover and participate in exciting events at Amity
+          </p>
+        </div>
         
         <div className="mb-12">
-          <h3 className="text-2xl font-semibold mb-6 text-indigo-800">
-            Upcoming Events
-          </h3>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-2">
+              <div className="h-8 w-1 bg-gradient-to-b from-indigo-600 to-blue-600 rounded-full"></div>
+              <h3 className="text-2xl font-semibold text-gray-800">
+                Upcoming Events
+              </h3>
+            </div>
+            <div className="flex items-center space-x-4">
+              {/* Add filter/sort options here if needed */}
+            </div>
+          </div>
           {upcomingEvents.length === 0 ? (
-            <p className="text-center text-gray-600">No upcoming events</p>
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-12 text-center shadow-sm">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <p className="text-gray-600 text-lg">No upcoming events</p>
+              <p className="text-gray-500 text-sm mt-2">Check back later for new events</p>
+            </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 transition-all duration-300">
               {upcomingEvents.map((event) => (
                 <EventCard 
                   key={event._id} 
@@ -74,13 +95,20 @@ const EventList = () => {
         </div>
 
         <div>
-          <h3 className="text-2xl font-semibold mb-6 text-indigo-800">
-            Past Events
-          </h3>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-2">
+              <div className="h-8 w-1 bg-gradient-to-b from-gray-400 to-gray-600 rounded-full"></div>
+              <h3 className="text-2xl font-semibold text-gray-700">
+                Past Events
+              </h3>
+            </div>
+          </div>
           {pastEvents.length === 0 ? (
-            <p className="text-center text-gray-600">No past events</p>
+            <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-8 text-center">
+              <p className="text-gray-500">No past events to show</p>
+            </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 opacity-75">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 opacity-80 hover:opacity-100 transition-opacity duration-300">
               {pastEvents.map((event) => (
                 <EventCard 
                   key={event._id} 
@@ -96,7 +124,13 @@ const EventList = () => {
         {!isExternal && (
           <button
             onClick={() => setShowCreateModal(true)}
-            className="fixed bottom-8 right-8 w-14 h-14 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center"
+            className="fixed bottom-8 right-8 w-14 h-14 rounded-full 
+                    bg-gradient-to-r from-indigo-600 to-blue-600 
+                    hover:from-indigo-700 hover:to-blue-700 
+                    text-white shadow-lg hover:shadow-xl 
+                    transition-all duration-300 
+                    flex items-center justify-center
+                    transform hover:scale-110"
           >
             <AddIcon />
           </button>
@@ -104,7 +138,7 @@ const EventList = () => {
 
         {showCreateModal && (
           <div className="fixed inset-0 z-50 overflow-y-auto">
-            <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" 
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
                  onClick={() => setShowCreateModal(false)} />
             <div className="flex items-center justify-center min-h-screen p-4">
               <div className="relative bg-white w-full max-w-2xl mx-auto rounded-lg shadow-xl">

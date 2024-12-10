@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import Navbar from './Navbar';
+import Footer from './Footer';
 import { jwtDecode } from 'jwt-decode';
 
 const ProtectedRoute = ({ children }) => {
@@ -14,7 +15,10 @@ const ProtectedRoute = ({ children }) => {
   return (
     <>
       <Navbar />
-      {children}
+      <div className="min-h-[calc(100vh-64px)]">
+        {children}
+      </div>
+      <Footer />
     </>
   );
 };
