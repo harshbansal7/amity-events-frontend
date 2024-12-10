@@ -47,7 +47,7 @@ const EventList = () => {
   const pastEvents = events.filter(event => new Date(event.date) < currentDate);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-100 pt-20 pb-4">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-100 py-8">
       <div className="container mx-auto px-4">
         <div className="text-center mb-6">
           <h2 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
