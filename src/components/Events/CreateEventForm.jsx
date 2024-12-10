@@ -92,234 +92,299 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
   };
 
   return (
-    <div className="relative bg-white rounded-lg shadow-xl max-h-[90vh] flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b">
-        <h2 className="text-2xl font-semibold text-gray-800">Create New Event</h2>
-        <button 
-          onClick={onCancel}
-          className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-        >
-          <CloseIcon className="text-gray-500" />
-        </button>
+    <div className="relative bg-gradient-to-br from-white to-indigo-50/30 rounded-2xl shadow-xl max-h-[90vh] flex flex-col overflow-hidden">
+      {/* Background Decorations */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-gradient-to-br from-indigo-200/20 to-blue-200/20 rounded-full blur-3xl" />
+        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-gradient-to-tr from-indigo-200/20 to-blue-200/20 rounded-full blur-3xl" />
       </div>
 
-      {/* Form */}
-      <div className="overflow-y-auto flex-1">
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          
-          {/* Image Upload Section */}
-          <div className="space-y-4">
-            {imagePreview && (
-              <div className="relative w-full h-48 rounded-lg overflow-hidden">
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="w-full h-full object-cover"
-                />
-                <button
-                  type="button"
-                  onClick={handleRemoveImage}
-                  className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-md hover:bg-gray-100"
-                >
-                  <CloseIcon className="text-gray-600" />
-                </button>
+      {/* Header */}
+      <div className="p-8 border-b bg-white/50 backdrop-blur-sm rounded-t-2xl relative">
+        <div className="flex items-center space-x-3 mb-2">
+          <div className="p-2 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-lg shadow-lg">
+            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+          </div>
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
+            Create Event
+          </h2>
+        </div>
+        <p className="mt-2 text-gray-600">Fill in the details to create a new event</p>
+      </div>
+
+      {/* Form Content */}
+      <div className="p-8 overflow-y-auto relative">
+        <form>
+          <div className="space-y-6">
+            {/* Image Section */}
+            <div className="bg-gradient-to-r from-indigo-50/50 to-blue-50/50 rounded-xl p-6 space-y-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <div className="w-2 h-2 rounded-full bg-gradient-to-r from-indigo-500 to-blue-500"></div>
+                <h3 className="text-lg font-semibold text-gray-900">Event Image</h3>
               </div>
-            )}
-            
-            <div className="flex justify-center">
-              <label className="cursor-pointer">
+
+              {/* Image Upload */}
+              <div className="space-y-2 bg-white/70 p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
+                <label className="block text-sm font-medium text-gray-700">
+                  Event Image
+                </label>
+                {imagePreview ? (
+                  <div className="relative">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-full h-48 object-cover rounded-xl shadow-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="absolute top-2 right-2 p-2 bg-white/90 hover:bg-white text-red-600 rounded-full shadow-lg transition-all duration-200"
+                    >
+                      <CloseIcon className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => document.getElementById('image-upload').click()}
+                    className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer 
+                      hover:border-indigo-500 hover:bg-indigo-50/50 transition-colors duration-200"
+                  >
+                    <PhotoCamera className="mx-auto h-12 w-12 text-gray-400" />
+                    <span className="mt-2 block text-sm text-gray-600">
+                      Click to upload event image
+                    </span>
+                  </div>
+                )}
                 <input
+                  id="image-upload"
                   type="file"
                   accept="image/*"
                   onChange={handleImageChange}
                   className="hidden"
                 />
-                <div className="flex items-center space-x-2 px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg border-2 border-dashed border-gray-300">
-                  <PhotoCamera className="text-gray-500" />
-                  <span>Upload Event Image</span>
-                </div>
-              </label>
-            </div>
-          </div>
-          {error && (
-            <div className="text-red-500 text-md">{error}</div>
-          )}
-          {/* Event Details */}
-          <div className="space-y-4">
-            <TextField
-              fullWidth
-              label="Event Name"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              required
-              variant="outlined"
-              sx={textFieldStyle}
-            />
-
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DateTimePicker
-                label="Event Date & Time"
-                value={formData.date}
-                onChange={(newValue) => setFormData({ ...formData, date: newValue })}
-                className="w-full"
-                renderInput={(params) => <TextField {...params} fullWidth required sx={textFieldStyle} />}
-              />
-            </LocalizationProvider>
-
-            <div className="grid grid-cols-3 gap-4">
-              <TextField
-                type="number"
-                label="Days"
-                value={formData.duration_days}
-                onChange={(e) => setFormData({ ...formData, duration_days: e.target.value })}
-                slotProps={{ htmlInput: { min: 0, max: 365 } }}
-                variant="outlined"
-                fullWidth
-                sx={textFieldStyle}
-              />
-              <TextField
-                type="number"
-                label="Hours"
-                value={formData.duration_hours}
-                onChange={(e) => setFormData({ ...formData, duration_hours: e.target.value })}
-                slotProps={{ htmlInput: { min: 0, max: 23 } }}
-                variant="outlined"
-                fullWidth
-                sx={textFieldStyle}
-              />
-              <TextField
-                type="number"
-                label="Minutes"
-                value={formData.duration_minutes}
-                onChange={(e) => setFormData({ ...formData, duration_minutes: e.target.value })}
-                slotProps={{ htmlInput: { min: 0, max: 59 } }}
-                variant="outlined"
-                fullWidth
-                sx={textFieldStyle}
-              />
-            </div>
-
-            <TextField
-              type="number"
-              label="Maximum Participants"
-              value={formData.max_participants}
-              onChange={(e) => setFormData({ ...formData, max_participants: e.target.value })}
-              required
-              slotProps={{ htmlInput: { min: 0, max: 100000 } }}
-              variant="outlined"
-              fullWidth
-              sx={textFieldStyle}
-            />
-
-            <TextField
-              label="Venue"
-              value={formData.venue}
-              onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
-              required
-              variant="outlined"
-              fullWidth
-              sx={textFieldStyle}
-            />
-
-            <TextField
-              label="Description"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              variant="outlined"
-              fullWidth
-              multiline
-              rows={4}
-              sx={textFieldStyle}
-            />
-
-            <TextField
-              label="Prizes (comma-separated)"
-              value={formData.prizes}
-              onChange={(e) => setFormData({ ...formData, prizes: e.target.value })}
-              variant="outlined"
-              fullWidth
-              placeholder="First Prize, Second Prize, Third Prize"
-              sx={textFieldStyle}
-            />
-
-            {/* External Event Option */}
-            <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
-              <input
-                type="checkbox"
-                id="allow_external"
-                checked={formData.allow_external}
-                onChange={(e) => setFormData({ ...formData, allow_external: e.target.checked })}
-                className="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-              />
-              <div>
-                <label htmlFor="allow_external" className="font-medium text-gray-700 block">
-                  Allow External Participants
-                </label>
-                <p className="text-sm text-gray-500 mt-1">
-                  Enable this to allow non-Amity participants to register
-                </p>
               </div>
             </div>
 
-            {formData.allow_external && (
-              <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <input
-                    type="checkbox"
-                    id="use_existing_code"
-                    checked={formData.use_existing_code}
-                    onChange={(e) => setFormData({ ...formData, use_existing_code: e.target.checked })}
-                    className="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+            {/* Basic Details Section */}
+            <div className="bg-white/70 rounded-xl p-6 shadow-sm space-y-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <div className="w-2 h-2 rounded-full bg-gradient-to-r from-indigo-500 to-blue-500"></div>
+                <h3 className="text-lg font-semibold text-gray-900">Basic Details</h3>
+              </div>
+
+              <TextField
+                label="Event Name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                required
+                variant="outlined"
+                fullWidth
+                className="bg-white/50"
+                sx={{
+                  ...textFieldStyle,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '0.75rem',
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    transition: 'all 0.2s',
+                    '&:hover': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    },
+                  }
+                }}
+              />
+
+              {/* Date and Duration */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gradient-to-r from-indigo-50/30 to-blue-50/30 p-4 rounded-xl">
+                <TextField
+                  label="Date"
+                  type="datetime-local"
+                  value={formData.date.toISOString().slice(0, 16)}
+                  onChange={(e) => setFormData({ ...formData, date: new Date(e.target.value) })}
+                  required
+                  variant="outlined"
+                  className="bg-white/50 rounded-xl shadow-sm"
+                  sx={textFieldStyle}
+                />
+
+                <div className="grid grid-cols-3 gap-4">
+                  <TextField
+                    label="Days"
+                    type="number"
+                    value={formData.duration_days}
+                    onChange={(e) => setFormData({ ...formData, duration_days: e.target.value })}
+                    variant="outlined"
+                    className="bg-white/50 rounded-xl shadow-sm"
+                    sx={textFieldStyle}
                   />
-                  <label htmlFor="use_existing_code" className="font-medium text-gray-700">
-                    Use Existing Event Code
-                  </label>
+                  <TextField
+                    label="Hours"
+                    type="number"
+                    value={formData.duration_hours}
+                    onChange={(e) => setFormData({ ...formData, duration_hours: e.target.value })}
+                    variant="outlined"
+                    className="bg-white/50 rounded-xl shadow-sm"
+                    sx={textFieldStyle}
+                  />
+                  <TextField
+                    label="Minutes"
+                    type="number"
+                    value={formData.duration_minutes}
+                    onChange={(e) => setFormData({ ...formData, duration_minutes: e.target.value })}
+                    variant="outlined"
+                    className="bg-white/50 rounded-xl shadow-sm"
+                    sx={textFieldStyle}
+                  />
                 </div>
-                
-                {formData.use_existing_code ? (
-                  <div>
-                    <label htmlFor="existing_event_code" className="block text-sm font-medium text-gray-700">
-                      Enter Existing Event Code
-                    </label>
-                    <input
-                      type="text"
-                      id="existing_event_code"
-                      value={formData.existing_event_code}
-                      onChange={(e) => setFormData({ 
-                        ...formData, 
-                        existing_event_code: e.target.value.toUpperCase() 
-                      })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                      placeholder="Enter event code"
-                      maxLength={6}
-                    />
-                  </div>
-                ) : (
-                  <p className="text-sm text-blue-800">
-                    A new event code will be generated automatically
-                  </p>
-                )}
               </div>
-            )}
+
+              {/* Venue and Capacity */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <TextField
+                  label="Venue"
+                  value={formData.venue}
+                  onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
+                  required
+                  variant="outlined"
+                  fullWidth
+                  sx={textFieldStyle}
+                />
+
+                <TextField
+                  type="number"
+                  label="Maximum Participants"
+                  value={formData.max_participants}
+                  onChange={(e) => setFormData({ ...formData, max_participants: e.target.value })}
+                  required
+                  slotProps={{ htmlInput: { min: 0, max: 100000 } }}
+                  variant="outlined"
+                  fullWidth
+                  sx={textFieldStyle}
+                />
+              </div>
+            </div>
+
+            {/* Additional Details Section */}
+            <div className="bg-white/70 rounded-xl p-6 shadow-sm space-y-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <div className="w-2 h-2 rounded-full bg-gradient-to-r from-indigo-500 to-blue-500"></div>
+                <h3 className="text-lg font-semibold text-gray-900">Additional Details</h3>
+              </div>
+
+              <TextField
+                label="Description"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                variant="outlined"
+                fullWidth
+                multiline
+                rows={4}
+                className="bg-white/50"
+                sx={textFieldStyle}
+              />
+
+              <TextField
+                label="Prizes (comma-separated)"
+                value={formData.prizes}
+                onChange={(e) => setFormData({ ...formData, prizes: e.target.value })}
+                variant="outlined"
+                fullWidth
+                placeholder="First Prize, Second Prize, Third Prize"
+                className="bg-white/50"
+                sx={textFieldStyle}
+              />
+            </div>
+
+            {/* External Event Options Section */}
+            <div className="bg-white/70 rounded-xl p-6 shadow-sm space-y-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <div className="w-2 h-2 rounded-full bg-gradient-to-r from-indigo-500 to-blue-500"></div>
+                <h3 className="text-lg font-semibold text-gray-900">External Registration</h3>
+              </div>
+
+              {/* External Event Option */}
+              <div className="flex items-center space-x-3 p-6 bg-gradient-to-r from-indigo-50/50 to-blue-50/50 rounded-xl border border-indigo-100/50 shadow-sm hover:shadow-md transition-all duration-300">
+                <input
+                  type="checkbox"
+                  id="allow_external"
+                  checked={formData.allow_external}
+                  onChange={(e) => setFormData({ ...formData, allow_external: e.target.checked })}
+                  className="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                />
+                <div>
+                  <label htmlFor="allow_external" className="font-medium text-gray-700 block">
+                    Allow External Participants
+                  </label>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Enable this to allow non-Amity participants to register
+                  </p>
+                </div>
+              </div>
+
+              {formData.allow_external && (
+                <div className="space-y-4 p-6 bg-gradient-to-r from-blue-50/30 to-indigo-50/30 rounded-xl border border-blue-100/50 shadow-sm">
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      id="use_existing_code"
+                      checked={formData.use_existing_code}
+                      onChange={(e) => setFormData({ ...formData, use_existing_code: e.target.checked })}
+                      className="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="use_existing_code" className="font-medium text-gray-700">
+                      Use Existing Event Code
+                    </label>
+                  </div>
+                  
+                  {formData.use_existing_code ? (
+                    <div>
+                      <label htmlFor="existing_event_code" className="block text-sm font-medium text-gray-700">
+                        Enter Existing Event Code
+                      </label>
+                      <input
+                        type="text"
+                        id="existing_event_code"
+                        value={formData.existing_event_code}
+                        onChange={(e) => setFormData({ 
+                          ...formData, 
+                          existing_event_code: e.target.value.toUpperCase() 
+                        })}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="Enter event code"
+                        maxLength={6}
+                      />
+                    </div>
+                  ) : (
+                    <p className="text-sm text-blue-800">
+                      A new event code will be generated automatically
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </form>
       </div>
 
       {/* Footer */}
-      <div className="flex justify-end space-x-4 p-6 border-t bg-gray-50">
+      <div className="flex justify-end space-x-4 p-6 border-t bg-white/50 backdrop-blur-sm rounded-b-2xl relative">
         <button
           type="button"
           onClick={onCancel}
           disabled={isCreating}
-          className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+          className="px-6 py-2.5 text-gray-700 bg-white hover:bg-gray-50 rounded-xl transition-all duration-200 font-medium shadow-sm hover:shadow-md"
         >
           Cancel
         </button>
         <button
           onClick={handleSubmit}
           disabled={isCreating}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center space-x-2"
+          className="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 
+            hover:from-indigo-700 hover:to-blue-700 text-white rounded-xl
+            transform hover:-translate-y-0.5
+            transition-all duration-200 font-medium shadow-lg hover:shadow-xl 
+            disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isCreating ? (
             <>

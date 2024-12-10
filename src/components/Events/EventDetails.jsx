@@ -53,6 +53,10 @@ const EventDetails = ({ event, open, onClose, isCreator, onUpdate }) => {
     }
   };
 
+  const formatDate = (date) => format(new Date(date), 'dd MMM yyyy');
+  const formatFullDate = (date) => format(new Date(date), 'EEEE, dd MMMM yyyy');
+  const formatTime = (date) => format(new Date(date), 'h:mm a');
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <div className="bg-gradient-to-r from-indigo-600 to-blue-600 p-6 flex justify-between items-center">
@@ -122,7 +126,7 @@ const EventDetails = ({ event, open, onClose, isCreator, onUpdate }) => {
                 <CalendarIcon className="h-5 w-5 text-indigo-500" />
                 <div>
                   <p className="text-sm text-gray-600">Date & Time</p>
-                  <p className="font-medium">{format(new Date(event.date), 'PPP p')}</p>
+                  <p className="font-medium">{formatFullDate(event.date)}</p>
                 </div>
               </div>
 
