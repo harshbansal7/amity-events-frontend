@@ -101,6 +101,20 @@ export const getCurrentUserId = () => {
   }
 };
 
+export const isExternalUser = () => {
+  const token = localStorage.getItem('token');
+  if (!token) return false;
+  
+  try {
+    const payload = token.split('.')[1];
+    const decodedPayload = JSON.parse(atob(payload));
+    return !!decodedPayload.is_external;
+  } catch (error) {
+    console.error('Error decoding token:', error);
+    return false;
+  }
+};
+
 export const unregisterFromEvent = async (eventId) => {
   const response = await api.post(`/events/${eventId}/unregister`);
   return response.data;
@@ -153,6 +167,24 @@ export const verifyEmail = async (data) => {
 
 export const verifyOTP = async (data) => {
   const response = await api.post('/auth/verify-otp', data);
+  return response.data;
+};
+
+export const verifyEventCode = async (data) => {
+  const response = await api.post('/auth/verify-event-code', data);
+  return response.data;
+};
+
+export const registerExternal = async (data) => {
+  const response = await api.post('/auth/register-external', data);
+  return response.data;
+};
+
+export const markAttendance = async (eventId, enrollmentNumber, status) => {
+  const response = await api.post(
+    `/events/${eventId}/participants/${enrollmentNumber}/attendance`,
+    { status }
+  );
   return response.data;
 };
 

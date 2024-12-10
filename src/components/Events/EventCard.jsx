@@ -12,6 +12,8 @@ import AdminTools from './AdminTools';
 const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
   const [openDetails, setOpenDetails] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [openRegisterDialog, setOpenRegisterDialog] = useState(false);
+  const [openUnregisterDialog, setOpenUnregisterDialog] = useState(false);
   const [isUnregistering, setIsUnregistering] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
   const currentUserId = getCurrentUserId();
@@ -27,6 +29,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
       setIsRegistering(true);
       await registerForEvent(event._id);
       if (onRegister) onRegister();
+      setOpenRegisterDialog(false);
     } catch (error) {
       console.error('Failed to register:', error);
     } finally {
@@ -43,6 +46,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
       } else if (onRegister) {
         onRegister();
       }
+      setOpenUnregisterDialog(false);
     } catch (error) {
       console.error('Failed to unregister:', error);
     } finally {
@@ -128,7 +132,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
             </div>
 
             <button
-              onClick={isRegistered ? handleUnregister : handleRegister}
+              onClick={() => isRegistered ? setOpenUnregisterDialog(true) : setOpenRegisterDialog(true)}
               disabled={
                 isPastEvent() ||
                 (event.participants.length >= event.max_participants && !isRegistered) || 
@@ -188,6 +192,60 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
               >
                 Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Registration Confirmation Modal */}
+      {openRegisterDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
+            <h3 className="text-xl font-semibold mb-4">Register for Event</h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to register for {event.name}?
+            </p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setOpenRegisterDialog(false)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+              >
+                No
+              </button>
+              <button
+                onClick={handleRegister}
+                disabled={isRegistering}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+              >
+                {isRegistering ? 'Registering...' : 'Yes'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Unregistration Confirmation Modal */}
+      {openUnregisterDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
+            <h3 className="text-xl font-semibold mb-4">Unregister from Event</h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to unregister from {event.name}?
+            </p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setOpenUnregisterDialog(false)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+              >
+                No
+              </button>
+              <button
+                onClick={handleUnregister}
+                disabled={isUnregistering}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              >
+                {isUnregistering ? 'Unregistering...' : 'Yes'}
               </button>
             </div>
           </div>

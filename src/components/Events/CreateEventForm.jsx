@@ -8,16 +8,18 @@ import CloseIcon from '@mui/icons-material/Close';
 import { TextField } from '@mui/material';
 
 const CreateEventForm = ({ onSuccess, onCancel }) => {
-  const [eventData, setEventData] = useState({
+  const [formData, setFormData] = useState({
     name: '',
     date: new Date(),
-    duration_days: '',
-    duration_hours: '',
-    duration_minutes: '',
+    duration_days: 0,
+    duration_hours: 0,
+    duration_minutes: 0,
     max_participants: '',
     venue: '',
     description: '',
-    prizes: ''
+    prizes: '',
+    allow_external: false,
+    image: null
   });
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -43,23 +45,25 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const formData = new FormData();
+      const form = new FormData();
       
-      Object.keys(eventData).forEach(key => {
+      Object.keys(formData).forEach(key => {
         if (key === 'prizes') {
-          formData.append(key, eventData[key].split(',').map(prize => prize.trim()).filter(Boolean));
+          form.append(key, formData[key].split(',').map(prize => prize.trim()).filter(Boolean));
         } else if (key === 'date') {
-          formData.append(key, eventData[key].toISOString());
+          form.append(key, formData[key].toISOString());
+        } else if (key === 'allow_external') {
+          form.append(key, formData[key].toString());
         } else {
-          formData.append(key, eventData[key]);
+          form.append(key, formData[key]);
         }
       });
 
       if (image) {
-        formData.append('image', image);
+        form.append('image', image);
       }
 
-      await createEvent(formData);
+      await createEvent(form);
       onSuccess();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create event');
@@ -140,8 +144,8 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
             <TextField
               fullWidth
               label="Event Name"
-              value={eventData.name}
-              onChange={(e) => setEventData({ ...eventData, name: e.target.value })}
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
               variant="outlined"
               sx={textFieldStyle}
@@ -150,8 +154,8 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <DateTimePicker
                 label="Event Date & Time"
-                value={eventData.date}
-                onChange={(newValue) => setEventData({ ...eventData, date: newValue })}
+                value={formData.date}
+                onChange={(newValue) => setFormData({ ...formData, date: newValue })}
                 className="w-full"
                 renderInput={(params) => <TextField {...params} fullWidth required sx={textFieldStyle} />}
               />
@@ -161,8 +165,8 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
               <TextField
                 type="number"
                 label="Days"
-                value={eventData.duration_days}
-                onChange={(e) => setEventData({ ...eventData, duration_days: e.target.value })}
+                value={formData.duration_days}
+                onChange={(e) => setFormData({ ...formData, duration_days: e.target.value })}
                 slotProps={{ htmlInput: { min: 0, max: 365 } }}
                 variant="outlined"
                 fullWidth
@@ -171,8 +175,8 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
               <TextField
                 type="number"
                 label="Hours"
-                value={eventData.duration_hours}
-                onChange={(e) => setEventData({ ...eventData, duration_hours: e.target.value })}
+                value={formData.duration_hours}
+                onChange={(e) => setFormData({ ...formData, duration_hours: e.target.value })}
                 slotProps={{ htmlInput: { min: 0, max: 23 } }}
                 variant="outlined"
                 fullWidth
@@ -181,8 +185,8 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
               <TextField
                 type="number"
                 label="Minutes"
-                value={eventData.duration_minutes}
-                onChange={(e) => setEventData({ ...eventData, duration_minutes: e.target.value })}
+                value={formData.duration_minutes}
+                onChange={(e) => setFormData({ ...formData, duration_minutes: e.target.value })}
                 slotProps={{ htmlInput: { min: 0, max: 59 } }}
                 variant="outlined"
                 fullWidth
@@ -193,8 +197,8 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
             <TextField
               type="number"
               label="Maximum Participants"
-              value={eventData.max_participants}
-              onChange={(e) => setEventData({ ...eventData, max_participants: e.target.value })}
+              value={formData.max_participants}
+              onChange={(e) => setFormData({ ...formData, max_participants: e.target.value })}
               required
               slotProps={{ htmlInput: { min: 0, max: 100000 } }}
               variant="outlined"
@@ -204,8 +208,8 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
 
             <TextField
               label="Venue"
-              value={eventData.venue}
-              onChange={(e) => setEventData({ ...eventData, venue: e.target.value })}
+              value={formData.venue}
+              onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
               required
               variant="outlined"
               fullWidth
@@ -214,8 +218,8 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
 
             <TextField
               label="Description"
-              value={eventData.description}
-              onChange={(e) => setEventData({ ...eventData, description: e.target.value })}
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               variant="outlined"
               fullWidth
               multiline
@@ -225,13 +229,35 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
 
             <TextField
               label="Prizes (comma-separated)"
-              value={eventData.prizes}
-              onChange={(e) => setEventData({ ...eventData, prizes: e.target.value })}
+              value={formData.prizes}
+              onChange={(e) => setFormData({ ...formData, prizes: e.target.value })}
               variant="outlined"
               fullWidth
               placeholder="First Prize, Second Prize, Third Prize"
               sx={textFieldStyle}
             />
+
+            {/* External Event Option */}
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="allow_external"
+                checked={formData.allow_external}
+                onChange={(e) => setFormData({ ...formData, allow_external: e.target.checked })}
+                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              />
+              <label htmlFor="allow_external" className="text-sm text-gray-700">
+                Allow External Participants
+              </label>
+            </div>
+
+            {formData.allow_external && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-blue-800">
+                  An event code will be generated automatically. External participants can use this code to register.
+                </p>
+              </div>
+            )}
           </div>
         </form>
       </div>

@@ -13,6 +13,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showExternalOption, setShowExternalOption] = useState(false);
 
   // Show success message if redirected from registration
   useEffect(() => {
@@ -120,9 +121,12 @@ const Login = () => {
               </a>
             </div>
             <div className="text-sm">
-              <a href="/forgot-password" className="font-medium text-indigo-600 hover:text-indigo-500">
-                Forgot your password?
-              </a>
+              <button
+                onClick={() => navigate('/external-register')}
+                className="font-medium text-indigo-600 hover:text-indigo-500"
+              >
+                External Participant Registration
+              </button>
             </div>
           </div>
         </form>

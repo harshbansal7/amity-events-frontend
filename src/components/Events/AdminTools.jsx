@@ -14,13 +14,15 @@ import {
   getEventParticipants,
   downloadParticipantsPDF,
   downloadParticipantsExcel,
-  removeParticipant
+  removeParticipant,
+  markAttendance
 } from '../../services/api';
 import Toast from '../UI/Toast';
 
 const ParticipantsModal = ({ event, onClose, onParticipantRemoved }) => {
   const [participants, setParticipants] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [markingAttendance, setMarkingAttendance] = useState(false);
 
   React.useEffect(() => {
     const fetchParticipants = async () => {
@@ -46,6 +48,22 @@ const ParticipantsModal = ({ event, onClose, onParticipantRemoved }) => {
       } catch (error) {
         console.error('Failed to remove participant:', error);
       }
+    }
+  };
+
+  const handleAttendanceChange = async (enrollmentNumber, currentStatus) => {
+    try {
+      setMarkingAttendance(true);
+      await markAttendance(event._id, enrollmentNumber, !currentStatus);
+      setParticipants(participants.map(p => 
+        p.enrollment_number === enrollmentNumber 
+          ? {...p, attendance: !currentStatus}
+          : p
+      ));
+    } catch (error) {
+      console.error('Failed to mark attendance:', error);
+    } finally {
+      setMarkingAttendance(false);
     }
   };
 
@@ -97,6 +115,9 @@ const ParticipantsModal = ({ event, onClose, onParticipantRemoved }) => {
                         Phone
                       </th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Attendance
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Actions
                       </th>
                     </tr>
@@ -124,6 +145,22 @@ const ParticipantsModal = ({ event, onClose, onParticipantRemoved }) => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <button
+                            onClick={() => handleAttendanceChange(
+                              participant.enrollment_number,
+                              participant.attendance
+                            )}
+                            disabled={markingAttendance}
+                            className={`px-3 py-1 rounded-full text-sm font-medium 
+                              ${participant.attendance 
+                                ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                                : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                              } transition-colors`}
+                          >
+                            {participant.attendance ? 'Present' : 'Absent'}
+                          </button>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <button
                             onClick={() => handleRemoveParticipant(participant.enrollment_number)}
                             className="text-red-600 hover:text-red-900 transition-colors"
                           >
@@ -145,16 +182,6 @@ const ParticipantsModal = ({ event, onClose, onParticipantRemoved }) => {
 };
 
 const FieldSelectionModal = ({ onClose, onConfirm, title }) => {
-  const [selectedFields, setSelectedFields] = useState({
-    name: true,
-    enrollment_number: true,
-    amity_email: true,
-    phone_number: true,
-    branch: true,
-    year: true,
-    registered_at: true
-  });
-
   const fields = [
     { id: 'name', label: 'Name' },
     { id: 'enrollment_number', label: 'Enrollment Number' },
@@ -162,8 +189,20 @@ const FieldSelectionModal = ({ onClose, onConfirm, title }) => {
     { id: 'phone_number', label: 'Phone Number' },
     { id: 'branch', label: 'Branch' },
     { id: 'year', label: 'Year' },
-    { id: 'registered_at', label: 'Registration Date' }
+    { id: 'registered_at', label: 'Registration Date' },
+    { id: 'attendance', label: 'Attendance Status' }
   ];
+
+  const [selectedFields, setSelectedFields] = useState({
+    name: true,
+    enrollment_number: true,
+    amity_email: true,
+    phone_number: true,
+    branch: true,
+    year: true,
+    registered_at: true,
+    attendance: true
+  });
 
   const handleToggleField = (fieldId) => {
     setSelectedFields(prev => ({

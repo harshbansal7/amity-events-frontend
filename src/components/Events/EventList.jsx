@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getEvents } from '../../services/api';
+import { getEvents, getCurrentUserId, isExternalUser } from '../../services/api';
 import EventCard from './EventCard';
 import CreateEventForm from './CreateEventForm';
 import { CircularProgress } from '@mui/material';
@@ -7,8 +7,10 @@ import AddIcon from '@mui/icons-material/Add';
 
 const EventList = () => {
   const [events, setEvents] = useState([]);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [isExternal, setIsExternal] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [openCreateDialog, setOpenCreateDialog] = useState(false);
+  const [error, setError] = useState('');
 
   const fetchEvents = async () => {
     try {
@@ -28,6 +30,7 @@ const EventList = () => {
 
   useEffect(() => {
     fetchEvents();
+    setIsExternal(isExternalUser());
   }, []);
 
   if (loading) {
@@ -90,25 +93,27 @@ const EventList = () => {
           )}
         </div>
 
-        <button
-          onClick={() => setOpenCreateDialog(true)}
-          className="fixed bottom-8 right-8 w-14 h-14 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center"
-        >
-          <AddIcon />
-        </button>
+        {!isExternal && (
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="fixed bottom-8 right-8 w-14 h-14 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center"
+          >
+            <AddIcon />
+          </button>
+        )}
 
-        {openCreateDialog && (
+        {showCreateModal && (
           <div className="fixed inset-0 z-50 overflow-y-auto">
             <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" 
-                 onClick={() => setOpenCreateDialog(false)} />
+                 onClick={() => setShowCreateModal(false)} />
             <div className="flex items-center justify-center min-h-screen p-4">
               <div className="relative bg-white w-full max-w-2xl mx-auto rounded-lg shadow-xl">
                 <CreateEventForm 
                   onSuccess={() => {
-                    setOpenCreateDialog(false);
+                    setShowCreateModal(false);
                     fetchEvents();
                   }}
-                  onCancel={() => setOpenCreateDialog(false)}
+                  onCancel={() => setShowCreateModal(false)}
                 />
               </div>
             </div>

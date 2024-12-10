@@ -152,6 +152,23 @@ const EventDetails = ({ event, open, onClose, isCreator, onUpdate }) => {
                   <p className="font-medium">{event.participants.length} / {event.max_participants}</p>
                 </div>
               </div>
+
+              {/* External Event Code - Only visible to creator */}
+              {isCreator && event.allow_external && event.event_code && (
+                <div className="col-span-full">
+                  <div className="flex items-center space-x-3 bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <div>
+                      <p className="text-sm text-blue-800 font-medium">External Registration Code</p>
+                      <p className="text-2xl font-mono font-bold text-blue-900 mt-1">
+                        {event.event_code}
+                      </p>
+                      <p className="text-xs text-blue-700 mt-1">
+                        Share this code with external participants to allow them to register
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Prizes */}

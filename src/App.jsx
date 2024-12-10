@@ -5,6 +5,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
+import ExternalRegistration from './components/Auth/ExternalRegistration';
 import EventList from './components/Events/EventList';
 import ProtectedRoute from './components/Layout/ProtectedRoute';
 import MyEvents from './components/Events/MyEvents';
@@ -28,6 +29,7 @@ function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/external-register" element={<ExternalRegistration />} />
             <Route
               path="/events"
               element={
