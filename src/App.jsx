@@ -9,6 +9,7 @@ import ExternalRegistration from './components/Auth/ExternalRegistration';
 import EventList from './components/Events/EventList';
 import ProtectedRoute from './components/Layout/ProtectedRoute';
 import MyEvents from './components/Events/MyEvents';
+import ForgotPassword from './components/Auth/ForgotPassword';
 
 const theme = createTheme({
   palette: {
@@ -29,6 +30,7 @@ function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/external-register" element={<ExternalRegistration />} />
             <Route
               path="/events"

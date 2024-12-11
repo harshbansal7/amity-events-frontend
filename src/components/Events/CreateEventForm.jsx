@@ -6,6 +6,7 @@ import { createEvent } from '../../services/api';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import CloseIcon from '@mui/icons-material/Close';
 import { TextField } from '@mui/material';
+import useRotatingMessage from '../../hooks/useRotatingMessage';
 
 const CreateEventForm = ({ onSuccess, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -27,6 +28,8 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
   const [imagePreview, setImagePreview] = useState(null);
   const [error, setError] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+
+  const rotatingMessage = useRotatingMessage('createEvent');
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -116,6 +119,9 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
 
       {/* Form Content */}
       <div className="p-8 overflow-y-auto relative">
+        <p className="text-gray-400/60 text-sm italic text-center mb-4">
+          {rotatingMessage}
+        </p>
         <form>
           <div className="space-y-6">
             {/* Image Section */}

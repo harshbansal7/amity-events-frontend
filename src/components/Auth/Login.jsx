@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { login } from '../../services/api';
 import Toast from '../UI/Toast';
+import useRotatingMessage from '../../hooks/useRotatingMessage';
 
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const rotatingMessage = useRotatingMessage('login');
   const [credentials, setCredentials] = useState({
     enrollment_number: '',
     password: ''
@@ -49,11 +51,14 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-blue-50 px-4 py-6">
       <div className="max-w-md w-full space-y-6 bg-white/80 backdrop-blur-sm p-6 sm:p-8 rounded-2xl shadow-xl">
+        <p className="text-center text-gray-400/60 text-sm italic mb-2">
+          {rotatingMessage}
+        </p>
         <div className="text-center space-y-2">
           <img
             src="/assets/amity-logo.png"
             alt="Amity Events"
-            className="h-16 sm:h-20 mx-auto mb-2 drop-shadow-xl"
+            className="h-16 sm:h-10 mx-auto mb-2 drop-shadow-xl"
           />
           <h2 className="text-3xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
             Sign in to your account
@@ -127,7 +132,7 @@ const Login = () => {
             </button>
           </div>
 
-          <div className="pt-6 space-y-4">
+          <div className="space-y-4">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-300"></div>
@@ -135,6 +140,14 @@ const Login = () => {
               <div className="relative flex justify-center text-sm">
                 <span className="px-2 bg-white/80 text-gray-500">or</span>
               </div>
+            </div>
+            <div className="text-sm text-center">
+              <a
+                href="/forgot-password"
+                className="text-indigo-600 hover:text-indigo-500 transition-colors duration-200"
+              >
+                Forgot your password?
+              </a>
             </div>
             
             <div className="text-sm">

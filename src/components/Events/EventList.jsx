@@ -4,6 +4,7 @@ import EventCard from './EventCard';
 import CreateEventForm from './CreateEventForm';
 import { CircularProgress } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import useRotatingMessage from '../../hooks/useRotatingMessage';
 
 const EventList = () => {
   const [events, setEvents] = useState([]);
@@ -11,6 +12,9 @@ const EventList = () => {
   const [isExternal, setIsExternal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const rotatingMessage = useRotatingMessage('eventList');
+  const noEventsMessage = useRotatingMessage('noEvents');
 
   const fetchEvents = async () => {
     try {
@@ -56,6 +60,9 @@ const EventList = () => {
           <p className="mt-2 text-gray-600">
             Discover and participate in exciting events at Amity
           </p>
+          <p className="mt-1 text-gray-400/60 text-sm italic">
+            {rotatingMessage}
+          </p>
         </div>
         
         <div className="mb-12">
@@ -78,7 +85,9 @@ const EventList = () => {
                 </svg>
               </div>
               <p className="text-gray-600 text-lg">No upcoming events</p>
-              <p className="text-gray-500 text-sm mt-2">Check back later for new events</p>
+              <p className="text-gray-400/60 text-sm mt-2 italic">
+                {noEventsMessage}
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 transition-all duration-300">

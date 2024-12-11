@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { register } from '../../services/api';
 import EmailVerification from './EmailVerification';
 import Toast from '../UI/Toast';
+import useRotatingMessage from '../../hooks/useRotatingMessage';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -19,6 +20,8 @@ const Register = () => {
     year: '',
     phone_number: ''
   });
+
+  const rotatingMessage = useRotatingMessage('register');
 
   const handleEmailVerification = (verifiedEmail) => {
     setUserData(prev => ({ ...prev, amity_email: verifiedEmail }));
@@ -54,6 +57,9 @@ const Register = () => {
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             Create your account
           </h2>
+          <p className="text-center text-gray-400/60 text-sm italic mt-2">
+            {rotatingMessage}
+          </p>
         </div>
 
         {error && <Toast message={error} type="error" onClose={() => setError('')} />}

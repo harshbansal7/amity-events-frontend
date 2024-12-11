@@ -411,7 +411,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
           role="dialog"
           aria-modal="true"
           aria-labelledby="event-details-title"
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-40 p-4"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowDetailsModal(false);

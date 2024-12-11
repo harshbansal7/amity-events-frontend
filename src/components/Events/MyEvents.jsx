@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { getRegisteredEvents } from '../../services/api';
 import EventCard from './EventCard';
 import { CircularProgress } from '@mui/material';
+import useRotatingMessage from '../../hooks/useRotatingMessage';
 
 const MyEvents = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sortOrder, setSortOrder] = useState('upcoming'); // 'upcoming' or 'past'
+
+  const rotatingMessage = useRotatingMessage('myEvents');
 
   const fetchEvents = async () => {
     try {
@@ -51,6 +54,9 @@ const MyEvents = () => {
           </h2>
           <p className="mt-2 text-gray-600">
             Track and manage your event registrations
+          </p>
+          <p className="mt-1 text-gray-400/60 text-sm italic">
+            {rotatingMessage}
           </p>
         </div>
 
@@ -100,6 +106,11 @@ const MyEvents = () => {
               {sortOrder === 'upcoming' 
                 ? "No upcoming registered events" 
                 : "No past registered events"}
+            </p>
+            <p className="text-gray-400/60 text-sm mt-2 italic">
+              {sortOrder === 'upcoming'
+                ? '"Time to break free from your comfort zone!" 🚀'
+                : '"Those were the days..." - Every Senior Ever 🎓'}
             </p>
             <a 
               href="/events" 
