@@ -113,7 +113,7 @@ const EventList = () => {
             </div>
           </div>
           {pastEvents.length === 0 ? (
-            <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-8 text-center">
+            <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-8 text-center z-50">
               <p className="text-gray-500">No past events to show</p>
             </div>
           ) : (

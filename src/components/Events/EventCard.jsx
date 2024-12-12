@@ -314,7 +314,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
         <div 
           className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-55"
         >
-          <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
+          <div className="bg-white rounded-lg p-6 max-w-sm mx-4 z-60">
             <h3 className="text-xl font-semibold mb-4">Register for Event</h3>
             <p className="text-gray-600 mb-6">
               Are you sure you want to register for {event.name}?
@@ -341,7 +341,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
       {/* Unregistration Confirmation Modal */}
       {openUnregisterDialog && (
         <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-55"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-60"
         >
           <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
             <h3 className="text-xl font-semibold mb-4">Unregister from Event</h3>

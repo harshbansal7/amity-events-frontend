@@ -28,6 +28,16 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
   const [imagePreview, setImagePreview] = useState(null);
   const [error, setError] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({
+    name: '',
+    date: '',
+    max_participants: '',
+    venue: '',
+    duration_days: '',
+    duration_hours: '',
+    duration_minutes: '',
+    existing_event_code: ''
+  });
 
   const rotatingMessage = useRotatingMessage('createEvent');
 
@@ -52,6 +62,49 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
     e.preventDefault();
     try {
       setIsCreating(true);
+      setValidationErrors({});
+      
+      const errors = {};
+      
+      if (!formData.name?.trim()) {
+        errors.name = 'Event name is required';
+      }
+      
+      if (!formData.venue?.trim()) {
+        errors.venue = 'Venue is required';
+      }
+      
+      if (!formData.max_participants) {
+        errors.max_participants = 'Maximum participants is required';
+      } else if (parseInt(formData.max_participants) <= 0) {
+        errors.max_participants = 'Maximum participants must be greater than 0';
+      }
+      
+      const selectedDate = new Date(formData.date);
+      const now = new Date();
+      if (selectedDate < now) {
+        errors.date = 'Event date cannot be in the past';
+      }
+      
+      const totalDuration = (parseInt(formData.duration_days) || 0) * 24 * 60 +
+                           (parseInt(formData.duration_hours) || 0) * 60 +
+                           (parseInt(formData.duration_minutes) || 0);
+      if (totalDuration <= 0) {
+        errors.duration_days = 'Event must have a duration';
+        errors.duration_hours = 'Event must have a duration';
+        errors.duration_minutes = 'Event must have a duration';
+      }
+      
+      if (formData.allow_external && formData.use_existing_code && !formData.existing_event_code) {
+        errors.existing_event_code = 'Event code is required when using existing code';
+      }
+      
+      if (Object.keys(errors).length > 0) {
+        setValidationErrors(errors);
+        setError('Please fix the validation errors');
+        return;
+      }
+
       const form = new FormData();
       
       Object.keys(formData).forEach(key => {
@@ -77,6 +130,14 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
     } finally {
       setIsCreating(false);
     }
+  };
+
+  const getInputClassName = (fieldName) => {
+    const baseClasses = "mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 transition-colors duration-200";
+    const validClasses = "border-gray-300 focus:ring-indigo-500 focus:border-indigo-500";
+    const errorClasses = "border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500";
+    
+    return `${baseClasses} ${validationErrors[fieldName] ? errorClasses : validClasses}`;
   };
 
   // Add these theme overrides if needed
@@ -187,7 +248,7 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
                 required
                 variant="outlined"
                 fullWidth
-                className="bg-white/50"
+                className={getInputClassName('name')}
                 sx={{
                   ...textFieldStyle,
                   '& .MuiOutlinedInput-root': {
@@ -356,7 +417,7 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
                           ...formData, 
                           existing_event_code: e.target.value.toUpperCase() 
                         })}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                        className={getInputClassName('existing_event_code')}
                         placeholder="Enter event code"
                         maxLength={6}
                       />
