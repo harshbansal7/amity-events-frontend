@@ -24,22 +24,61 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
     existing_event_code: '',
     image: null
   });
+  const [touched, setTouched] = useState({});
+  const [validationErrors, setValidationErrors] = useState({});
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [error, setError] = useState('');
   const [isCreating, setIsCreating] = useState(false);
-  const [validationErrors, setValidationErrors] = useState({
-    name: '',
-    date: '',
-    max_participants: '',
-    venue: '',
-    duration_days: '',
-    duration_hours: '',
-    duration_minutes: '',
-    existing_event_code: ''
-  });
 
   const rotatingMessage = useRotatingMessage('createEvent');
+
+  const validateForm = () => {
+    const errors = {};
+    
+    // Required field validations
+    if (!formData.name?.trim()) {
+      errors.name = 'Event name is required';
+    }
+    
+    if (!formData.venue?.trim()) {
+      errors.venue = 'Venue is required';
+    }
+    
+    if (!formData.max_participants) {
+      errors.max_participants = 'Maximum participants is required';
+    } else if (parseInt(formData.max_participants) <= 0) {
+      errors.max_participants = 'Maximum participants must be greater than 0';
+    }
+    
+    // Date validation
+    const selectedDate = new Date(formData.date);
+    const now = new Date();
+    if (selectedDate < now) {
+      errors.date = 'Event date cannot be in the past';
+    }
+    
+    // Duration validation
+    const totalDuration = (parseInt(formData.duration_days) || 0) * 24 * 60 +
+                         (parseInt(formData.duration_hours) || 0) * 60 +
+                         (parseInt(formData.duration_minutes) || 0);
+    if (totalDuration <= 0) {
+      errors.duration = 'Event must have a duration';
+    }
+    
+    // Event code validation for external events
+    if (formData.allow_external && formData.use_existing_code && !formData.existing_event_code) {
+      errors.existing_event_code = 'Event code is required when using existing code';
+    }
+    
+    return errors;
+  };
+
+  const handleBlur = (field) => {
+    setTouched(prev => ({ ...prev, [field]: true }));
+    const errors = validateForm();
+    setValidationErrors(errors);
+  };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -62,46 +101,14 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
     e.preventDefault();
     try {
       setIsCreating(true);
-      setValidationErrors({});
+      setTouched(Object.keys(formData).reduce((acc, key) => ({ ...acc, [key]: true }), {}));
       
-      const errors = {};
-      
-      if (!formData.name?.trim()) {
-        errors.name = 'Event name is required';
-      }
-      
-      if (!formData.venue?.trim()) {
-        errors.venue = 'Venue is required';
-      }
-      
-      if (!formData.max_participants) {
-        errors.max_participants = 'Maximum participants is required';
-      } else if (parseInt(formData.max_participants) <= 0) {
-        errors.max_participants = 'Maximum participants must be greater than 0';
-      }
-      
-      const selectedDate = new Date(formData.date);
-      const now = new Date();
-      if (selectedDate < now) {
-        errors.date = 'Event date cannot be in the past';
-      }
-      
-      const totalDuration = (parseInt(formData.duration_days) || 0) * 24 * 60 +
-                           (parseInt(formData.duration_hours) || 0) * 60 +
-                           (parseInt(formData.duration_minutes) || 0);
-      if (totalDuration <= 0) {
-        errors.duration_days = 'Event must have a duration';
-        errors.duration_hours = 'Event must have a duration';
-        errors.duration_minutes = 'Event must have a duration';
-      }
-      
-      if (formData.allow_external && formData.use_existing_code && !formData.existing_event_code) {
-        errors.existing_event_code = 'Event code is required when using existing code';
-      }
+      const errors = validateForm();
+      setValidationErrors(errors);
       
       if (Object.keys(errors).length > 0) {
-        setValidationErrors(errors);
         setError('Please fix the validation errors');
+        setIsCreating(false);
         return;
       }
 
@@ -135,9 +142,11 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
   const getInputClassName = (fieldName) => {
     const baseClasses = "mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 transition-colors duration-200";
     const validClasses = "border-gray-300 focus:ring-indigo-500 focus:border-indigo-500";
-    const errorClasses = "border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500";
+    const errorClasses = "border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500 bg-red-50";
     
-    return `${baseClasses} ${validationErrors[fieldName] ? errorClasses : validClasses}`;
+    return `${baseClasses} ${
+      touched[fieldName] && validationErrors[fieldName] ? errorClasses : validClasses
+    }`;
   };
 
   // Add these theme overrides if needed
@@ -183,7 +192,7 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
         <p className="text-gray-400/60 text-sm italic text-center mb-4">
           {rotatingMessage}
         </p>
-        <form>
+        <form onSubmit={handleSubmit}>
           <div className="space-y-6">
             {/* Image Section */}
             <div className="bg-gradient-to-r from-indigo-50/50 to-blue-50/50 rounded-xl p-6 space-y-4">
@@ -245,6 +254,7 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
                 label="Event Name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onBlur={() => handleBlur('name')}
                 required
                 variant="outlined"
                 fullWidth
@@ -260,6 +270,8 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
                     },
                   }
                 }}
+                error={touched.name && !!validationErrors.name}
+                helperText={touched.name && validationErrors.name}
               />
 
               {/* Date and Duration */}
@@ -267,12 +279,15 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
                 <TextField
                   label="Date"
                   type="datetime-local"
-                  value={formData.date.toISOString().slice(0, 16)}
+                  value={new Date(formData.date.getTime() - formData.date.getTimezoneOffset() * 60000).toISOString().slice(0, 16)}
                   onChange={(e) => setFormData({ ...formData, date: new Date(e.target.value) })}
+                  onBlur={() => handleBlur('date')}
                   required
                   variant="outlined"
                   className="bg-white/50 rounded-xl shadow-sm"
                   sx={textFieldStyle}
+                  error={touched.date && !!validationErrors.date}
+                  helperText={touched.date && validationErrors.date}
                 />
 
                 <div className="grid grid-cols-3 gap-4">
@@ -281,27 +296,36 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
                     type="number"
                     value={formData.duration_days}
                     onChange={(e) => setFormData({ ...formData, duration_days: e.target.value })}
+                    onBlur={() => handleBlur('duration_days')}
                     variant="outlined"
                     className="bg-white/50 rounded-xl shadow-sm"
                     sx={textFieldStyle}
+                    error={touched.duration_days && !!validationErrors.duration_days}
+                    helperText={touched.duration_days && validationErrors.duration_days}
                   />
                   <TextField
                     label="Hours"
                     type="number"
                     value={formData.duration_hours}
                     onChange={(e) => setFormData({ ...formData, duration_hours: e.target.value })}
+                    onBlur={() => handleBlur('duration_hours')}
                     variant="outlined"
                     className="bg-white/50 rounded-xl shadow-sm"
                     sx={textFieldStyle}
+                    error={touched.duration_hours && !!validationErrors.duration_hours}
+                    helperText={touched.duration_hours && validationErrors.duration_hours}
                   />
                   <TextField
                     label="Minutes"
                     type="number"
                     value={formData.duration_minutes}
                     onChange={(e) => setFormData({ ...formData, duration_minutes: e.target.value })}
+                    onBlur={() => handleBlur('duration_minutes')}
                     variant="outlined"
                     className="bg-white/50 rounded-xl shadow-sm"
                     sx={textFieldStyle}
+                    error={touched.duration_minutes && !!validationErrors.duration_minutes}
+                    helperText={touched.duration_minutes && validationErrors.duration_minutes}
                   />
                 </div>
               </div>
@@ -312,10 +336,13 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
                   label="Venue"
                   value={formData.venue}
                   onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
+                  onBlur={() => handleBlur('venue')}
                   required
                   variant="outlined"
                   fullWidth
                   sx={textFieldStyle}
+                  error={touched.venue && !!validationErrors.venue}
+                  helperText={touched.venue && validationErrors.venue}
                 />
 
                 <TextField
@@ -323,11 +350,14 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
                   label="Maximum Participants"
                   value={formData.max_participants}
                   onChange={(e) => setFormData({ ...formData, max_participants: e.target.value })}
+                  onBlur={() => handleBlur('max_participants')}
                   required
                   slotProps={{ htmlInput: { min: 0, max: 100000 } }}
                   variant="outlined"
                   fullWidth
                   sx={textFieldStyle}
+                  error={touched.max_participants && !!validationErrors.max_participants}
+                  helperText={touched.max_participants && validationErrors.max_participants}
                 />
               </div>
             </div>
@@ -343,23 +373,29 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
                 label="Description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onBlur={() => handleBlur('description')}
                 variant="outlined"
                 fullWidth
                 multiline
                 rows={4}
                 className="bg-white/50"
                 sx={textFieldStyle}
+                error={touched.description && !!validationErrors.description}
+                helperText={touched.description && validationErrors.description}
               />
 
               <TextField
                 label="Prizes (comma-separated)"
                 value={formData.prizes}
                 onChange={(e) => setFormData({ ...formData, prizes: e.target.value })}
+                onBlur={() => handleBlur('prizes')}
                 variant="outlined"
                 fullWidth
                 placeholder="First Prize, Second Prize, Third Prize"
                 className="bg-white/50"
                 sx={textFieldStyle}
+                error={touched.prizes && !!validationErrors.prizes}
+                helperText={touched.prizes && validationErrors.prizes}
               />
             </div>
 
@@ -377,6 +413,7 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
                   id="allow_external"
                   checked={formData.allow_external}
                   onChange={(e) => setFormData({ ...formData, allow_external: e.target.checked })}
+                  onBlur={() => handleBlur('allow_external')}
                   className="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                 />
                 <div>
@@ -397,6 +434,7 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
                       id="use_existing_code"
                       checked={formData.use_existing_code}
                       onChange={(e) => setFormData({ ...formData, use_existing_code: e.target.checked })}
+                      onBlur={() => handleBlur('use_existing_code')}
                       className="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                     />
                     <label htmlFor="use_existing_code" className="font-medium text-gray-700">
@@ -417,6 +455,7 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
                           ...formData, 
                           existing_event_code: e.target.value.toUpperCase() 
                         })}
+                        onBlur={() => handleBlur('existing_event_code')}
                         className={getInputClassName('existing_event_code')}
                         placeholder="Enter event code"
                         maxLength={6}

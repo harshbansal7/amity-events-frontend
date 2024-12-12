@@ -362,7 +362,9 @@ const AdminTools = ({ event, onParticipantRemoved }) => {
         </button>
 
         {showMenu && (
-          <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+          <div 
+            className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-[150]"
+          >
             <div className="py-1">
               <button
                 onClick={handleViewParticipants}
@@ -399,22 +401,48 @@ const AdminTools = ({ event, onParticipantRemoved }) => {
       </div>
 
       {showParticipants && (
-        <ParticipantsModal
-          event={event}
-          onClose={() => setShowParticipants(false)}
-          onParticipantRemoved={onParticipantRemoved}
-        />
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[200]"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowParticipants(false);
+            }
+          }}
+        >
+          <div 
+            className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto relative z-[201]"
+          >
+            <ParticipantsModal
+              event={event}
+              onClose={() => setShowParticipants(false)}
+              onParticipantRemoved={onParticipantRemoved}
+            />
+          </div>
+        </div>
       )}
 
       {showFieldSelection && (
-        <FieldSelectionModal
-          title={`Select Fields for ${exportType.toUpperCase()} Export`}
-          onClose={() => {
-            setShowFieldSelection(false);
-            setExportType(null);
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[200]"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowFieldSelection(false);
+            }
           }}
-          onConfirm={handleExport}
-        />
+        >
+          <div 
+            className="bg-white rounded-xl p-6 max-w-md w-full relative z-[201]"
+          >
+            <FieldSelectionModal
+              title={`Select Fields for ${exportType.toUpperCase()} Export`}
+              onClose={() => {
+                setShowFieldSelection(false);
+                setExportType(null);
+              }}
+              onConfirm={handleExport}
+            />
+          </div>
+        </div>
       )}
 
       {error && (

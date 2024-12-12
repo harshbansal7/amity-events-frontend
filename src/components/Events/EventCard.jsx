@@ -284,9 +284,16 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
       {/* Delete Confirmation Dialog */}
       {openDeleteDialog && (
         <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[200]"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setOpenDeleteDialog(false);
+            }
+          }}
         >
-          <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
+          <div 
+            className="bg-white rounded-lg p-6 max-w-sm mx-4 relative z-[201]"
+          >
             <h3 className="text-xl font-semibold mb-4">Delete Event</h3>
             <p className="text-gray-600 mb-6">
               Are you sure you want to delete this event? This action cannot be undone.
@@ -312,7 +319,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
       {/* Registration Confirmation Modal */}
       {openRegisterDialog && (
         <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-55"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[201]"
         >
           <div className="bg-white rounded-lg p-6 max-w-sm mx-4 z-60">
             <h3 className="text-xl font-semibold mb-4">Register for Event</h3>
@@ -341,9 +348,16 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
       {/* Unregistration Confirmation Modal */}
       {openUnregisterDialog && (
         <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-60"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[200]"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setOpenUnregisterDialog(false);
+            }
+          }}
         >
-          <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
+          <div 
+            className="bg-white rounded-lg p-6 max-w-sm mx-4 relative z-[201]"
+          >
             <h3 className="text-xl font-semibold mb-4">Unregister from Event</h3>
             <p className="text-gray-600 mb-6">
               Are you sure you want to unregister from {event.name}?
@@ -369,8 +383,17 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
 
       {/* Edit Event Modal */}
       {openEditForm && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[200]"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setOpenEditForm(false);
+            }
+          }}
+        >
+          <div 
+            className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto relative z-[201]"
+          >
             <div className="p-8 border-b bg-white/50 backdrop-blur-sm rounded-t-2xl relative">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
@@ -411,7 +434,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
           role="dialog"
           aria-modal="true"
           aria-labelledby="event-details-title"
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[200] p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowDetailsModal(false);
@@ -420,7 +443,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
         >
           <div 
             ref={detailsModalRef}
-            className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto relative z-[201]"
             tabIndex="-1"
           >
             <div className="relative">

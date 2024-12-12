@@ -113,11 +113,15 @@ const EventList = () => {
             </div>
           </div>
           {pastEvents.length === 0 ? (
-            <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-8 text-center z-50">
+            <div 
+              className="bg-white/60 backdrop-blur-sm rounded-2xl p-8 text-center relative z-[10]"
+            >
               <p className="text-gray-500">No past events to show</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 opacity-80 hover:opacity-100 transition-opacity duration-300">
+            <div 
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 opacity-80 hover:opacity-100 transition-opacity duration-300 relative z-[10]"
+            >
               {pastEvents.map((event) => (
                 <EventCard 
                   key={event._id} 
@@ -140,7 +144,7 @@ const EventList = () => {
                     transition-all duration-300 
                     flex items-center justify-center
                     transform hover:scale-110
-                    z-48
+                    z-[90]
                     sm:w-auto sm:h-auto sm:px-4 sm:py-3 sm:rounded-lg"
           >
             <div className="flex items-center space-x-2">
@@ -151,7 +155,7 @@ const EventList = () => {
         )}
 
         {showCreateModal && (
-          <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="fixed inset-0 z-[200] overflow-y-auto">
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
                  onClick={() => setShowCreateModal(false)} />
             <div className="flex items-center justify-center min-h-screen p-4">
