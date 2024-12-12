@@ -139,9 +139,14 @@ const EventList = () => {
                     text-white shadow-lg hover:shadow-xl 
                     transition-all duration-300 
                     flex items-center justify-center
-                    transform hover:scale-110"
+                    transform hover:scale-110
+                    z-48
+                    sm:w-auto sm:h-auto sm:px-4 sm:py-3 sm:rounded-lg"
           >
-            <AddIcon />
+            <div className="flex items-center space-x-2">
+              <AddIcon />
+              <span className="hidden sm:inline">Create Event</span>
+            </div>
           </button>
         )}
 
