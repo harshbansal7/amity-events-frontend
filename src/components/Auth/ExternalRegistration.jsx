@@ -76,34 +76,29 @@ const ExternalRegistration = () => {
         {success && <Toast message={success} type="success" onClose={() => setSuccess('')} />}
 
         {step === 1 && (
-          <form onSubmit={handleEventCodeSubmit} className="space-y-6">
+          <form onSubmit={handleEventCodeSubmit} className="space-y-4">
             <div>
-              <label htmlFor="event_code" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="event_code" className="block text-sm font-medium text-gray-700">
                 Event Code
               </label>
-              <div className="relative">
-                <input
-                  id="event_code"
-                  type="text"
-                  required
-                  value={eventCode}
-                  onChange={(e) => setEventCode(e.target.value.toUpperCase())}
-                  className="block w-full px-4 py-3 bg-white/50 border border-gray-300 
-                          rounded-xl shadow-sm placeholder-gray-400 
-                          focus:outline-none focus:ring-2 focus:ring-indigo-500 
-                          focus:border-indigo-500 transition-all duration-200
-                          text-center uppercase tracking-widest font-mono text-lg"
-                  placeholder="Enter event code"
-                  maxLength={6}
-                />
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-                  </svg>
-                </div>
-              </div>
+              <input
+                id="event_code"
+                type="text"
+                required
+                value={eventCode}
+                onChange={(e) => setEventCode(e.target.value.toUpperCase())}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="Enter event code"
+                pattern="[A-Z0-9]{6}"
+                maxLength={6}
+              />
             </div>
-
+            <div className="text-sm text-amber-600 bg-amber-50 p-3 rounded-lg border border-amber-200 flex items-start space-x-2">
+              <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span>Make sure to check your spam/junk folder for the verification code.</span>
+            </div>
             <button
               type="submit"
               disabled={loading}

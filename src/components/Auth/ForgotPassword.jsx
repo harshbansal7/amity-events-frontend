@@ -90,10 +90,10 @@ const ForgotPassword = () => {
         {error && <Toast message={error} type="error" onClose={() => setError('')} />}
 
         {step === 1 && (
-          <form onSubmit={handleEmailSubmit} className="space-y-6">
+          <form onSubmit={handleEmailSubmit} className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Amity Email Address
+                Amity Email
               </label>
               <input
                 id="email"
@@ -102,9 +102,14 @@ const ForgotPassword = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="your.name@s.amity.edu"
-                pattern="[a-zA-Z0-9._%+-]+@s\.amity\.edu$"
+                placeholder="Enter your Amity email"
               />
+            </div>
+            <div className="text-sm text-amber-600 bg-amber-50 p-3 rounded-lg border border-amber-200 flex items-start space-x-2">
+              <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span>Make sure to check your spam/junk folder for the reset code.</span>
             </div>
             <button
               type="submit"
