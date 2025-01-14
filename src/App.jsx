@@ -10,6 +10,12 @@ import EventList from './components/Events/EventList';
 import ProtectedRoute from './components/Layout/ProtectedRoute';
 import MyEvents from './components/Events/MyEvents';
 import ForgotPassword from './components/Auth/ForgotPassword';
+import AdminPanel from './components/Admin/AdminPanel';
+import Dashboard from './components/Admin/Dashboard';
+import Events from './components/Admin/Events';
+import Participants from './components/Admin/Participants';
+import Reports from './components/Admin/Reports';
+import Attendance from './components/Admin/Attendance';
 
 const theme = createTheme({
   palette: {
@@ -48,6 +54,13 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>}>
+              <Route index element={<Events />} />
+              <Route path="events" element={<Events />} />
+              <Route path="participants" element={<Participants />} />
+              <Route path="reports"s element={<Reports />} />
+              <Route path="attendance" element={<Attendance />} />
+            </Route>
             <Route path="/" element={<Navigate to="/events" replace />} />
           </Routes>
         </BrowserRouter>

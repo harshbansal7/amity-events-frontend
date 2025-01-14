@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, LogOut } from 'lucide-react';
-import { getCurrentUserId, getCurrentUserName } from '../../services/api';
+import { Menu, X, LogOut, Settings } from 'lucide-react';
+import { getCurrentUserId, getCurrentUserName, isExternalUser } from '../../services/api';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -10,6 +10,7 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const userEnrollment = getCurrentUserId();
   const userName = getCurrentUserName();
+  const isExternal = isExternalUser();
 
   // Handle navbar background on scroll
   useEffect(() => {
@@ -24,7 +25,13 @@ const Navbar = () => {
   const navLinks = [
     { name: 'All Events', path: '/events' },
     { name: 'My Events', path: '/my-events' },
-  ];
+    !isExternal && { 
+      name: 'Creator Dashboard', 
+      path: '/admin',
+      icon: Settings,
+      className: 'text-indigo-600 hover:bg-indigo-50'
+    }
+  ].filter(Boolean);
 
   const isActive = (path) => location.pathname === path;
 
@@ -37,7 +44,7 @@ const Navbar = () => {
     <>
       <nav className={`fixed w-full top-0 z-50 transition-all duration-300 
         bg-white/80 backdrop-blur-sm
-        ${scrolled ? 'shadow-lg' : ''} z-[100]`}>
+        ${scrolled ? 'shadow-lg' : ''}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo/Brand */}
@@ -60,13 +67,18 @@ const Navbar = () => {
                 <a
                   key={link.path}
                   href={link.path}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                  className={`
+                    flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium 
+                    transition-all duration-200
+                    ${link.className || ''} 
                     ${isActive(link.path)
                       ? 'bg-indigo-600 text-white'
                       : 'text-gray-700 hover:bg-indigo-50 hover:text-indigo-600'
-                    }`}
+                    }
+                  `}
                 >
-                  {link.name}
+                  {link.icon && <link.icon className="w-4 h-4" />}
+                  <span>{link.name}</span>
                 </a>
               ))}
             </div>
@@ -112,13 +124,18 @@ const Navbar = () => {
                 <a
                   key={link.path}
                   href={link.path}
-                  className={`block px-3 py-2 rounded-lg text-base font-medium transition-colors duration-200
+                  className={`
+                    flex items-center space-x-2 px-3 py-2 rounded-lg text-base font-medium 
+                    transition-colors duration-200
+                    ${link.className || ''} 
                     ${isActive(link.path)
                       ? 'bg-indigo-600 text-white'
                       : 'text-gray-700 hover:bg-indigo-50 hover:text-indigo-600'
-                    }`}
+                    }
+                  `}
                 >
-                  {link.name}
+                  {link.icon && <link.icon className="w-4 h-4" />}
+                  <span>{link.name}</span>
                 </a>
               ))}
               <div className="px-3 py-2 text-sm">

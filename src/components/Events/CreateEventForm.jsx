@@ -7,6 +7,14 @@ import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import CloseIcon from '@mui/icons-material/Close';
 import { TextField } from '@mui/material';
 import useRotatingMessage from '../../hooks/useRotatingMessage';
+import { 
+  Camera, 
+  Calendar, 
+  Clock, 
+  Users, 
+  MapPin,
+  ClipboardList
+} from 'lucide-react';
 
 const CreateEventForm = ({ onSuccess, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -22,7 +30,7 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
     allow_external: false,
     use_existing_code: false,
     existing_event_code: '',
-    image: null
+    image: null,
   });
   const [touched, setTouched] = useState({});
   const [validationErrors, setValidationErrors] = useState({});
@@ -112,25 +120,30 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
         return;
       }
 
-      const form = new FormData();
+      const formData = new FormData();
       
-      Object.keys(formData).forEach(key => {
-        if (key === 'prizes') {
-          form.append(key, formData[key].split(',').map(prize => prize.trim()).filter(Boolean));
-        } else if (key === 'date') {
-          form.append(key, formData[key].toISOString());
-        } else if (key === 'allow_external') {
-          form.append(key, formData[key].toString());
-        } else {
-          form.append(key, formData[key]);
-        }
-      });
-
+      // Add basic event details
+      formData.append('name', formData.name);
+      formData.append('date', formData.date.toISOString());
+      formData.append('venue', formData.venue);
+      formData.append('description', formData.description);
+      formData.append('max_participants', formData.max_participants);
+      formData.append('duration_days', formData.duration_days || 0);
+      formData.append('duration_hours', formData.duration_hours || 0);
+      formData.append('duration_minutes', formData.duration_minutes || 0);
+      formData.append('allow_external', formData.allow_external || false);
+      
+      // Add prizes if any
+      if (formData.prizes) {
+        formData.append('prizes', formData.prizes);
+      }
+      
+      // Add image if selected
       if (image) {
-        form.append('image', image);
+        formData.append('image', image);
       }
 
-      await createEvent(form);
+      await createEvent(formData);
       onSuccess();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create event');

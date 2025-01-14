@@ -2,7 +2,13 @@ import React, { useState } from 'react';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { CameraIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { 
+  Camera, 
+  X as XIcon, 
+  Calendar, 
+  FileText, 
+  AlertCircle
+} from 'lucide-react';
 import { TextField } from '@mui/material';
 import { updateEvent } from '../../services/api';
 
@@ -80,13 +86,13 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Form Sections */}
       <div className="space-y-6">
         {/* Image Section */}
-        <div className="bg-gradient-to-r from-indigo-50/50 to-blue-50/50 rounded-xl p-6 space-y-4">
+        <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4 shadow-sm">
           <div className="flex items-center space-x-2 mb-2">
-            <div className="w-2 h-2 rounded-full bg-gradient-to-r from-indigo-500 to-blue-500"></div>
+            <Camera className="w-5 h-5 text-indigo-600" />
             <h3 className="text-lg font-semibold text-gray-900">Event Image</h3>
           </div>
 
@@ -101,7 +107,7 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
                 onClick={handleRemoveImage}
                 className="absolute top-2 right-2 p-2 bg-white/90 hover:bg-white rounded-full shadow-lg transition-all duration-200"
               >
-                <XMarkIcon className="h-5 w-5 text-gray-600" />
+                <XIcon className="h-5 w-5 text-gray-600" />
               </button>
             </div>
           )}
@@ -125,7 +131,7 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
               <div className="flex items-center space-x-2 px-6 py-3 border-2 border-dashed border-gray-300 
                            rounded-xl hover:border-indigo-500 hover:bg-white/50 
                            transition-all duration-200 group">
-                <CameraIcon className="h-5 w-5 text-gray-500 group-hover:text-indigo-500 transition-colors" />
+                <Camera className="h-5 w-5 text-gray-500 group-hover:text-indigo-500 transition-colors" />
                 <span>Upload Event Image</span>
               </div>
             </label>
@@ -133,9 +139,9 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
         </div>
 
         {/* Basic Details Section */}
-        <div className="bg-white/70 rounded-xl p-6 shadow-sm space-y-4">
+        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm space-y-4">
           <div className="flex items-center space-x-2 mb-2">
-            <div className="w-2 h-2 rounded-full bg-gradient-to-r from-indigo-500 to-blue-500"></div>
+            <Calendar className="w-5 h-5 text-indigo-600" />
             <h3 className="text-lg font-semibold text-gray-900">Basic Details</h3>
           </div>
 
@@ -251,9 +257,9 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
         </div>
 
         {/* Additional Details Section */}
-        <div className="bg-white/70 rounded-xl p-6 shadow-sm space-y-4">
+        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm space-y-4">
           <div className="flex items-center space-x-2 mb-2">
-            <div className="w-2 h-2 rounded-full bg-gradient-to-r from-indigo-500 to-blue-500"></div>
+            <FileText className="w-5 h-5 text-indigo-600" />
             <h3 className="text-lg font-semibold text-gray-900">Additional Details</h3>
           </div>
 
@@ -285,22 +291,21 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
       {error && (
         <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl border border-red-200">
           <div className="flex items-center space-x-2">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+            <AlertCircle className="w-5 h-5" />
             <span>{error}</span>
           </div>
         </div>
       )}
 
       {/* Footer */}
-      <div className="mt-8 pt-6 border-t flex justify-end space-x-4">
+      <div className="sticky bottom-0 mt-8 -mx-6 -mb-6 px-6 py-4 bg-gray-50 border-t flex justify-end space-x-4">
         <button
           type="button"
           onClick={onCancel}
           disabled={isSubmitting}
           className="px-6 py-2.5 text-gray-700 bg-white hover:bg-gray-50 rounded-xl 
-                   transition-all duration-200 font-medium shadow-sm hover:shadow-md"
+                   transition-all duration-200 font-medium shadow-sm hover:shadow-md
+                   border border-gray-300"
         >
           Cancel
         </button>
@@ -311,9 +316,18 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
                     hover:from-indigo-700 hover:to-blue-700 text-white rounded-xl
                     transform hover:-translate-y-0.5
                     transition-all duration-200 font-medium shadow-lg hover:shadow-xl 
-                    disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled:opacity-50 disabled:cursor-not-allowed
+                    min-w-[120px]"
         >
-          {isSubmitting ? 'Saving...' : 'Save Changes'}
+          {isSubmitting ? (
+            <div className="flex items-center justify-center space-x-2">
+              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              <span>Saving...</span>
+            </div>
+          ) : 'Save Changes'}
         </button>
       </div>
     </div>
