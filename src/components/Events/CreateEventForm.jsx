@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -7,14 +7,6 @@ import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import CloseIcon from '@mui/icons-material/Close';
 import { TextField } from '@mui/material';
 import useRotatingMessage from '../../hooks/useRotatingMessage';
-import { 
-  Camera, 
-  Calendar, 
-  Clock, 
-  Users, 
-  MapPin,
-  ClipboardList
-} from 'lucide-react';
 
 const CreateEventForm = ({ onSuccess, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -30,7 +22,7 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
     allow_external: false,
     use_existing_code: false,
     existing_event_code: '',
-    image: null,
+    image: null
   });
   const [touched, setTouched] = useState({});
   const [validationErrors, setValidationErrors] = useState({});
@@ -38,8 +30,33 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
   const [imagePreview, setImagePreview] = useState(null);
   const [error, setError] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  const maxParticipantsRef = useRef(null);
+  const durationDaysRef = useRef(null);
+  const durationHoursRef = useRef(null);
+  const durationMinutesRef = useRef(null);
 
   const rotatingMessage = useRotatingMessage('createEvent');
+
+  useEffect(() => {
+    const handleWheel = (e) => {
+      e.preventDefault();
+    };
+
+    const inputElements = [maxParticipantsRef.current, durationDaysRef.current, durationHoursRef.current, durationMinutesRef.current];
+    inputElements.forEach(inputElement => {
+      if (inputElement) {
+        inputElement.addEventListener('wheel', handleWheel, { passive: false });
+      }
+    });
+
+    return () => {
+      inputElements.forEach(inputElement => {
+        if (inputElement) {
+          inputElement.removeEventListener('wheel', handleWheel);
+        }
+      });
+    };
+  }, []);
 
   const validateForm = () => {
     const errors = {};
@@ -120,30 +137,25 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
         return;
       }
 
-      const formData = new FormData();
+      const form = new FormData();
       
-      // Add basic event details
-      formData.append('name', formData.name);
-      formData.append('date', formData.date.toISOString());
-      formData.append('venue', formData.venue);
-      formData.append('description', formData.description);
-      formData.append('max_participants', formData.max_participants);
-      formData.append('duration_days', formData.duration_days || 0);
-      formData.append('duration_hours', formData.duration_hours || 0);
-      formData.append('duration_minutes', formData.duration_minutes || 0);
-      formData.append('allow_external', formData.allow_external || false);
-      
-      // Add prizes if any
-      if (formData.prizes) {
-        formData.append('prizes', formData.prizes);
-      }
-      
-      // Add image if selected
+      Object.keys(formData).forEach(key => {
+        if (key === 'prizes') {
+          form.append(key, formData[key].split(',').map(prize => prize.trim()).filter(Boolean));
+        } else if (key === 'date') {
+          form.append(key, formData[key].toISOString());
+        } else if (key === 'allow_external') {
+          form.append(key, formData[key].toString());
+        } else {
+          form.append(key, formData[key]);
+        }
+      });
+
       if (image) {
-        formData.append('image', image);
+        form.append('image', image);
       }
 
-      await createEvent(formData);
+      await createEvent(form);
       onSuccess();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create event');
@@ -303,42 +315,42 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
                   helperText={touched.date && validationErrors.date}
                 />
 
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <TextField
-                    label="Days"
                     type="number"
+                    label="Days"
+                    inputRef={durationDaysRef}
                     value={formData.duration_days}
                     onChange={(e) => setFormData({ ...formData, duration_days: e.target.value })}
-                    onBlur={() => handleBlur('duration_days')}
+                    required
+                    slotProps={{ htmlInput: { min: 0 } }}
                     variant="outlined"
-                    className="bg-white/50 rounded-xl shadow-sm"
+                    fullWidth
                     sx={textFieldStyle}
-                    error={touched.duration_days && !!validationErrors.duration_days}
-                    helperText={touched.duration_days && validationErrors.duration_days}
                   />
                   <TextField
-                    label="Hours"
                     type="number"
+                    label="Hours"
+                    inputRef={durationHoursRef}
                     value={formData.duration_hours}
                     onChange={(e) => setFormData({ ...formData, duration_hours: e.target.value })}
-                    onBlur={() => handleBlur('duration_hours')}
+                    required
+                    slotProps={{ htmlInput: { min: 0, max: 23 } }}
                     variant="outlined"
-                    className="bg-white/50 rounded-xl shadow-sm"
+                    fullWidth
                     sx={textFieldStyle}
-                    error={touched.duration_hours && !!validationErrors.duration_hours}
-                    helperText={touched.duration_hours && validationErrors.duration_hours}
                   />
                   <TextField
-                    label="Minutes"
                     type="number"
+                    label="Minutes"
+                    inputRef={durationMinutesRef}
                     value={formData.duration_minutes}
                     onChange={(e) => setFormData({ ...formData, duration_minutes: e.target.value })}
-                    onBlur={() => handleBlur('duration_minutes')}
+                    required
+                    slotProps={{ htmlInput: { min: 0, max: 59 } }}
                     variant="outlined"
-                    className="bg-white/50 rounded-xl shadow-sm"
+                    fullWidth
                     sx={textFieldStyle}
-                    error={touched.duration_minutes && !!validationErrors.duration_minutes}
-                    helperText={touched.duration_minutes && validationErrors.duration_minutes}
                   />
                 </div>
               </div>
@@ -361,6 +373,7 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
                 <TextField
                   type="number"
                   label="Maximum Participants"
+                  inputRef={maxParticipantsRef}
                   value={formData.max_participants}
                   onChange={(e) => setFormData({ ...formData, max_participants: e.target.value })}
                   onBlur={() => handleBlur('max_participants')}
