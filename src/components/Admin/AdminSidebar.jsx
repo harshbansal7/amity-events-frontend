@@ -1,21 +1,15 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
-  LayoutDashboard, 
   Calendar, 
   Users, 
-  Settings,
   FileSpreadsheet,
-  ClipboardList
+  ClipboardList,
+  X
 } from 'lucide-react';
 
-const AdminSidebar = () => {
+const AdminSidebar = ({ onClose }) => {
   const navItems = [
-    // { 
-    //   name: 'Dashboard', 
-    //   path: '/admin', 
-    //   icon: LayoutDashboard 
-    // },
     { 
       name: 'Events', 
       path: '/admin/events', 
@@ -35,25 +29,21 @@ const AdminSidebar = () => {
       name: 'Attendance', 
       path: '/admin/attendance', 
       icon: ClipboardList 
-    },
-    // { 
-    //   name: 'Settings', 
-    //   path: '/admin/settings', 
-    //   icon: Settings 
-    // }
+    }
   ];
 
   return (
-    <div className="w-64 min-h-screen bg-white border-r border-gray-200">
-      <div className="flex items-center space-x-3 px-6 py-4 border-b">
-        {/* <img 
-          src="/assets/amity-logo.png" 
-          alt="Amity Events" 
-          className="h-8 w-auto"
-        /> */}
+    <div className="w-64 h-screen bg-white border-r border-gray-200 overflow-y-auto">
+      <div className="flex items-center justify-between px-6 py-4 border-b">
         <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
           Creator Dashboard
         </span>
+        <button
+          onClick={onClose}
+          className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
+        >
+          <X className="w-5 h-5 text-gray-500" />
+        </button>
       </div>
       
       <nav className="mt-6 px-4">
@@ -62,6 +52,7 @@ const AdminSidebar = () => {
             key={item.path}
             to={item.path}
             end={item.path === '/admin'}
+            onClick={onClose}
             className={({ isActive }) => `
               flex items-center space-x-3 px-4 py-3 rounded-lg mb-1
               transition-colors duration-200

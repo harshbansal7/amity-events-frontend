@@ -90,8 +90,8 @@ const Participants = () => {
         <p className="text-gray-500">Manage event participants and attendance</p>
       </div>
 
-      {/* Event Selection */}
-      <div className="bg-white p-4 rounded-lg shadow-sm">
+      {/* Event Selector */}
+      <div className="bg-white p-6 rounded-lg shadow-sm">
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Select Event
         </label>
@@ -101,7 +101,7 @@ const Participants = () => {
             const event = events.find(evt => evt._id === e.target.value);
             setSelectedEvent(event);
           }}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 
+          className="w-full max-w-2xl border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 
                    focus:ring-indigo-500 focus:border-indigo-500"
         >
           {events.map((event) => (
@@ -112,9 +112,9 @@ const Participants = () => {
         </select>
       </div>
 
-      {/* Filters and Search */}
+      {/* Search and Filter Controls */}
       <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
+        <div className="relative flex-1 max-w-2xl">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           <input
             type="text"
@@ -125,12 +125,12 @@ const Participants = () => {
                      focus:ring-indigo-500 focus:border-indigo-500"
           />
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 min-w-[200px]">
           <Filter className="text-gray-400 w-5 h-5" />
           <select
             value={filterAttendance}
             onChange={(e) => setFilterAttendance(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 
                      focus:ring-indigo-500 focus:border-indigo-500"
           >
             <option value="all">All Participants</option>
@@ -140,8 +140,85 @@ const Participants = () => {
         </div>
       </div>
 
+      {/* Table Container */}
+      <div className="bg-white rounded-lg border border-gray-200">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="sticky left-0 bg-gray-50 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Name
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Enrollment
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Email
+                </th>
+                <th className="hidden sm:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Branch
+                </th>
+                <th className="hidden sm:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Year
+                </th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="sticky right-0 bg-gray-50 px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {filteredParticipants.map((participant) => (
+                <tr key={participant.enrollment_number} className="hover:bg-gray-50">
+                  <td className="sticky left-0 bg-white px-4 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">
+                      {participant.name}
+                    </div>
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {participant.enrollment_number}
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {participant.amity_email}
+                  </td>
+                  <td className="hidden sm:table-cell px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {participant.branch}
+                  </td>
+                  <td className="hidden sm:table-cell px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {participant.year}
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap text-center">
+                    {participant.attendance ? (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <CheckCircle className="w-4 h-4 mr-1" />
+                        Present
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                        <XCircle className="w-4 h-4 mr-1" />
+                        Absent
+                      </span>
+                    )}
+                  </td>
+                  <td className="sticky right-0 bg-white px-4 py-4 whitespace-nowrap text-right">
+                    <button
+                      onClick={() => handleRemoveParticipant(selectedEvent._id, participant.enrollment_number)}
+                      className="text-red-600 hover:text-red-900"
+                    >
+                      <UserMinus className="w-5 h-5" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       {/* Export Options */}
-      <div className="flex gap-4">
+      <div className="flex gap-4 mt-6">
         <button
           onClick={() => {/* Handle PDF export */}}
           className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg
@@ -158,91 +235,6 @@ const Participants = () => {
           <FileSpreadsheet className="w-5 h-5 text-gray-600" />
           <span>Export Excel</span>
         </button>
-      </div>
-
-      {/* Participants Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Enrollment
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Email
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Branch
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Year
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Attendance
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredParticipants.map((participant) => (
-                <tr key={participant.enrollment_number} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {participant.name}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">
-                      {participant.enrollment_number}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">
-                      {participant.amity_email}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">
-                      {participant.branch}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">
-                      {participant.year}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {participant.attendance ? (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        <CheckCircle className="w-4 h-4 mr-1" />
-                        Present
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                        <XCircle className="w-4 h-4 mr-1" />
-                        Absent
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      onClick={() => handleRemoveParticipant(selectedEvent._id, participant.enrollment_number)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      <UserMinus className="w-5 h-5" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
       </div>
 
       {error && (

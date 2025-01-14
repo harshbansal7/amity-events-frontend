@@ -73,8 +73,8 @@ const Events = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Events Management</h1>
-          <p className="text-gray-500">Create and manage your events</p>
+          <h1 className="text-2xl font-bold text-gray-900">Events</h1>
+          <p className="text-gray-500">Manage your events and registrations</p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
@@ -86,9 +86,9 @@ const Events = () => {
         </button>
       </div>
 
-      {/* Filters and Search */}
+      {/* Search and Filter Controls */}
       <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
+        <div className="relative flex-1 max-w-2xl">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           <input
             type="text"
@@ -99,12 +99,12 @@ const Events = () => {
                      focus:ring-indigo-500 focus:border-indigo-500"
           />
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 min-w-[200px]">
           <Filter className="text-gray-400 w-5 h-5" />
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 
                      focus:ring-indigo-500 focus:border-indigo-500"
           >
             <option value="all">All Events</option>
@@ -114,92 +114,75 @@ const Events = () => {
         </div>
       </div>
 
-      {/* Events Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      {/* Table Container */}
+      <div className="bg-white rounded-lg border border-gray-200">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Event Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Venue
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Participants
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredEvents.map((event) => (
-                <tr key={event._id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{event.name}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">
-                      {format(new Date(event.date), 'MMM d, yyyy')}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {format(new Date(event.date), 'h:mm a')}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">{event.venue}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">
-                      {event.participants.length} / {event.max_participants}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                      ${new Date(event.date) >= new Date()
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-800'}`}
-                    >
-                      {new Date(event.date) >= new Date() ? 'Active' : 'Past'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex items-center justify-end space-x-3">
-                      <button
-                        onClick={() => {
-                          setSelectedEvent(event);
-                          setShowEditModal(true);
-                        }}
-                        className="text-indigo-600 hover:text-indigo-900"
-                      >
-                        <Edit2 className="w-5 h-5" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(event._id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </td>
+          <div className="min-w-full divide-y divide-gray-200">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Event Name
+                  </th>
+                  <th className="hidden sm:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Date
+                  </th>
+                  <th className="hidden md:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Participants
+                  </th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredEvents.map((event) => (
+                  <tr key={event._id} className="hover:bg-gray-50">
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        {event.name}
+                      </div>
+                      {/* Show date on mobile */}
+                      <div className="sm:hidden text-xs text-gray-500 mt-1">
+                        {format(new Date(event.date), 'MMM d, yyyy')}
+                      </div>
+                    </td>
+                    <td className="hidden sm:table-cell px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {format(new Date(event.date), 'MMM d, yyyy')}
+                    </td>
+                    <td className="hidden md:table-cell px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {event.participants.length} / {event.max_participants}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center justify-end space-x-2">
+                        <button
+                          onClick={() => {
+                            setSelectedEvent(event);
+                            setShowEditModal(true);
+                          }}
+                          className="text-indigo-600 hover:text-indigo-900"
+                        >
+                          <Edit2 className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(event._id)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
       {/* Create Event Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
+        <div className="fixed inset-0 z-50 overflow-y-auto z-[200]">
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" 
                onClick={() => setShowCreateModal(false)} />
           <div className="flex items-center justify-center min-h-screen p-4">
