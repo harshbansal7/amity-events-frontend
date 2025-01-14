@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { format } from 'date-fns';
-import { registerForEvent, getCurrentUserId, unregisterFromEvent } from '../../services/api';
+import {registerForEvent, deleteEvent, getCurrentUserId, unregisterFromEvent } from '../../services/api';
 import EditEventForm from './EditEventForm';
 import { 
   CalendarDays, 
@@ -15,6 +15,7 @@ import {
   Info,
   Key
 } from 'lucide-react';
+// import AdminTools from './AdminTools';
 
 const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
   const [openEditForm, setOpenEditForm] = useState(false);
@@ -28,7 +29,6 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const detailsModalRef = React.useRef(null);
   const closeButtonRef = React.useRef(null);
-  const [error, setError] = useState('');
 
   const isRegistered = event.participants.some(
     p => (typeof p === 'string' && p === currentUserId) || 
@@ -38,14 +38,11 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
   const handleRegister = async () => {
     try {
       setIsRegistering(true);
-      setError('');
-      
       await registerForEvent(event._id);
       if (onRegister) onRegister();
       setOpenRegisterDialog(false);
     } catch (error) {
-      const errorMessage = error.response?.data?.error || 'Failed to register for event';
-      setError(errorMessage);
+      console.error('Failed to register:', error);
     } finally {
       setIsRegistering(false);
     }
@@ -122,6 +119,24 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
   return (
     <div className="relative group">
       <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300">
+        {/* Admin Tools */}
+        {isCreator && (
+          <div className="absolute top-4 right-4 z-10 flex space-x-2">
+            <button 
+              onClick={() => setOpenEditForm(true)}
+              className="p-2 bg-white/90 hover:bg-white rounded-full shadow-md hover:shadow-lg transition-all"
+            >
+              <Edit2 className="text-indigo-600 w-5 h-5" />
+            </button>
+            <button 
+              onClick={() => setOpenDeleteDialog(true)}
+              className="p-2 bg-white/90 hover:bg-white rounded-full shadow-md hover:shadow-lg transition-all"
+            >
+              <Trash2 className="text-red-600 w-5 h-5" />
+            </button>
+          </div>
+        )}
+
         {/* Event Image */}
         <div className="relative h-48">
           <img
@@ -300,23 +315,30 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
         </div>
       )}
 
-      {/* Registration Modal */}
+      {/* Registration Confirmation Modal */}
       {openRegisterDialog && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" 
-               onClick={() => setOpenRegisterDialog(false)} />
-          <div className="flex items-center justify-center min-h-screen p-4">
-            <div className="relative bg-white w-full max-w-md mx-auto rounded-xl shadow-xl p-6">
-              <div className="mb-6">
-                <h3 className="text-xl font-semibold text-gray-900">Register for Event</h3>
-                <p className="mt-1 text-sm text-gray-500">{event.name}</p>
-              </div>
-              <RegistrationForm
-                event={event}
-                onSubmit={handleRegister}
-                onCancel={() => setOpenRegisterDialog(false)}
-                isRegistering={isRegistering}
-              />
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[201]"
+        >
+          <div className="bg-white rounded-lg p-6 max-w-sm mx-4 z-60">
+            <h3 className="text-xl font-semibold mb-4">Register for Event</h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to register for {event.name}?
+            </p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setOpenRegisterDialog(false)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+              >
+                No
+              </button>
+              <button
+                onClick={handleRegister}
+                disabled={isRegistering}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+              >
+                {isRegistering ? 'Registering...' : 'Yes'}
+              </button>
             </div>
           </div>
         </div>
