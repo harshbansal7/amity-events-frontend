@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -39,6 +39,14 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/external-register" element={<ExternalRegistration />} />
             <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <EventList />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/events"
               element={
                 <ProtectedRoute>
@@ -58,10 +66,9 @@ function App() {
               <Route index element={<Events />} />
               <Route path="events" element={<Events />} />
               <Route path="participants" element={<Participants />} />
-              <Route path="reports"s element={<Reports />} />
+              <Route path="reports" element={<Reports />} />
               <Route path="attendance" element={<Attendance />} />
             </Route>
-            <Route path="/" element={<Navigate to="/events" replace />} />
           </Routes>
         </BrowserRouter>
       </LocalizationProvider>
