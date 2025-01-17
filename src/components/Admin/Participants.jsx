@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getEvents, getEventParticipants, removeParticipant } from '../../services/api';
+import { getEvents, getEventParticipants, removeParticipant, getCurrentUserId } from '../../services/api';
 import { format } from 'date-fns';
 import { 
   Search,
@@ -21,27 +21,40 @@ const Participants = () => {
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterAttendance, setFilterAttendance] = useState('all'); // all, present, absent
+  const currentUserId = getCurrentUserId();
+  const [apiError, setApiError] = useState(''); // Separate state for API errors
 
   const fetchEvents = async () => {
     try {
       const data = await getEvents();
-      setEvents(data);
-      if (data.length > 0) {
-        setSelectedEvent(data[0]);
-        await fetchParticipants(data[0]._id);
+      const userEvents = data.filter(event => event.creator_id === currentUserId);
+      setEvents(userEvents);
+      if (userEvents.length > 0) {
+        setSelectedEvent(userEvents[0]);
+        await fetchParticipants(userEvents[0]._id);
+      } else {
+        setLoading(false);
       }
     } catch (error) {
       setError('Failed to fetch events');
+      setLoading(false);
     }
   };
 
   const fetchParticipants = async (eventId) => {
     try {
+      const event = events.find(e => e._id === eventId);
+      if (!event || event.creator_id !== currentUserId) {
+        setApiError('Unauthorized to view these participants');
+        return;
+      }
+
+      setApiError(''); // Clear any existing error
       setLoading(true);
       const data = await getEventParticipants(eventId);
       setParticipants(data);
     } catch (error) {
-      setError('Failed to fetch participants');
+      setApiError('Failed to fetch participants');
     } finally {
       setLoading(false);
     }
@@ -237,11 +250,11 @@ const Participants = () => {
         </button>
       </div>
 
-      {error && (
+      {apiError && (
         <Toast 
-          message={error} 
+          message={apiError} 
           type="error" 
-          onClose={() => setError('')} 
+          onClose={() => setApiError('')} 
         />
       )}
     </div>

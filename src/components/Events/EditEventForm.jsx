@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { updateEvent } from '../../services/api';
+import { TextField } from '@mui/material';
 import { 
   Camera, 
   X as XIcon, 
@@ -9,8 +11,7 @@ import {
   FileText, 
   AlertCircle
 } from 'lucide-react';
-import { TextField } from '@mui/material';
-import { updateEvent } from '../../services/api';
+import Toast from '../UI/Toast';
 
 const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
   const [editedEvent, setEditedEvent] = useState({
@@ -23,13 +24,41 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
     venue: initialEvent.venue,
     description: initialEvent.description || '',
     prizes: Array.isArray(initialEvent.prizes) ? initialEvent.prizes.join(', ') : initialEvent.prizes || '',
+    image: null,
+    image_url: initialEvent.image_url || null
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError('');
+
+    try {
+      await updateEvent(event._id, editedEvent);
+      onSuccess();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to update event');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setEditedEvent({
+        ...editedEvent,
+        image: file,
+        image_url: URL.createObjectURL(file)
+      });
+    }
+  };
+
   const handleRemoveImage = () => {
-    setEditedEvent({ 
-      ...editedEvent, 
+    setEditedEvent({
+      ...editedEvent,
       image: null,
       image_url: null
     });
@@ -37,183 +66,117 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
 
   const textFieldStyle = {
     '& .MuiOutlinedInput-root': {
-      '&:hover fieldset': {
-        borderColor: '#6366f1',
+      borderRadius: '0.75rem',
+      backgroundColor: 'rgba(255, 255, 255, 0.8)',
+      transition: 'all 0.2s',
+      '&:hover': {
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
       },
-      '&.Mui-focused fieldset': {
-        borderColor: '#4f46e5',
-      },
-    },
-    '& .MuiInputLabel-root.Mui-focused': {
-      color: '#4f46e5',
-    },
-  };
-
-  const handleSubmit = async () => {
-    try {
-      setIsSubmitting(true);
-      const formData = new FormData();
-      
-      if (!editedEvent.name || !editedEvent.venue || !editedEvent.max_participants) {
-        setError('Please fill in all required fields');
-        return;
-      }
-
-      Object.keys(editedEvent).forEach(key => {
-        if (key === 'prizes') {
-          formData.append(key, editedEvent[key].split(',').map(prize => prize.trim()).filter(Boolean));
-        } else if (key === 'date') {
-          formData.append(key, editedEvent[key].toISOString());
-        } else {
-          formData.append(key, editedEvent[key]);
-        }
-      });
-
-      formData.append('duration', JSON.stringify({
-        days: parseInt(editedEvent.duration_days) || 0,
-        hours: parseInt(editedEvent.duration_hours) || 0,
-        minutes: parseInt(editedEvent.duration_minutes) || 0
-      }));
-
-      await updateEvent(event._id, formData);
-      onSuccess();
-    } catch (err) {
-      console.error('Update error:', err);
-      setError(err.response?.data?.error || err.response?.data?.message || 'Failed to update event');
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Form Sections */}
-      <div className="space-y-6">
-        {/* Image Section */}
-        <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4 shadow-sm">
-          <div className="flex items-center space-x-2 mb-2">
-            <Camera className="w-5 h-5 text-indigo-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Event Image</h3>
+    <div className="relative">
+      {/* <div className="sticky top-0 z-[100] bg-white border-b">
+        <div className="flex items-center justify-between p-6">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">Edit Event</h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Update event details and manage settings
+            </p>
           </div>
+          <button
+            onClick={onCancel}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <XIcon className="w-6 h-6 text-gray-500" />
+          </button>
+        </div>
+      </div> */}
 
-          {(event.image_url || editedEvent.image) && (
-            <div className="relative w-full h-48 rounded-xl overflow-hidden">
-              <img
-                src={editedEvent.image ? URL.createObjectURL(editedEvent.image) : event.image_url}
-                alt={event.name}
-                className="w-full h-full object-cover"
-              />
+      <div className="p-6 space-y-6">
+        {/* Image Upload Section */}
+        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-2">
+              <Camera className="w-5 h-5 text-indigo-600" />
+              <h3 className="text-lg font-semibold text-gray-900">Event Banner</h3>
+            </div>
+            {editedEvent.image_url && (
               <button
                 onClick={handleRemoveImage}
-                className="absolute top-2 right-2 p-2 bg-white/90 hover:bg-white rounded-full shadow-lg transition-all duration-200"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <XIcon className="h-5 w-5 text-gray-600" />
+                <XIcon className="w-5 h-5 text-gray-500" />
               </button>
+            )}
+          </div>
+
+          {editedEvent.image_url ? (
+            <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-50">
+              <img
+                src={editedEvent.image_url}
+                alt="Event banner"
+                className="w-full h-full object-cover"
+              />
             </div>
-          )}
-          
-          <div className="flex justify-center">
-            <label className="cursor-pointer">
+          ) : (
+            <label className="flex flex-col items-center justify-center w-full aspect-video rounded-lg border-2 border-dashed border-gray-300 hover:border-indigo-500 hover:bg-gray-50 transition-all cursor-pointer bg-gray-50">
+              <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                <Camera className="w-12 h-12 text-gray-400 mb-3" />
+                <p className="mb-2 text-sm text-gray-500">
+                  <span className="font-semibold">Click to upload</span> or drag and drop
+                </p>
+                <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+              </div>
               <input
                 type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  if (e.target.files[0]) {
-                    setEditedEvent({ 
-                      ...editedEvent, 
-                      image: e.target.files[0],
-                      image_url: null
-                    });
-                  }
-                }}
                 className="hidden"
+                accept="image/*"
+                onChange={handleImageChange}
               />
-              <div className="flex items-center space-x-2 px-6 py-3 border-2 border-dashed border-gray-300 
-                           rounded-xl hover:border-indigo-500 hover:bg-white/50 
-                           transition-all duration-200 group">
-                <Camera className="h-5 w-5 text-gray-500 group-hover:text-indigo-500 transition-colors" />
-                <span>Upload Event Image</span>
-              </div>
             </label>
-          </div>
+          )}
         </div>
 
-        {/* Basic Details Section */}
+        {/* Basic Event Details */}
         <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm space-y-4">
           <div className="flex items-center space-x-2 mb-2">
             <Calendar className="w-5 h-5 text-indigo-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Basic Details</h3>
+            <h3 className="text-lg font-semibold text-gray-900">Event Details</h3>
           </div>
 
           <TextField
-            fullWidth
             label="Event Name"
             value={editedEvent.name}
             onChange={(e) => setEditedEvent({ ...editedEvent, name: e.target.value })}
             required
+            fullWidth
             variant="outlined"
             className="bg-white/50"
-            sx={{
-              ...textFieldStyle,
-              '& .MuiOutlinedInput-root': {
-                borderRadius: '0.75rem',
-                backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                transition: 'all 0.2s',
-                '&:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                },
-              }
-            }}
+            sx={textFieldStyle}
           />
 
-          {/* Date and Duration */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gradient-to-r from-indigo-50/30 to-blue-50/30 p-4 rounded-xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <DateTimePicker
                 label="Event Date & Time"
                 value={editedEvent.date}
-                onChange={(newValue) => setEditedEvent({ ...editedEvent, date: newValue })}
-                className="w-full"
-                renderInput={(params) => <TextField {...params} fullWidth required sx={textFieldStyle} />}
+                onChange={(newDate) => setEditedEvent({ ...editedEvent, date: newDate })}
+                className="bg-white/50"
+                sx={textFieldStyle}
+                slotProps={{
+                  textField: {
+                    required: true,
+                    inputProps: {
+                      placeholder: 'dd/mm/yyyy hh:mm am/pm',
+                    },
+                  },
+                }}
+                format="dd/MM/yyyy hh:mm a"
               />
             </LocalizationProvider>
 
-            <div className="grid grid-cols-3 gap-4">
-              <TextField
-                type="number"
-                label="Days"
-                value={editedEvent.duration_days}
-                onChange={(e) => setEditedEvent({ ...editedEvent, duration_days: e.target.value })}
-                slotProps={{ htmlInput: { min: 0, max: 365 } }}
-                variant="outlined"
-                fullWidth
-                sx={textFieldStyle}
-              />
-              <TextField
-                type="number"
-                label="Hours"
-                value={editedEvent.duration_hours}
-                onChange={(e) => setEditedEvent({ ...editedEvent, duration_hours: e.target.value })}
-                slotProps={{ htmlInput: { min: 0, max: 23 } }}
-                variant="outlined"
-                fullWidth
-                sx={textFieldStyle}
-              />
-              <TextField
-                type="number"
-                label="Minutes"
-                value={editedEvent.duration_minutes}
-                onChange={(e) => setEditedEvent({ ...editedEvent, duration_minutes: e.target.value })}
-                slotProps={{ htmlInput: { min: 0, max: 59 } }}
-                variant="outlined"
-                fullWidth
-                sx={textFieldStyle}
-              />
-            </div>
-          </div>
-
-          {/* Venue and Capacity */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <TextField
               label="Venue"
               value={editedEvent.venue}
@@ -221,17 +184,37 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
               required
               variant="outlined"
               className="bg-white/50"
-              sx={{
-                ...textFieldStyle,
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: '0.75rem',
-                  backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                  transition: 'all 0.2s',
-                  '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                  },
-                }
-              }}
+              sx={textFieldStyle}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <TextField
+              type="number"
+              label="Days"
+              value={editedEvent.duration_days}
+              onChange={(e) => setEditedEvent({ ...editedEvent, duration_days: e.target.value })}
+              variant="outlined"
+              className="bg-white/50"
+              sx={textFieldStyle}
+            />
+            <TextField
+              type="number"
+              label="Hours"
+              value={editedEvent.duration_hours}
+              onChange={(e) => setEditedEvent({ ...editedEvent, duration_hours: e.target.value })}
+              variant="outlined"
+              className="bg-white/50"
+              sx={textFieldStyle}
+            />
+            <TextField
+              type="number"
+              label="Minutes"
+              value={editedEvent.duration_minutes}
+              onChange={(e) => setEditedEvent({ ...editedEvent, duration_minutes: e.target.value })}
+              variant="outlined"
+              className="bg-white/50"
+              sx={textFieldStyle}
             />
             <TextField
               type="number"
@@ -241,17 +224,7 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
               required
               variant="outlined"
               className="bg-white/50"
-              sx={{
-                ...textFieldStyle,
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: '0.75rem',
-                  backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                  transition: 'all 0.2s',
-                  '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                  },
-                }
-              }}
+              sx={textFieldStyle}
             />
           </div>
         </div>
@@ -286,19 +259,19 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
             sx={textFieldStyle}
           />
         </div>
+
+        {error && (
+          <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl border border-red-200">
+            <div className="flex items-center space-x-2">
+              <AlertCircle className="w-5 h-5" />
+              <span>{error}</span>
+            </div>
+          </div>
+        )}
       </div>
 
-      {error && (
-        <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl border border-red-200">
-          <div className="flex items-center space-x-2">
-            <AlertCircle className="w-5 h-5" />
-            <span>{error}</span>
-          </div>
-        </div>
-      )}
-
       {/* Footer */}
-      <div className="sticky bottom-0 mt-8 -mx-6 -mb-6 px-6 py-4 bg-gray-50 border-t flex justify-end space-x-4">
+      <div className="sticky bottom-0 mt-8 -mx-6 -mb-6 px-6 py-4 bg-white/80 backdrop-blur-sm border-t flex justify-end space-x-4 z-[100]">
         <button
           type="button"
           onClick={onCancel}

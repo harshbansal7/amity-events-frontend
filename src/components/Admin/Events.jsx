@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getEvents, deleteEvent } from '../../services/api';
+import { getEvents, deleteEvent, getCurrentUserId } from '../../services/api';
 import { format } from 'date-fns';
 import { 
   Plus, 
@@ -25,11 +25,13 @@ const Events = () => {
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all'); // all, active, past
+  const currentUserId = getCurrentUserId();
 
   const fetchEvents = async () => {
     try {
       const data = await getEvents();
-      setEvents(data);
+      const userEvents = data.filter(event => event.creator_id === currentUserId);
+      setEvents(userEvents);
     } catch (error) {
       setError('Failed to fetch events');
     } finally {
@@ -201,13 +203,13 @@ const Events = () => {
 
       {/* Edit Event Modal */}
       {showEditModal && selectedEvent && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
+        <div className="fixed inset-0 overflow-y-auto z-[200]">
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" 
                onClick={() => setShowEditModal(false)} />
           <div className="flex items-center justify-center min-h-screen p-4">
             <div className="relative bg-white w-full max-w-3xl mx-auto rounded-xl shadow-xl">
               {/* Header */}
-              <div className="p-6 border-b bg-gradient-to-r from-indigo-50/50 to-blue-50/50">
+              <div className="sticky top-0 z-[100] backdrop-blur-md p-6 border-b bg-gradient-to-r from-indigo-50/50 to-blue-50/50">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="p-2 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-lg shadow-lg">

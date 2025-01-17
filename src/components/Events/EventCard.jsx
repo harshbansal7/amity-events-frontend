@@ -393,7 +393,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
           <div 
             className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto relative z-[201]"
           >
-            <div className="p-8 border-b bg-white/50 backdrop-blur-sm rounded-t-2xl relative">
+            <div className="sticky top-0 z-[100] p-6 border-b bg-white/50 backdrop-blur-sm rounded-t-2xl relative">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="p-2 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-lg shadow-lg">

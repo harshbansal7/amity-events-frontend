@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getEvents, downloadParticipantsPDF, downloadParticipantsExcel } from '../../services/api';
+import { getEvents, downloadParticipantsPDF, downloadParticipantsExcel, getCurrentUserId } from '../../services/api';
 import { format } from 'date-fns';
 import { 
   FileText, 
@@ -15,6 +15,7 @@ const Reports = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const currentUserId = getCurrentUserId();
   const [selectedFields, setSelectedFields] = useState({
     name: true,
     enrollment_number: true,
@@ -41,9 +42,10 @@ const Reports = () => {
     const fetchEvents = async () => {
       try {
         const data = await getEvents();
-        setEvents(data);
-        if (data.length > 0) {
-          setSelectedEvent(data[0]);
+        const userEvents = data.filter(event => event.creator_id === currentUserId);
+        setEvents(userEvents);
+        if (userEvents.length > 0) {
+          setSelectedEvent(userEvents[0]);
         }
       } catch (error) {
         setError('Failed to fetch events');
@@ -55,6 +57,10 @@ const Reports = () => {
 
   const handleExport = async (format) => {
     try {
+      if (!selectedEvent || selectedEvent.creator_id !== currentUserId) {
+        setError('Unauthorized to export this event');
+        return;
+      }
       setLoading(true);
       const selectedFieldsList = Object.entries(selectedFields)
         .filter(([_, isSelected]) => isSelected)
@@ -78,7 +84,7 @@ const Reports = () => {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
-      setError(`Failed to generate ${format.toUpperCase()} report`);
+      setError('Failed to export data');
     } finally {
       setLoading(false);
     }

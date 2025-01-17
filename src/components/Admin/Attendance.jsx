@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getEvents, getEventParticipants, markAttendance } from '../../services/api';
+import { getEvents, getEventParticipants, markAttendance, getCurrentUserId } from '../../services/api';
 import { format } from 'date-fns';
 import { 
   Search,
@@ -22,28 +22,40 @@ const Attendance = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all'); // all, present, absent
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const currentUserId = getCurrentUserId();
+  const [apiError, setApiError] = useState('');
 
   const fetchEvents = async () => {
     try {
       const data = await getEvents();
-      setEvents(data);
-      if (data.length > 0) {
-        setSelectedEvent(data[0]);
-        await fetchParticipants(data[0]._id);
+      const userEvents = data.filter(event => event.creator_id === currentUserId);
+      setEvents(userEvents);
+      if (userEvents.length > 0) {
+        setSelectedEvent(userEvents[0]);
+        await fetchParticipants(userEvents[0]._id);
+      } else {
+        setLoading(false);
       }
     } catch (error) {
       setError('Failed to fetch events');
+      setLoading(false);
     }
   };
 
   const fetchParticipants = async (eventId) => {
     try {
+      const event = events.find(e => e._id === eventId);
+      if (!event || event.creator_id !== currentUserId) {
+        setApiError('Unauthorized to view these participants');
+        return;
+      }
+
+      setApiError('');
       setLoading(true);
       const data = await getEventParticipants(eventId);
       setParticipants(data);
-      setHasUnsavedChanges(false);
     } catch (error) {
-      setError('Failed to fetch participants');
+      setApiError('Failed to fetch participants');
     } finally {
       setLoading(false);
     }
@@ -72,6 +84,11 @@ const Attendance = () => {
   const handleSaveAttendance = async () => {
     try {
       setSaving(true);
+      // Verify this is user's event before saving attendance
+      if (!selectedEvent || selectedEvent.creator_id !== currentUserId) {
+        setError('Unauthorized to mark attendance for this event');
+        return;
+      }
       const modifiedAttendance = participants
         .filter(p => p.modified)
         .map(p => ({
@@ -280,11 +297,11 @@ const Attendance = () => {
         </div>
       </div>
 
-      {error && (
+      {apiError && (
         <Toast 
-          message={error} 
+          message={apiError} 
           type="error" 
-          onClose={() => setError('')} 
+          onClose={() => setApiError('')} 
         />
       )}
       {success && (
