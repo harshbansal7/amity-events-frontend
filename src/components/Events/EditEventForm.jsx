@@ -9,14 +9,26 @@ import {
   X as XIcon, 
   Calendar, 
   FileText, 
-  AlertCircle
+  AlertCircle,
+  Plus,
+  Minus
 } from 'lucide-react';
 import Toast from '../UI/Toast';
 
 const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
+  // Convert custom_fields from string to array if needed
+  const initialCustomFields = (() => {
+    if (!initialEvent.custom_fields) return [];
+    if (Array.isArray(initialEvent.custom_fields)) return initialEvent.custom_fields;
+    if (typeof initialEvent.custom_fields === 'string') {
+      return initialEvent.custom_fields.split(',').filter(field => field.trim());
+    }
+    return [];
+  })();
+
   const [editedEvent, setEditedEvent] = useState({
     name: initialEvent.name,
-    date: new Date(initialEvent.date),
+    date: initialEvent.date ? new Date(initialEvent.date) : new Date(),
     duration_days: initialEvent.duration?.days || 0,
     duration_hours: initialEvent.duration?.hours || 0,
     duration_minutes: initialEvent.duration?.minutes || 0,
@@ -25,10 +37,12 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
     description: initialEvent.description || '',
     prizes: Array.isArray(initialEvent.prizes) ? initialEvent.prizes.join(', ') : initialEvent.prizes || '',
     image: null,
-    image_url: initialEvent.image_url || null
+    image_url: initialEvent.image_url || null,
+    custom_fields: initialCustomFields
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [customFieldInput, setCustomFieldInput] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,7 +50,21 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
     setError('');
 
     try {
-      await updateEvent(event._id, editedEvent);
+      const formData = new FormData();
+      
+      Object.keys(editedEvent).forEach(key => {
+        if (key === 'image' && editedEvent[key]) {
+          formData.append('image', editedEvent[key]);
+        } else if (key === 'custom_fields') {
+          formData.append('custom_fields', editedEvent.custom_fields.join(','));
+        } else if (key === 'date') {
+          formData.append('date', editedEvent.date.toISOString());
+        } else if (key !== 'image_url') {
+          formData.append(key, editedEvent[key]);
+        }
+      });
+
+      await updateEvent(event._id, formData);
       onSuccess();
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to update event');
@@ -62,6 +90,31 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
       image: null,
       image_url: null
     });
+  };
+
+  const handleAddCustomField = () => {
+    if (!customFieldInput.trim()) return;
+    
+    const currentFields = Array.isArray(editedEvent.custom_fields) ? editedEvent.custom_fields : [];
+    
+    if (currentFields.includes(customFieldInput.trim())) {
+      return;
+    }
+
+    setEditedEvent(prev => ({
+      ...prev,
+      custom_fields: [...currentFields, customFieldInput.trim()]
+    }));
+    setCustomFieldInput('');
+  };
+
+  const handleRemoveCustomField = (fieldToRemove) => {
+    const currentFields = Array.isArray(editedEvent.custom_fields) ? editedEvent.custom_fields : [];
+    
+    setEditedEvent(prev => ({
+      ...prev,
+      custom_fields: currentFields.filter(field => field !== fieldToRemove)
+    }));
   };
 
   const textFieldStyle = {
@@ -258,6 +311,58 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
             className="bg-white/50"
             sx={textFieldStyle}
           />
+        </div>
+
+        {/* Custom Fields Section */}
+        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm space-y-4">
+          <div className="flex items-center space-x-2 mb-2">
+            <div className="w-2 h-2 rounded-full bg-gradient-to-r from-indigo-500 to-blue-500"></div>
+            <h3 className="text-lg font-semibold text-gray-900">Custom Fields</h3>
+          </div>
+
+          <div className="space-y-4">
+            {/* Custom Fields List */}
+            {editedEvent.custom_fields.length > 0 && (
+              <div className="space-y-2">
+                {editedEvent.custom_fields.map((field, index) => (
+                  <div 
+                    key={index}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <span className="text-sm text-gray-700">{field}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveCustomField(field)}
+                      className="p-1 hover:bg-red-100 rounded-full text-red-600 transition-colors"
+                    >
+                      <Minus className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Add Custom Field Input */}
+            <div className="flex space-x-2">
+              <input
+                type="text"
+                value={customFieldInput}
+                onChange={(e) => setCustomFieldInput(e.target.value)}
+                placeholder="Enter custom field name"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg 
+                         focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+              <button
+                type="button"
+                onClick={handleAddCustomField}
+                className="px-3 py-2 bg-indigo-600 text-white rounded-lg 
+                         hover:bg-indigo-700 transition-colors flex items-center space-x-1"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add Field</span>
+              </button>
+            </div>
+          </div>
         </div>
 
         {error && (
