@@ -135,27 +135,39 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsCreating(true);
-    setError('');
+    if (!validateForm()) return;
 
     try {
-      const formData = new FormData();
-      
+      setIsCreating(true);
+      setError('');
+
+      // Create FormData object
+      const eventFormData = new FormData();
+
+      // Add all form fields
       Object.keys(formData).forEach(key => {
-        if (key === 'image' && formData[key]) {
-          formData.append('image', formData[key]);
+        if (key === 'custom_fields') {
+          // Handle custom fields array properly
+          eventFormData.append('custom_fields', formData.custom_fields.join(','));
+        } else if (key === 'image') {
+          // Only append image if it exists
+          if (formData.image) {
+            eventFormData.append('image', formData.image);
+          }
         } else if (key === 'date') {
-          // Format date properly for the API
-          formData.append('date', formData.date.toISOString());
+          // Format date properly
+          eventFormData.append('date', formData.date.toISOString());
         } else {
-          formData.append(key, formData[key]);
+          // Handle all other fields
+          eventFormData.append(key, formData[key]);
         }
       });
 
-      await createEvent(formData);
-      onSuccess();
+      // Create event
+      await createEvent(eventFormData);
+      if (onSuccess) onSuccess();
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to create event');
+      setError(err.response?.data?.message || 'Failed to create event');
     } finally {
       setIsCreating(false);
     }
