@@ -62,8 +62,12 @@ export const createEvent = async (eventData) => {
   return response.data;
 };
 
-export const registerForEvent = async (eventId) => {
-  const response = await api.post(`/events/${eventId}/register`);
+export const registerForEvent = async (eventId, data) => {
+  const response = await api.post(`/events/${eventId}/register`, data, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
   return response.data;
 };
 

@@ -154,38 +154,44 @@ const Participants = () => {
       </div>
 
       {/* Table Container */}
-      <div className="bg-white rounded-lg border border-gray-200">
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="sticky left-0 bg-gray-50 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Name
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Enrollment
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Enrollment Number
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Email
                 </th>
-                <th className="hidden sm:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {/* <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Registration Date
+                </th> */}
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Branch
                 </th>
-                <th className="hidden sm:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Year
                 </th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Attendance
                 </th>
-                <th className="sticky right-0 bg-gray-50 px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Custom Fields
+                </th>
+                <th scope="col" className="relative px-4 py-3">
+                  <span className="sr-only">Actions</span>
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-gray-200">
               {filteredParticipants.map((participant) => (
-                <tr key={participant.enrollment_number} className="hover:bg-gray-50">
-                  <td className="sticky left-0 bg-white px-4 py-4 whitespace-nowrap">
+                <tr key={participant.enrollment_number}>
+                  <td className="px-4 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
                       {participant.name}
                     </div>
@@ -196,10 +202,13 @@ const Participants = () => {
                   <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                     {participant.amity_email}
                   </td>
-                  <td className="hidden sm:table-cell px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {/* <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {participant.registration_date}
+                  </td> */}
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                     {participant.branch}
                   </td>
-                  <td className="hidden sm:table-cell px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                     {participant.year}
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap text-center">
@@ -213,6 +222,25 @@ const Participants = () => {
                         <XCircle className="w-4 h-4 mr-1" />
                         Absent
                       </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap">
+                    {participant.custom_field_values && 
+                     Object.keys(participant.custom_field_values).length > 0 ? (
+                      <div className="space-y-1">
+                        {Object.entries(participant.custom_field_values).map(([field, value]) => (
+                          <div key={field} className="flex items-start space-x-1 text-sm">
+                            <span className="font-medium text-gray-600">
+                              {field}:
+                            </span>
+                            <span className="text-gray-900">
+                              {value || '-'}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-gray-400 text-sm">No custom fields</span>
                     )}
                   </td>
                   <td className="sticky right-0 bg-white px-4 py-4 whitespace-nowrap text-right">
@@ -231,9 +259,10 @@ const Participants = () => {
       </div>
 
       {/* Export Options */}
-      <div className="flex gap-4 mt-6">
+      {/* To be fixed */}
+      {/* <div className="flex gap-4 mt-6">
         <button
-          onClick={() => {/* Handle PDF export */}}
+          onClick={() => }
           className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg
                     hover:bg-gray-50 transition-colors duration-200"
         >
@@ -241,14 +270,14 @@ const Participants = () => {
           <span>Export PDF</span>
         </button>
         <button
-          onClick={() => {/* Handle Excel export */}}
+          onClick={() => }
           className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg
                     hover:bg-gray-50 transition-colors duration-200"
         >
           <FileSpreadsheet className="w-5 h-5 text-gray-600" />
           <span>Export Excel</span>
         </button>
-      </div>
+      </div> */}
 
       {apiError && (
         <Toast 

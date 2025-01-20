@@ -7,6 +7,7 @@ import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import CloseIcon from '@mui/icons-material/Close';
 import { TextField } from '@mui/material';
 import useRotatingMessage from '../../hooks/useRotatingMessage';
+import { Plus, Minus } from 'lucide-react';
 
 const CreateEventForm = ({ onSuccess, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -22,7 +23,8 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
     allow_external: false,
     use_existing_code: false,
     existing_event_code: '',
-    image: null
+    image: null,
+    custom_fields: []
   });
   const [touched, setTouched] = useState({});
   const [validationErrors, setValidationErrors] = useState({});
@@ -34,6 +36,7 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
   const durationDaysRef = useRef(null);
   const durationHoursRef = useRef(null);
   const durationMinutesRef = useRef(null);
+  const [customFieldInput, setCustomFieldInput] = useState('');
 
   const rotatingMessage = useRotatingMessage('createEvent');
 
@@ -96,6 +99,14 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
       errors.existing_event_code = 'Event code is required when using existing code';
     }
     
+    // Custom fields validation
+    const duplicateFields = formData.custom_fields.filter(
+      (field, index) => formData.custom_fields.indexOf(field) !== index
+    );
+    if (duplicateFields.length > 0) {
+      errors.custom_fields = 'Duplicate custom fields are not allowed';
+    }
+
     return errors;
   };
 
@@ -124,39 +135,37 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
+
     try {
       setIsCreating(true);
-      setTouched(Object.keys(formData).reduce((acc, key) => ({ ...acc, [key]: true }), {}));
-      
-      const errors = validateForm();
-      setValidationErrors(errors);
-      
-      if (Object.keys(errors).length > 0) {
-        setError('Please fix the validation errors');
-        setIsCreating(false);
-        return;
-      }
+      setError('');
 
-      const form = new FormData();
-      
+      // Create FormData object
+      const eventFormData = new FormData();
+
+      // Add all form fields
       Object.keys(formData).forEach(key => {
-        if (key === 'prizes') {
-          form.append(key, formData[key].split(',').map(prize => prize.trim()).filter(Boolean));
+        if (key === 'custom_fields') {
+          // Handle custom fields array properly
+          eventFormData.append('custom_fields', formData.custom_fields.join(','));
+        } else if (key === 'image') {
+          // Only append image if it exists
+          if (formData.image) {
+            eventFormData.append('image', formData.image);
+          }
         } else if (key === 'date') {
-          form.append(key, formData[key].toISOString());
-        } else if (key === 'allow_external') {
-          form.append(key, formData[key].toString());
+          // Format date properly
+          eventFormData.append('date', formData.date.toISOString());
         } else {
-          form.append(key, formData[key]);
+          // Handle all other fields
+          eventFormData.append(key, formData[key]);
         }
       });
 
-      if (image) {
-        form.append('image', image);
-      }
-
-      await createEvent(form);
-      onSuccess();
+      // Create event
+      await createEvent(eventFormData);
+      if (onSuccess) onSuccess();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create event');
     } finally {
@@ -187,6 +196,28 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
     '& .MuiInputLabel-root.Mui-focused': {
       color: '#4f46e5', // indigo-600
     },
+  };
+
+  const handleAddCustomField = () => {
+    if (!customFieldInput.trim()) return;
+    
+    // Don't allow duplicates
+    if (formData.custom_fields.includes(customFieldInput.trim())) {
+      return;
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      custom_fields: [...prev.custom_fields, customFieldInput.trim()]
+    }));
+    setCustomFieldInput('');
+  };
+
+  const handleRemoveCustomField = (fieldToRemove) => {
+    setFormData(prev => ({
+      ...prev,
+      custom_fields: prev.custom_fields.filter(field => field !== fieldToRemove)
+    }));
   };
 
   return (
@@ -494,6 +525,58 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
                   )}
                 </div>
               )}
+            </div>
+
+            {/* Custom Fields Section */}
+            <div className="bg-white/70 rounded-xl p-6 shadow-sm space-y-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <div className="w-2 h-2 rounded-full bg-gradient-to-r from-indigo-500 to-blue-500"></div>
+                <h3 className="text-lg font-semibold text-gray-900">Custom Fields</h3>
+              </div>
+              
+              <div className="space-y-4">
+                {/* Custom Fields List */}
+                {formData.custom_fields.length > 0 && (
+                  <div className="space-y-2">
+                    {formData.custom_fields.map((field, index) => (
+                      <div 
+                        key={index}
+                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                      >
+                        <span className="text-sm text-gray-700">{field}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveCustomField(field)}
+                          className="p-1 hover:bg-red-100 rounded-full text-red-600 transition-colors"
+                        >
+                          <Minus className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Add Custom Field Input */}
+                <div className="flex space-x-2">
+                  <input
+                    type="text"
+                    value={customFieldInput}
+                    onChange={(e) => setCustomFieldInput(e.target.value)}
+                    placeholder="Enter custom field name"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg 
+                             focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddCustomField}
+                    className="px-3 py-2 bg-indigo-600 text-white rounded-lg 
+                             hover:bg-indigo-700 transition-colors flex items-center space-x-1"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Add Field</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </form>

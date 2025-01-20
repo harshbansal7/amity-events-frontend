@@ -15,12 +15,12 @@ import {
   Info,
   Key
 } from 'lucide-react';
+import { Dialog } from '@headlessui/react';
 // import AdminTools from './AdminTools';
 
 const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
   const [openEditForm, setOpenEditForm] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [openRegisterDialog, setOpenRegisterDialog] = useState(false);
   const [openUnregisterDialog, setOpenUnregisterDialog] = useState(false);
   const [isUnregistering, setIsUnregistering] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
@@ -29,18 +29,47 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const detailsModalRef = React.useRef(null);
   const closeButtonRef = React.useRef(null);
+  const [customFieldValues, setCustomFieldValues] = useState({});
+  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
 
   const isRegistered = event.participants.some(
     p => (typeof p === 'string' && p === currentUserId) || 
          (typeof p === 'object' && p.enrollment_number === currentUserId)
   );
 
-  const handleRegister = async () => {
+  // Helper function to parse custom fields
+  const getCustomFields = () => {
+    if (!event.custom_fields) return [];
+    if (Array.isArray(event.custom_fields)) return event.custom_fields;
+    if (typeof event.custom_fields === 'string') {
+      return event.custom_fields.split(',').filter(field => field.trim());
+    }
+    return [];
+  };
+
+  const handleRegisterClick = () => {
+    const customFields = getCustomFields();
+    // Initialize custom field values
+    const initialValues = {};
+    customFields.forEach(field => {
+      initialValues[field] = '';
+    });
+    setCustomFieldValues(initialValues);
+    setShowRegistrationModal(true);
+  };
+
+  const handleRegisterSubmit = async () => {
     try {
       setIsRegistering(true);
-      await registerForEvent(event._id);
+      
+      // Create the request data
+      const requestData = {
+        custom_field_values: JSON.stringify(customFieldValues)
+      };
+
+      await registerForEvent(event._id, requestData);
       if (onRegister) onRegister();
-      setOpenRegisterDialog(false);
+      setShowRegistrationModal(false);
     } catch (error) {
       console.error('Failed to register:', error);
     } finally {
@@ -256,7 +285,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
                 </button>
               ) : (
                 <button
-                  onClick={() => setOpenRegisterDialog(true)}
+                  onClick={() => setShowRegistrationModal(true)}
                   disabled={
                     isPastEvent() ||
                     event.participants.length >= event.max_participants ||
@@ -315,31 +344,74 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
         </div>
       )}
 
-      {/* Registration Confirmation Modal */}
-      {openRegisterDialog && (
-        <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[201]"
-        >
-          <div className="bg-white rounded-lg p-6 max-w-sm mx-4 z-60">
-            <h3 className="text-xl font-semibold mb-4">Register for Event</h3>
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to register for {event.name}?
-            </p>
-            <div className="flex justify-end space-x-4">
-              <button
-                onClick={() => setOpenRegisterDialog(false)}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800"
-              >
-                No
-              </button>
-              <button
-                onClick={handleRegister}
-                disabled={isRegistering}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-              >
-                {isRegistering ? 'Registering...' : 'Yes'}
-              </button>
-            </div>
+      {/* Combined Registration Modal */}
+      {showRegistrationModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen p-4">
+            <Dialog
+              open={showRegistrationModal}
+              onClose={() => setShowRegistrationModal(false)}
+              className="relative z-50"
+            >
+              <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" aria-hidden="true" />
+              
+              <div className="fixed inset-0 flex items-center justify-center p-4">
+                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 shadow-xl transition-all">
+                  <Dialog.Title className="text-lg font-medium text-gray-900 mb-4">
+                    Register for {event.name}
+                  </Dialog.Title>
+                  
+                  <div className="space-y-4">
+                    <p className="text-sm text-gray-500">
+                      {getCustomFields().length > 0 
+                        ? "Please provide the following optional information for your registration"
+                        : "Are you sure you want to register for this event?"}
+                    </p>
+
+                    {getCustomFields().map((field) => (
+                      <div key={field} className="space-y-1">
+                        <label className="block text-sm font-medium text-gray-700">
+                          {field}
+                        </label>
+                        <input
+                          type="text"
+                          value={customFieldValues[field] || ''}
+                          onChange={(e) => setCustomFieldValues(prev => ({
+                            ...prev,
+                            [field]: e.target.value
+                          }))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg 
+                                   focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          placeholder={`Enter ${field.toLowerCase()}`}
+                        />
+                      </div>
+                    ))}
+
+                    <div className="mt-6 flex justify-end space-x-3">
+                      <button
+                        type="button"
+                        onClick={() => setShowRegistrationModal(false)}
+                        className="px-4 py-2 text-sm font-medium text-gray-700 
+                                 bg-white border border-gray-300 rounded-lg 
+                                 hover:bg-gray-50"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleRegisterSubmit}
+                        disabled={isRegistering}
+                        className="px-4 py-2 text-sm font-medium text-white 
+                                 bg-indigo-600 rounded-lg hover:bg-indigo-700
+                                 disabled:opacity-50"
+                      >
+                        {isRegistering ? 'Registering...' : 'Register'}
+                      </button>
+                    </div>
+                  </div>
+                </Dialog.Panel>
+              </div>
+            </Dialog>
           </div>
         </div>
       )}
@@ -638,7 +710,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
                   </div>
                 ) : (
                   <button
-                    onClick={() => setOpenRegisterDialog(true)}
+                    onClick={() => setShowRegistrationModal(true)}
                     disabled={
                       isPastEvent() ||
                       event.participants.length >= event.max_participants ||
