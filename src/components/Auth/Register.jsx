@@ -1,21 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { register } from '../../services/api';
 import EmailVerification from './EmailVerification';
 import Toast from '../UI/Toast';
 import useRotatingMessage from '../../hooks/useRotatingMessage';
+import branchesData from '../../data/branches.json';
 
 const Register = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [domains] = useState(Object.keys(branchesData));
   const [userData, setUserData] = useState({
     name: '',
     amity_email: '',
     enrollment_number: '',
     password: '',
     confirm_password: '',
+    domain: '',
     branch: '',
     year: '',
     phone_number: ''
@@ -109,6 +112,60 @@ const Register = () => {
                 />
               </div>
 
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="domain" className="block text-sm font-medium text-gray-700">
+                    Domain
+                  </label>
+                  <select
+                    id="domain"
+                    required
+                    value={userData.domain}
+                    onChange={(e) => setUserData({
+                      ...userData,
+                      domain: e.target.value,
+                      branch: '' // Reset branch when domain changes
+                    })}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 
+                           bg-white rounded-lg shadow-sm focus:outline-none 
+                           focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  >
+                    <option value="">Select your domain</option>
+                    {domains.map((domain) => (
+                      <option key={domain} value={domain}>
+                        {domain}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="branch" className="block text-sm font-medium text-gray-700">
+                    Branch
+                  </label>
+                  <select
+                    id="branch"
+                    required
+                    value={userData.branch}
+                    onChange={(e) => setUserData({
+                      ...userData,
+                      branch: e.target.value
+                    })}
+                    disabled={!userData.domain}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 
+                           bg-white rounded-lg shadow-sm focus:outline-none 
+                           focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  >
+                    <option value="">Select your branch</option>
+                    {userData.domain && branchesData[userData.domain].map((branch) => (
+                      <option key={branch} value={branch}>
+                        {branch}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                   Password
@@ -150,30 +207,6 @@ const Register = () => {
               </div>
 
               <div>
-                <label htmlFor="branch" className="block text-sm font-medium text-gray-700">
-                  Branch
-                </label>
-                <select
-                  id="branch"
-                  required
-                  value={userData.branch}
-                  onChange={(e) => setUserData({
-                    ...userData,
-                    branch: e.target.value
-                  })}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 
-                         bg-white rounded-lg shadow-sm focus:outline-none 
-                         focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                >
-                  <option value="">Select your branch</option>
-                  <option value="CSE">Computer Science</option>
-                  <option value="ECE">Electronics</option>
-                  <option value="ME">Mechanical</option>
-                  <option value="CE">Civil</option>
-                </select>
-              </div>
-
-              <div>
                 <label htmlFor="year" className="block text-sm font-medium text-gray-700">
                   Year
                 </label>
@@ -194,6 +227,7 @@ const Register = () => {
                   <option value="2">2nd Year</option>
                   <option value="3">3rd Year</option>
                   <option value="4">4th Year</option>
+                  <option value="5">5th Year</option>
                 </select>
               </div>
 
@@ -242,4 +276,4 @@ const Register = () => {
   );
 };
 
-export default Register; 
+export default Register;

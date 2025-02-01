@@ -1,0 +1,165 @@
+{
+  "MANAGEMENT": [
+    "BBA",
+    "BBA (Marketing)",
+    "BBA (Honours/Research)",
+    "BBA 3 Continent",
+    "MBA",
+    "MBA - 3 Continent",
+    "MBA (Healthcare Management)"
+  ],
+  "ANIMATION AND GAME DESIGN": [
+    "B.Sc Animation Game Design"
+  ],
+  "ARCHITECTURE": [
+    "B.Arch (Bachelor of Architecture)"
+  ],
+  "BIOTECHNOLOGY": [
+    "B.Sc. Biotechnology (Honours/Research)",
+    "B.Sc. Biotechnology integrated",
+    "B.Sc. M.Sc. (H) Biotechnology Integrated",
+    "B.Sc.(Bioinformatics (Honours/Research))",
+    "B.Sc. Bioinformatics - Integrated",
+    "M.Sc. (H) Bioinformatics",
+    "M.Sc. (H) Biotechnology"
+  ],
+  "ENGLISH LITERATURE": [
+    "BA English",
+    "BA English (Honours/Research)",
+    "B.A.M.A. (H) English Integrated",
+    "M.A. (H) English",
+    "M.A. (H) English-Integrated"
+  ],
+  "ECOLOGY & ENVIRONMENT": [
+    "B.Sc. Environmental Science",
+    "B.Sc. (H) Environment",
+    "B.Sc. M.Sc. (H) Ecology & Environmental Science Integrated",
+    "M.Sc (H) Ecology & Environmental Science"
+  ],
+  "FINE ARTS": [
+    "RFA (Bachelor of Fine Arts)"
+  ],
+  "FORENSIC SCIENCES": [
+    "B.Sc. Forensic Science (Honours/Research)",
+    "B.Sc. M.Sc. (H) Forensic Sciences Integrated",
+    "M.Sc. Forensic Sciences"
+  ],
+  "FOOD SCIENCE": [
+    "B.Sc. (H) Food Sc. Tech & Processing",
+    "B.Sc. Food Sc. Tech & Processing (Honours/Research)",
+    "B.Sc. M.Sc. (H) Food Sc. Tech. & Processing Integrated",
+    "M.Sc. (H) Food Sc. Tech. & Processing"
+  ],
+  "GEO INFORMATICS & REMOTE SENSING": [
+    "B.Sc. (H) Geology (Honours/Research)",
+    "B.Sc. Geology",
+    "B.Sc. (H) Geology Integrated",
+    "B.Sc. (H) Geo-Informatics (Honours/Research)",
+    "B.Sc. M.Sc (H) Geo-Informatics Integrated",
+    "M.Sc. (H) Geology",
+    "M.Sc. (H) Geo-Informatics"
+  ],
+  "HEALTHCARE": [
+    "Bachelor of Physiotherapy",
+    "Bachelor of Optometry",
+    "B.Sc. (Operation Theatre Technology)",
+    "B.Sc. (Anaesthesia Technology)"
+  ],
+  "HEALTH SCIENCES": [
+    "B.Sc. (Operation Theatre Technology)",
+    "B.Sc. (Anaesthesia Technology)"
+  ],
+  "INTERIOR DESIGN": [
+    "BID (Bachelor of Interior Design)"
+  ],
+  "LAW": [
+    "B.A. LL.B. (H)",
+    "BBA LLB (H)",
+    "LLB (H)",
+    "LLM"
+  ],
+  "MATHEMATICS": [
+    "B.Sc. (H) Mathematics",
+    "B.Sc. Mathematics (Honours/Research)",
+    "B.Sc. M.Sc. (H) Mathematics-Integrated",
+    "M.Sc. (H) Mathematics"
+  ],
+  "MICROBIAL SCIENCES": [
+    "B.Sc. (H) Microbiology",
+    "B.Sc. Microbiology (Honours/Research)",
+    "B.Sc. M.Sc. (H) Microbiology Integrated",
+    "M.Sc. (H)-Microbiology"
+  ],
+  "MOLECULAR MEDICINE, STEM CELL RESEARCH AND CANCER BIOLOGY": [
+    "B.Sc. (H) Biochemistry",
+    "B.Sc. Biochemistry (Honours/Research)",
+    "B.Sc. M.Sc. (H) Bio-Chemistry - Integrated",
+    "B.Sc. (H) Human Genetics and Molecular Medicine",
+    "B.Sc. Human Genetics and Molecular Medicine (Honours/Research)",
+    "B.Sc. + M.Sc. (H) Human Genetics and Molecular Medicine Integrated",
+    "M.Sc. (H) Biochemistry",
+    "M.Sc. (H) Human Genetics and Molecular Medicine"
+  ],
+  "NUTRITION & DIETETICS": [
+    "B.Sc. Nutrition & Dietetics (H)",
+    "B.Sc. Nutrition & Dietetics (Honours/Research)"
+  ],
+  "PHYSICS": [
+    "B.Sc. (H) Physics",
+    "B.Sc. Physics (Honours/Research)",
+    "B.Sc. + M.Sc. (H) Physics - Integrated",
+    "B.Sc. (H) Computational Physics",
+    "B.Sc. M.Sc. (H) Computational Physics - Integrated",
+    "M.Sc. (H) Physics",
+    "M.Sc. (H) Computational Physics"
+  ],
+  "PSYCHOLOGY": [
+    "B.A. (H) Psychology",
+    "B.A. (H) Psychology (Honours/Research)",
+    "B.A.M.A. (H) Psychology Integrated",
+    "B.Sc. (Clinical Psychology)",
+    "B.Sc. Clinical Psychology (Honours/Research)",
+    "M.A. (H) Psychology",
+    "M. Phil. (Clinical Psychology)"
+  ],
+  "CHEMISTRY": [
+    "B.Sc. (H) Chemistry",
+    "B.Sc. + MSc. (H) Chemistry - Integrated",
+    "Computational Chemistry",
+    "M.Sc. (H) Computational Chemistry",
+    "M.Sc. (H) Chemistry"
+  ],
+  "DESIGN": [
+    "Bachelor of Product Design",
+    "Bachelor of Fashion Design",
+    "Bachelor of Textile Design"
+  ],
+  "ECONOMICS": [
+    "BA (H) Economics",
+    "B.A. Economics (Honours/Research)",
+    "B.A.M.A. (Economics Integrated)",
+    "MA (H) Economics"
+  ],
+  "ENGINEERING": [
+    "B.Tech-CSE",
+    "B.Tech (Data Science)",
+    "B.Tech (IoT & Blockchain)",
+    "B.Tech (Cyber Security)",
+    "B.Tech (AI & ML)",
+    "B.Tech Biotechnology",
+    "B.Tech Food Sc. Tech & Processing"
+  ],
+  "COMMERCE": [
+    "B. Com. (Honours/Research)"
+  ],
+  "COMMUNICATION": [
+    "BA (Journalism & Mass Communication)"
+  ],
+  "BSC IT / COMPUTER APPLICATIONS": [
+    "BCA",
+    "BCA (Honours/Research)",
+    "MCA",
+    "B.Sc. IT",
+    "B.Sc. IT (Honours/Research)"
+  ]
+}
