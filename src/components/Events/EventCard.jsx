@@ -346,12 +346,12 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
 
       {/* Combined Registration Modal */}
       {showRegistrationModal && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
+        <div className="fixed inset-0 z-[250] overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen p-4">
             <Dialog
               open={showRegistrationModal}
               onClose={() => setShowRegistrationModal(false)}
-              className="relative z-50"
+              className="relative z-[250]"
             >
               <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" aria-hidden="true" />
               
@@ -419,7 +419,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
       {/* Unregistration Confirmation Modal */}
       {openUnregisterDialog && (
         <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[200]"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[250]"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setOpenUnregisterDialog(false);
@@ -427,7 +427,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
           }}
         >
           <div 
-            className="bg-white rounded-lg p-6 max-w-sm mx-4 relative z-[201]"
+            className="bg-white rounded-lg p-6 max-w-sm mx-4 relative z-[250]"
           >
             <h3 className="text-xl font-semibold mb-4">Unregister from Event</h3>
             <p className="text-gray-600 mb-6">
