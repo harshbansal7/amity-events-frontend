@@ -30,39 +30,31 @@ const theme = createTheme({
 });
 
 function App() {
+  // Add redirect logic for root and login routes
+  const loginElement = isTokenValid() ? (
+    <Navigate to="/events" replace state={{ from: location }} />
+  ) : (
+    <Login />
+  );
+
   return (
     <ThemeProvider theme={theme}>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <BrowserRouter>
           <Routes>
-            <Route 
-              path="/login" 
-              element={
-                isTokenValid() ? <Navigate to="/events" replace /> : <Login />
-              } 
-            />
-            <Route 
-              path="/register" 
-              element={
-                isTokenValid() ? <Navigate to="/events" replace /> : <Register />
-              } 
-            />
-            <Route 
-              path="/forgot-password" 
-              element={
-                isTokenValid() ? <Navigate to="/events" replace /> : <ForgotPassword />
-              } 
-            />
-            <Route 
-              path="/external-register" 
-              element={
-                isTokenValid() ? <Navigate to="/events" replace /> : <ExternalRegistration />
-              } 
-            />
-            <Route
-              path="/"
-              element={<Navigate to="/events" replace />}
-            />
+            <Route path="/login" element={loginElement} />
+            <Route path="/register" element={
+              isTokenValid() ? <Navigate to="/events" replace /> : <Register />
+            } />
+            <Route path="/forgot-password" element={
+              isTokenValid() ? <Navigate to="/events" replace /> : <ForgotPassword />
+            } />
+            <Route path="/external-register" element={
+              isTokenValid() ? <Navigate to="/events" replace /> : <ExternalRegistration />
+            } />
+            <Route path="/" element={
+              isTokenValid() ? <Navigate to="/events" replace /> : <Navigate to="/login" replace />
+            } />
             <Route
               path="/events"
               element={

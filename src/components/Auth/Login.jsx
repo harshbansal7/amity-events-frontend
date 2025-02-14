@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { login } from '../../services/api';
 import Toast from '../UI/Toast';
 import useRotatingMessage from '../../hooks/useRotatingMessage';
+import { isTokenValid } from '../../utils/tokenUtils';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -16,6 +17,14 @@ const Login = () => {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [showExternalOption, setShowExternalOption] = useState(false);
+
+  useEffect(() => {
+    // Check token validity on component mount
+    if (isTokenValid()) {
+      const from = location.state?.from?.pathname || '/events';
+      navigate(from, { replace: true });
+    }
+  }, [navigate, location]);
 
   // Show success message if redirected from registration
   useEffect(() => {
