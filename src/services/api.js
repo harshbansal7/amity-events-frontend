@@ -4,26 +4,42 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5005/api';
 
 const api = axios.create({
   baseURL: API_URL,
+  withCredentials: true // Important for CSRF
 });
 
-// Request interceptor for adding auth token
+// Store CSRF token
+let csrfToken = null;
+
+// Request interceptor
 api.interceptors.request.use((config) => {
+  // Add auth token
   const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  
+  // Add CSRF token if available
+  if (csrfToken) {
+    config.headers['X-CSRF-Token'] = csrfToken;
+  }
+  
   return config;
 });
 
-// Response interceptor to handle token expiration
+// Response interceptor
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Store CSRF token from response headers
+    const newToken = response.headers['x-csrf-token'];
+    if (newToken) {
+      csrfToken = newToken;
+    }
+    return response;
+  },
   (error) => {
     if (error.response?.status === 401 && 
         error.response?.data?.error === 'Token has expired') {
-      // Clear the expired token
       localStorage.removeItem('token');
-      // Redirect to login
       window.location.href = '/login?expired=true';
     }
     return Promise.reject(error);
@@ -90,12 +106,34 @@ export const getEvent = async (eventId) => {
   return response.data;
 };
 
-export const getCurrentUserId = () => {
+export const isTokenValid = () => {
   const token = localStorage.getItem('token');
-  if (!token) return null;
+  if (!token) return false;
   
   try {
-    // JWT tokens are in format: header.payload.signature
+    const payload = token.split('.')[1];
+    const decodedPayload = JSON.parse(atob(payload));
+    const currentTime = Date.now() / 1000;
+    
+    // Check if token is expired
+    if (decodedPayload.exp < currentTime) {
+      localStorage.removeItem('token');
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error validating token:', error);
+    localStorage.removeItem('token');
+    return false;
+  }
+};
+
+export const getCurrentUserId = () => {
+  if (!isTokenValid()) return null;
+  
+  try {
+    const token = localStorage.getItem('token');
     const payload = token.split('.')[1];
     const decodedPayload = JSON.parse(atob(payload));
     return decodedPayload.enrollment_number;  

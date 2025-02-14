@@ -1,15 +1,15 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from './Footer';
-import { jwtDecode } from 'jwt-decode';
+import { isTokenValid } from '../../services/api';
 
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem('token');
+  const location = useLocation();
 
-  if (!token || isTokenExpired(token)) {
-    localStorage.removeItem('token');
-    return <Navigate to="/login" replace />;
+  if (!isTokenValid()) {
+    // Save the attempted URL for redirecting after login
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   return (
@@ -21,16 +21,6 @@ const ProtectedRoute = ({ children }) => {
       <Footer />
     </>
   );
-};
-
-const isTokenExpired = (token) => {
-  try {
-    const decoded = jwtDecode(token);
-    const currentTime = Date.now() / 1000;
-    return decoded.exp < currentTime;
-  } catch (error) {
-    return true;
-  }
 };
 
 export default ProtectedRoute; 

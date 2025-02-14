@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -16,6 +16,7 @@ import Events from './components/Admin/Events';
 import Participants from './components/Admin/Participants';
 import Reports from './components/Admin/Reports';
 import Attendance from './components/Admin/Attendance';
+import { isTokenValid } from './services/api';
 
 const theme = createTheme({
   palette: {
@@ -34,17 +35,33 @@ function App() {
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <BrowserRouter>
           <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/external-register" element={<ExternalRegistration />} />
+            <Route 
+              path="/login" 
+              element={
+                isTokenValid() ? <Navigate to="/events" replace /> : <Login />
+              } 
+            />
+            <Route 
+              path="/register" 
+              element={
+                isTokenValid() ? <Navigate to="/events" replace /> : <Register />
+              } 
+            />
+            <Route 
+              path="/forgot-password" 
+              element={
+                isTokenValid() ? <Navigate to="/events" replace /> : <ForgotPassword />
+              } 
+            />
+            <Route 
+              path="/external-register" 
+              element={
+                isTokenValid() ? <Navigate to="/events" replace /> : <ExternalRegistration />
+              } 
+            />
             <Route
               path="/"
-              element={
-                <ProtectedRoute>
-                  <EventList />
-                </ProtectedRoute>
-              }
+              element={<Navigate to="/events" replace />}
             />
             <Route
               path="/events"
@@ -69,6 +86,7 @@ function App() {
               <Route path="reports" element={<Reports />} />
               <Route path="attendance" element={<Attendance />} />
             </Route>
+            <Route path="*" element={<Navigate to="/events" replace />} />
           </Routes>
         </BrowserRouter>
       </LocalizationProvider>
