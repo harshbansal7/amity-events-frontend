@@ -4,7 +4,10 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5005/api';
 
 const api = axios.create({
   baseURL: API_URL,
-  withCredentials: true // Important for CSRF
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json'
+  }
 });
 
 // Store CSRF token
@@ -18,8 +21,8 @@ api.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`;
   }
   
-  // Add CSRF token if available
-  if (csrfToken) {
+  // Add CSRF token if available and not an auth route
+  if (csrfToken && !config.url.startsWith('/auth/')) {
     config.headers['X-CSRF-Token'] = csrfToken;
   }
   
@@ -33,12 +36,16 @@ api.interceptors.response.use(
     const newToken = response.headers['x-csrf-token'];
     if (newToken) {
       csrfToken = newToken;
+      console.log('New CSRF token received:', newToken);
     }
     return response;
   },
   (error) => {
-    if (error.response?.status === 401 && 
-        error.response?.data?.error === 'Token has expired') {
+    if (error.response?.status === 403 && 
+        error.response?.data?.description?.includes('CSRF')) {
+      console.error('CSRF token error:', error.response.data);
+    }
+    if (error.response?.status === 401) {
       localStorage.removeItem('token');
       window.location.href = '/login?expired=true';
     }
