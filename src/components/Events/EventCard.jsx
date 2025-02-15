@@ -32,10 +32,14 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
   const [customFieldValues, setCustomFieldValues] = useState({});
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
 
-  const isRegistered = event.participants.some(
-    p => (typeof p === 'string' && p === currentUserId) || 
-         (typeof p === 'object' && p.enrollment_number === currentUserId)
-  );
+  // Check if participants is a number (for non-creators) or array (for creators)
+  const participantCount = Array.isArray(event.participants) 
+    ? event.participants.length 
+    : event.participants;
+
+  const isRegistered = Array.isArray(event.participants)
+    ? event.participants.some(p => p.enrollment_number === getCurrentUserId())
+    : event.is_registered;
 
   // Helper function to parse custom fields
   const getCustomFields = () => {
@@ -247,8 +251,8 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
             <div className="flex items-center space-x-3 text-gray-600">
               <Users className="w-5 h-5 flex-shrink-0" />
               <div className="text-sm">
-                <span className={event.participants.length >= event.max_participants ? 'text-red-600' : ''}>
-                  {event.participants.length}
+                <span className={participantCount >= event.max_participants ? 'text-red-600 font-medium' : ''}>
+                  {participantCount}
                 </span>
                 <span className="mx-1">/</span>
                 <span>{event.max_participants}</span>
@@ -301,7 +305,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
                   onClick={() => setShowRegistrationModal(true)}
                   disabled={
                     isPastEvent() ||
-                    event.participants.length >= event.max_participants ||
+                    participantCount >= event.max_participants ||
                     isRegistering
                   }
                   className="flex-1 py-2 px-4 rounded-lg font-medium transition-colors duration-300
@@ -310,7 +314,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
                 >
                   {isPastEvent()
                     ? 'Event Ended'
-                    : event.participants.length >= event.max_participants
+                    : participantCount >= event.max_participants
                     ? 'Full'
                     : isRegistering
                     ? 'Registering...'
@@ -663,8 +667,8 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
                     <div className="flex items-center space-x-3 text-gray-600">
                       <Users className="w-5 h-5" />
                       <div className="text-sm">
-                        <span className={event.participants.length >= event.max_participants ? 'text-red-600 font-medium' : ''}>
-                          {event.participants.length}
+                        <span className={participantCount >= event.max_participants ? 'text-red-600 font-medium' : ''}>
+                          {participantCount}
                         </span>
                         <span className="mx-1">/</span>
                         <span>{event.max_participants}</span>
@@ -726,7 +730,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
                     onClick={() => setShowRegistrationModal(true)}
                     disabled={
                       isPastEvent() ||
-                      event.participants.length >= event.max_participants ||
+                      participantCount >= event.max_participants ||
                       isRegistering
                     }
                     className="w-full py-2 px-4 rounded-lg font-medium transition-colors duration-300
@@ -735,7 +739,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
                   >
                     {isPastEvent()
                       ? 'Event Ended'
-                      : event.participants.length >= event.max_participants
+                      : participantCount >= event.max_participants
                       ? 'Full'
                       : isRegistering
                       ? 'Registering...'
