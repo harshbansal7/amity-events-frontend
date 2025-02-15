@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import {registerForEvent, deleteEvent, getCurrentUserId, unregisterFromEvent } from '../../services/api';
 import EditEventForm from './EditEventForm';
+import Toast from '../UI/Toast';
 import { 
   CalendarDays, 
   MapPin, 
@@ -13,7 +14,8 @@ import {
   CheckCircle,
   XCircle,
   Info,
-  Key
+  Key,
+  Share2
 } from 'lucide-react';
 import { Dialog } from '@headlessui/react';
 // import AdminTools from './AdminTools';
@@ -31,6 +33,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
   const closeButtonRef = React.useRef(null);
   const [customFieldValues, setCustomFieldValues] = useState({});
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
+  const [showShareToast, setShowShareToast] = useState(false);
 
   // Check if participants is a number (for non-creators) or array (for creators)
   const participantCount = Array.isArray(event.participants) 
@@ -162,26 +165,48 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
     }
   };
 
+  const handleShare = async () => {
+    try {
+      const eventUrl = `${window.location.origin}/events/${event._id}`;
+      await navigator.clipboard.writeText(eventUrl);
+      setShowShareToast(true);
+      setTimeout(() => setShowShareToast(false), 3000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
   return (
     <div className="relative group">
       <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300">
         {/* Admin Tools */}
-        {isCreator && (
-          <div className="absolute top-4 right-4 z-10 flex space-x-2">
-            <button 
-              onClick={() => setOpenEditForm(true)}
-              className="p-2 bg-white/90 hover:bg-white rounded-full shadow-md hover:shadow-lg transition-all"
-            >
-              <Edit2 className="text-indigo-600 w-5 h-5" />
-            </button>
-            <button 
-              onClick={() => setOpenDeleteDialog(true)}
-              className="p-2 bg-white/90 hover:bg-white rounded-full shadow-md hover:shadow-lg transition-all"
-            >
-              <Trash2 className="text-red-600 w-5 h-5" />
-            </button>
-          </div>
-        )}
+        <div className="absolute top-4 right-4 z-10 flex space-x-2">
+          {/* Share button - visible to everyone */}
+          <button 
+            onClick={handleShare}
+            className="p-2 bg-white/90 hover:bg-white rounded-full shadow-md hover:shadow-lg transition-all"
+          >
+            <Share2 className="text-gray-600 hover:text-indigo-600 w-5 h-5" />
+          </button>
+
+          {/* Edit and Delete - only visible to creator */}
+          {isCreator && (
+            <>
+              <button 
+                onClick={() => setOpenEditForm(true)}
+                className="p-2 bg-white/90 hover:bg-white rounded-full shadow-md hover:shadow-lg transition-all"
+              >
+                <Edit2 className="text-indigo-600 w-5 h-5" />
+              </button>
+              <button 
+                onClick={() => setOpenDeleteDialog(true)}
+                className="p-2 bg-white/90 hover:bg-white rounded-full shadow-md hover:shadow-lg transition-all"
+              >
+                <Trash2 className="text-red-600 w-5 h-5" />
+              </button>
+            </>
+          )}
+        </div>
 
         {/* Event Image */}
         <div className="relative h-48">
@@ -750,6 +775,15 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
             </div>
           </div>
         </div>
+      )}
+
+      {/* Share Toast Notification */}
+      {showShareToast && (
+        <Toast
+          message="Event link copied to clipboard!"
+          type="success"
+          onClose={() => setShowShareToast(false)}
+        />
       )}
     </div>
   );
