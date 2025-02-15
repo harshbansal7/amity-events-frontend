@@ -36,7 +36,6 @@ api.interceptors.response.use(
     const newToken = response.headers['x-csrf-token'];
     if (newToken) {
       csrfToken = newToken;
-      console.log('New CSRF token received:', newToken);
     }
     return response;
   },
@@ -45,7 +44,13 @@ api.interceptors.response.use(
         error.response?.data?.description?.includes('CSRF')) {
       console.error('CSRF token error:', error.response.data);
     }
-    if (error.response?.status === 401) {
+    
+    // Only redirect on 401 if:
+    // 1. We have a token (session expired)
+    // 2. It's not a login request (login failures)
+    if (error.response?.status === 401 && 
+        localStorage.getItem('token') && 
+        !error.config.url.includes('/auth/login')) {
       localStorage.removeItem('token');
       window.location.href = '/login?expired=true';
     }
@@ -54,11 +59,23 @@ api.interceptors.response.use(
 );
 
 export const login = async (credentials) => {
-  const response = await api.post('/auth/login', credentials);
-  if (response.data.token) {
-    localStorage.setItem('token', response.data.token);
+  try {
+    const response = await api.post('/auth/login', credentials);
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+      return response.data;
+    }
+    throw new Error('No token received');
+  } catch (error) {
+    // Don't remove token on login failure
+    throw error;
   }
-  return response.data;
+};
+
+export const logout = () => {
+  localStorage.removeItem('token');
+  // Optionally clear other stored data
+  localStorage.clear();
 };
 
 export const register = async (userData) => {
@@ -126,13 +143,13 @@ export const isTokenValid = () => {
     // Check if token is expired
     const currentTime = Date.now() / 1000;
     if (payload.exp && payload.exp < currentTime) {
-      localStorage.removeItem('token');
+      localStorage.removeItem('token'); // Clean up expired token
       return false;
     }
 
     return true;
   } catch (error) {
-    localStorage.removeItem('token');
+    localStorage.removeItem('token'); // Clean up invalid token
     return false;
   }
 };

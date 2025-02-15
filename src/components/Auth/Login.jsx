@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { login } from '../../services/api';
+import { login, isTokenValid } from '../../services/api';
 import Toast from '../UI/Toast';
 import useRotatingMessage from '../../hooks/useRotatingMessage';
-import { isTokenValid } from '../../services/api';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -18,42 +17,65 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [showExternalOption, setShowExternalOption] = useState(false);
 
+  // Handle initial token check and URL parameters only once on mount
   useEffect(() => {
-    // Check token validity on component mount
-    if (isTokenValid()) {
-      // Fix: Use a safe way to get the redirect path
-      const from = location.state?.from?.pathname || '/events';
-      navigate(from, { replace: true });
-    }
-  }, [navigate, location]);
+    const handleInitialLoad = () => {
+      // Check for valid token
+      if (isTokenValid()) {
+        const from = location.state?.from?.pathname || '/events';
+        navigate(from, { replace: true });
+        return;
+      }
 
-  // Show success message if redirected from registration
+      // Check URL parameters
+      const params = new URLSearchParams(location.search);
+      if (params.get('expired')) {
+        setMessage('Your session has expired. Please login again.');
+        // Clean up URL without triggering a refresh
+        window.history.replaceState({}, '', '/login');
+      }
+    };
+
+    handleInitialLoad();
+  }, []); // Empty dependency array - only run once on mount
+
+  // Memoize the message handler to prevent recreation on every render
+  const handleStateMessage = useCallback(() => {
+    const stateMessage = location.state?.message;
+    if (stateMessage) {
+      setMessage(stateMessage);
+      // Clear the message from location state without triggering a re-render
+      window.history.replaceState(
+        { ...window.history.state, state: {} },
+        '',
+        location.pathname
+      );
+    }
+  }, [location.pathname, location.state?.message]);
+
+  // Use the memoized handler in useEffect
   useEffect(() => {
-    // Show message if redirected from expired token
-    const params = new URLSearchParams(location.search);
-    if (params.get('expired')) {
-      setMessage('Your session has expired. Please login again.');
-    }
-
-    if (location.state?.message) {
-      setMessage(location.state.message);
-      // Clear the message from location state
-      window.history.replaceState({}, document.title);
-    }
-  }, [location]);
+    handleStateMessage();
+  }, [handleStateMessage]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setMessage('');
     setLoading(true);
 
     try {
       await login(credentials);
-      // Fix: Use a safe way to get the redirect path
       const from = location.state?.from?.pathname || '/events';
       navigate(from, { replace: true });
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed');
+      if (err.response?.status === 401) {
+        setError('Invalid credentials. Please try again.');
+      } else if (err.response?.data?.error) {
+        setError(err.response.data.error);
+      } else {
+        setError('Login failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }

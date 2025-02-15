@@ -1,15 +1,30 @@
-import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { isTokenValid } from '../../services/api';
 import Navbar from './Navbar';
 import Footer from './Footer';
-import { isTokenValid } from '../../services/api';
 
 const ProtectedRoute = ({ children }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isTokenValid()) {
+      // Clean navigation - only pass necessary location info
+      navigate('/login', {
+        replace: true,
+        state: {
+          from: {
+            pathname: location.pathname,
+            search: location.search
+          }
+        }
+      });
+    }
+  }, [location, navigate]);
 
   if (!isTokenValid()) {
-    // Save the attempted URL for redirecting after login
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return null; // Return null instead of Navigate to prevent flash
   }
 
   return (
@@ -23,4 +38,5 @@ const ProtectedRoute = ({ children }) => {
   );
 };
 
-export default ProtectedRoute; 
+export default ProtectedRoute;
+
