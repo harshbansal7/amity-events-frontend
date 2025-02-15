@@ -16,7 +16,7 @@ import Events from './components/Admin/Events';
 import Participants from './components/Admin/Participants';
 import Reports from './components/Admin/Reports';
 import Attendance from './components/Admin/Attendance';
-import { isTokenValid } from './services/api';
+import { AuthProvider } from './context/AuthContext';
 
 const theme = createTheme({
   palette: {
@@ -34,55 +34,47 @@ function App() {
     <ThemeProvider theme={theme}>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <BrowserRouter>
-          <Routes>
-            <Route path="/login" element={
-              isTokenValid() ? <Navigate to="/events" replace /> : <Login />
-            } />
-            <Route path="/register" element={
-              isTokenValid() ? <Navigate to="/events" replace /> : <Register />
-            } />
-            <Route path="/forgot-password" element={
-              isTokenValid() ? <Navigate to="/events" replace /> : <ForgotPassword />
-            } />
-            <Route path="/external-register" element={
-              isTokenValid() ? <Navigate to="/events" replace /> : <ExternalRegistration />
-            } />
-            <Route path="/" element={
-              isTokenValid() ? <Navigate to="/events" replace /> : <Navigate to="/login" replace />
-            } />
-            <Route
-              path="/events"
-              element={
-                <ProtectedRoute>
-                  <EventList />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/my-events"
-              element={
-                <ProtectedRoute>
-                  <MyEvents />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>}>
-              <Route index element={<Events />} />
-              <Route path="events" element={<Events />} />
-              <Route path="participants" element={<Participants />} />
-              <Route path="reports" element={<Reports />} />
-              <Route path="attendance" element={<Attendance />} />
-            </Route>
-            <Route
-              path="/events/:eventId"
-              element={
-                <ProtectedRoute>
-                  <EventList />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="*" element={<Navigate to="/events" replace />} />
-          </Routes>
+          <AuthProvider>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/external-register" element={<ExternalRegistration />} />
+              <Route path="/" element={<Navigate to="/events" replace />} />
+              <Route
+                path="/events"
+                element={
+                  <ProtectedRoute>
+                    <EventList />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/my-events"
+                element={
+                  <ProtectedRoute>
+                    <MyEvents />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>}>
+                <Route index element={<Events />} />
+                <Route path="events" element={<Events />} />
+                <Route path="participants" element={<Participants />} />
+                <Route path="reports" element={<Reports />} />
+                <Route path="attendance" element={<Attendance />} />
+              </Route>
+              <Route
+                path="/events/:eventId"
+                element={
+                  <ProtectedRoute>
+                    <EventList />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="*" element={<Navigate to="/events" replace />} />
+            </Routes>
+          </AuthProvider>
         </BrowserRouter>
       </LocalizationProvider>
     </ThemeProvider>

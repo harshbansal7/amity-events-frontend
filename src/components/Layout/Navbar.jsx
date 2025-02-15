@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { Menu, X, LogOut, Settings } from 'lucide-react';
 import { getCurrentUserId, getCurrentUserName, isExternalUser } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
 const Navbar = () => {
-  const navigate = useNavigate();
   const location = useLocation();
+  const { logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const userEnrollment = getCurrentUserId();
@@ -36,8 +37,7 @@ const Navbar = () => {
   const isActive = (path) => location.pathname === path;
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
+    logout();
   };
 
   return (

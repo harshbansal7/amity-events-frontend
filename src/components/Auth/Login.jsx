@@ -1,12 +1,14 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { login, isTokenValid } from '../../services/api';
+import { login as apiLogin } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 import Toast from '../UI/Toast';
 import useRotatingMessage from '../../hooks/useRotatingMessage';
 
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { isAuthenticated, login: authLogin } = useAuth();
   const rotatingMessage = useRotatingMessage('login');
   const [credentials, setCredentials] = useState({
     enrollment_number: '',
@@ -17,34 +19,25 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [showExternalOption, setShowExternalOption] = useState(false);
 
-  // Handle initial token check and URL parameters only once on mount
   useEffect(() => {
-    const handleInitialLoad = () => {
-      // Check for valid token
-      if (isTokenValid()) {
-        const from = location.state?.from?.pathname || '/events';
-        navigate(from, { replace: true });
-        return;
-      }
+    if (isAuthenticated) {
+      const from = location.state?.from?.pathname || '/events';
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, navigate, location.state?.from?.pathname]);
 
-      // Check URL parameters
-      const params = new URLSearchParams(location.search);
-      if (params.get('expired')) {
-        setMessage('Your session has expired. Please login again.');
-        // Clean up URL without triggering a refresh
-        window.history.replaceState({}, '', '/login');
-      }
-    };
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('expired')) {
+      setMessage('Your session has expired. Please login again.');
+      window.history.replaceState({}, '', '/login');
+    }
+  }, []);
 
-    handleInitialLoad();
-  }, []); // Empty dependency array - only run once on mount
-
-  // Memoize the message handler to prevent recreation on every render
-  const handleStateMessage = useCallback(() => {
+  useEffect(() => {
     const stateMessage = location.state?.message;
     if (stateMessage) {
       setMessage(stateMessage);
-      // Clear the message from location state without triggering a re-render
       window.history.replaceState(
         { ...window.history.state, state: {} },
         '',
@@ -53,11 +46,6 @@ const Login = () => {
     }
   }, [location.pathname, location.state?.message]);
 
-  // Use the memoized handler in useEffect
-  useEffect(() => {
-    handleStateMessage();
-  }, [handleStateMessage]);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -65,9 +53,8 @@ const Login = () => {
     setLoading(true);
 
     try {
-      await login(credentials);
-      const from = location.state?.from?.pathname || '/events';
-      navigate(from, { replace: true });
+      await apiLogin(credentials);
+      authLogin(); // Update auth context
     } catch (err) {
       if (err.response?.status === 401) {
         setError('Invalid credentials. Please try again.');
@@ -210,4 +197,4 @@ const Login = () => {
   );
 };
 
-export default Login; 
+export default Login;

@@ -1,30 +1,15 @@
-import React, { useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { isTokenValid } from '../../services/api';
+import React from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import Navbar from './Navbar';
 import Footer from './Footer';
 
 const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!isTokenValid()) {
-      // Clean navigation - only pass necessary location info
-      navigate('/login', {
-        replace: true,
-        state: {
-          from: {
-            pathname: location.pathname,
-            search: location.search
-          }
-        }
-      });
-    }
-  }, [location, navigate]);
-
-  if (!isTokenValid()) {
-    return null; // Return null instead of Navigate to prevent flash
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   return (
@@ -39,4 +24,3 @@ const ProtectedRoute = ({ children }) => {
 };
 
 export default ProtectedRoute;
-
