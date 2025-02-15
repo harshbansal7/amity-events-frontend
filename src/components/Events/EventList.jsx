@@ -5,6 +5,7 @@ import CreateEventForm from './CreateEventForm';
 import { CircularProgress } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import useRotatingMessage from '../../hooks/useRotatingMessage';
+import { useParams, useLocation } from 'react-router-dom';
 
 const EventList = () => {
   const [events, setEvents] = useState([]);
@@ -12,6 +13,8 @@ const EventList = () => {
   const [isExternal, setIsExternal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { eventId } = useParams();
+  const [selectedEventForModal, setSelectedEventForModal] = useState(null);
 
   const rotatingMessage = useRotatingMessage('eventList');
   const noEventsMessage = useRotatingMessage('noEvents');
@@ -36,6 +39,15 @@ const EventList = () => {
     fetchEvents();
     setIsExternal(isExternalUser());
   }, []);
+
+  useEffect(() => {
+    if (eventId && events.length > 0) {
+      const event = events.find(e => e._id === eventId);
+      if (event) {
+        setSelectedEventForModal(event);
+      }
+    }
+  }, [eventId, events]);
 
   if (loading) {
     return (
@@ -170,6 +182,19 @@ const EventList = () => {
               </div>
             </div>
           </div>
+        )}
+
+        {selectedEventForModal && (
+          <EventCard 
+            event={selectedEventForModal}
+            onRegister={fetchEvents}
+            onDelete={fetchEvents}
+            showDetailsModal={true}
+            onCloseModal={() => {
+              setSelectedEventForModal(null);
+              window.history.pushState({}, '', '/events');
+            }}
+          />
         )}
       </div>
     </div>

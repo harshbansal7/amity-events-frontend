@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { login } from '../../services/api';
 import Toast from '../UI/Toast';
 import useRotatingMessage from '../../hooks/useRotatingMessage';
-import { isTokenValid } from '../../utils/tokenUtils';
+import { isTokenValid } from '../../services/api';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -21,6 +21,7 @@ const Login = () => {
   useEffect(() => {
     // Check token validity on component mount
     if (isTokenValid()) {
+      // Fix: Use a safe way to get the redirect path
       const from = location.state?.from?.pathname || '/events';
       navigate(from, { replace: true });
     }
@@ -47,9 +48,10 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await login(credentials);
-      // Token is automatically saved by the api service
-      navigate('/events'); // or wherever your main app page is
+      await login(credentials);
+      // Fix: Use a safe way to get the redirect path
+      const from = location.state?.from?.pathname || '/events';
+      navigate(from, { replace: true });
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed');
     } finally {

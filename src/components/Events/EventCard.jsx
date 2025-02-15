@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import {registerForEvent, deleteEvent, getCurrentUserId, unregisterFromEvent } from '../../services/api';
 import EditEventForm from './EditEventForm';
@@ -18,7 +18,7 @@ import {
 import { Dialog } from '@headlessui/react';
 // import AdminTools from './AdminTools';
 
-const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
+const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal = false, onCloseModal }) => {
   const [openEditForm, setOpenEditForm] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openUnregisterDialog, setOpenUnregisterDialog] = useState(false);
@@ -26,7 +26,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
   const [isRegistering, setIsRegistering] = useState(false);
   const currentUserId = getCurrentUserId();
   const isCreator = currentUserId === event.creator_id;
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showDetailsModalState, setShowDetailsModalState] = useState(showDetailsModal);
   const detailsModalRef = React.useRef(null);
   const closeButtonRef = React.useRef(null);
   const [customFieldValues, setCustomFieldValues] = useState({});
@@ -126,12 +126,12 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
   // Handle keyboard events for modal
   React.useEffect(() => {
     const handleEscape = (e) => {
-      if (e.key === 'Escape' && showDetailsModal) {
-        setShowDetailsModal(false);
+      if (e.key === 'Escape' && showDetailsModalState) {
+        handleCloseModal();
       }
     };
 
-    if (showDetailsModal) {
+    if (showDetailsModalState) {
       document.addEventListener('keydown', handleEscape);
       // Lock body scroll
       document.body.style.overflow = 'hidden';
@@ -143,7 +143,20 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
       document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = 'unset';
     };
+  }, [showDetailsModalState]);
+
+  // Add effect to handle prop changes
+  useEffect(() => {
+    setShowDetailsModalState(showDetailsModal);
   }, [showDetailsModal]);
+
+  // Update the close modal handler
+  const handleCloseModal = () => {
+    setShowDetailsModalState(false);
+    if (onCloseModal) {
+      onCloseModal();
+    }
+  };
 
   return (
     <div className="relative group">
@@ -264,7 +277,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
           <div className="pt-4 border-t">
             <div className="flex gap-3 flex-col sm:flex-row">
               <button
-                onClick={() => setShowDetailsModal(true)}
+                onClick={() => setShowDetailsModalState(true)}
                 className="flex-1 py-2 px-4 rounded-lg font-medium transition-colors duration-300
                   bg-gray-100 text-gray-700 hover:bg-gray-200 
                   flex items-center justify-center space-x-2"
@@ -500,7 +513,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
       )}
 
       {/* Event Details Modal */}
-      {showDetailsModal && (
+      {showDetailsModalState && (
         <div 
           role="dialog"
           aria-modal="true"
@@ -508,7 +521,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
           className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[200] p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
-              setShowDetailsModal(false);
+              handleCloseModal();
             }
           }}
         >
@@ -535,7 +548,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister }) => {
               {/* Close Button */}
               <button
                 ref={closeButtonRef}
-                onClick={() => setShowDetailsModal(false)}
+                onClick={() => handleCloseModal()}
                 aria-label="Close details"
                 className="absolute top-4 right-4 p-2 bg-white/90 hover:bg-white rounded-full shadow-md hover:shadow-lg transition-all"
               >

@@ -32,7 +32,7 @@ const theme = createTheme({
 function App() {
   // Add redirect logic for root and login routes
   const loginElement = isTokenValid() ? (
-    <Navigate to="/events" replace state={{ from: location }} />
+    <Navigate to="/events" replace />
   ) : (
     <Login />
   );
@@ -78,6 +78,14 @@ function App() {
               <Route path="reports" element={<Reports />} />
               <Route path="attendance" element={<Attendance />} />
             </Route>
+            <Route
+              path="/events/:eventId"
+              element={
+                <ProtectedRoute>
+                  <EventList />
+                </ProtectedRoute>
+              }
+            />
             <Route path="*" element={<Navigate to="/events" replace />} />
           </Routes>
         </BrowserRouter>
