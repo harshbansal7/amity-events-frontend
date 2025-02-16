@@ -15,7 +15,8 @@ import {
   XCircle,
   Info,
   Key,
-  Share2
+  Share2,
+  X
 } from 'lucide-react';
 import { Dialog } from '@headlessui/react';
 // import AdminTools from './AdminTools';
@@ -543,235 +544,235 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
 
       {/* Event Details Modal */}
       {showDetailsModalState && (
-        <div 
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="event-details-title"
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[200] p-4"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              handleCloseModal();
-            }
-          }}
-        >
+        <div className="fixed inset-0 z-[205] overflow-y-auto">
           <div 
-            ref={detailsModalRef}
-            className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto relative z-[201]"
-            tabIndex="-1"
-          >
-            <div className="relative">
-              {/* Header Image */}
-              <div 
-                className="h-48 sm:h-64 relative"
-                role="img"
-                aria-label={`Cover image for ${event.name}`}
-              >
-                <img
-                  src={event.image_url || '/assets/default-event.jpg'}
-                  alt={event.name}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent" />
-              </div>
-              
-              {/* Close Button */}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
+            onClick={() => {
+              setShowDetailsModalState(false);
+              if (onCloseModal) onCloseModal();
+            }}
+          />
+          <div className="flex min-h-screen items-center justify-center p-4">
+            <div className="relative w-full max-w-3xl mx-auto bg-white rounded-xl shadow-xl">
+              {/* Close button */}
               <button
-                ref={closeButtonRef}
-                onClick={() => handleCloseModal()}
-                aria-label="Close details"
-                className="absolute top-4 right-4 p-2 bg-white/90 hover:bg-white rounded-full shadow-md hover:shadow-lg transition-all"
+                onClick={() => {
+                  setShowDetailsModalState(false);
+                  if (onCloseModal) onCloseModal();
+                }}
+                className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-500 
+                         hover:bg-gray-100 rounded-full z-[10]"
               >
-                <XCircle className="w-5 h-5 text-gray-600" />
+                <X className="w-6 h-6" />
               </button>
-            </div>
 
-            {/* Content */}
-            <div className="p-6 space-y-6">
-              {/* Title Section */}
-              <div className="space-y-2">
-                <h2 
-                  id="event-details-title"
-                  className="text-2xl font-bold text-gray-900"
-                >
-                  {event.name}
-                </h2>
-                <div 
-                  role="list"
-                  className="flex flex-wrap gap-2"
-                >
-                  <span 
-                    role="listitem"
-                    className="px-3 py-1 rounded-full text-sm bg-indigo-100 text-indigo-800"
+              {/* Modal content */}
+              <div className="overflow-y-auto max-h-[90vh]">
+                <div className="relative">
+                  {/* Header Image */}
+                  <div 
+                    className="h-48 sm:h-64 relative"
+                    role="img"
+                    aria-label={`Cover image for ${event.name}`}
                   >
-                    {formatFullDate(event.date)}
-                  </span>
+                    <img
+                      src={event.image_url || '/assets/default-event.jpg'}
+                      alt={event.name}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent" />
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="p-6 space-y-6">
+                  {/* Title Section */}
+                  <div className="space-y-2">
+                    <h2 
+                      id="event-details-title"
+                      className="text-2xl font-bold text-gray-900"
+                    >
+                      {event.name}
+                    </h2>
+                    <div 
+                      role="list"
+                      className="flex flex-wrap gap-2"
+                    >
+                      <span 
+                        role="listitem"
+                        className="px-3 py-1 rounded-full text-sm bg-indigo-100 text-indigo-800"
+                      >
+                        {formatFullDate(event.date)}
+                      </span>
+                      {event.allow_external && (
+                        <div className="flex items-center gap-2">
+                          <span className="px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
+                            External Participants Allowed
+                          </span>
+                          <span className="px-3 py-1 rounded-full text-sm bg-indigo-100 text-indigo-800 font-mono">
+                            Code: {event.event_code}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* External Registration Info */}
                   {event.allow_external && (
-                    <div className="flex items-center gap-2">
-                      <span className="px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
-                        External Participants Allowed
-                      </span>
-                      <span className="px-3 py-1 rounded-full text-sm bg-indigo-100 text-indigo-800 font-mono">
-                        Code: {event.event_code}
-                      </span>
+                    <div className="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-4">
+                      <div className="flex items-start space-x-3">
+                        <Key className="w-5 h-5 text-indigo-600 mt-1" />
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-1">External Registration</h4>
+                          <p className="text-sm text-gray-600">
+                            This event allows external participants to register using the event code:
+                          </p>
+                          <div className="mt-2 bg-white/50 px-4 py-2 rounded-lg inline-block">
+                            <code className="text-lg font-mono font-bold text-indigo-600">
+                              {event.event_code}
+                            </code>
+                          </div>
+                          <p className="text-sm text-gray-500 mt-2">
+                            Share this code with external participants to allow them to register.
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   )}
-                </div>
-              </div>
 
-              {/* External Registration Info */}
-              {event.allow_external && (
-                <div className="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-4">
-                  <div className="flex items-start space-x-3">
-                    <Key className="w-5 h-5 text-indigo-600 mt-1" />
-                    <div>
-                      <h4 className="font-semibold text-gray-900 mb-1">External Registration</h4>
-                      <p className="text-sm text-gray-600">
-                        This event allows external participants to register using the event code:
-                      </p>
-                      <div className="mt-2 bg-white/50 px-4 py-2 rounded-lg inline-block">
-                        <code className="text-lg font-mono font-bold text-indigo-600">
-                          {event.event_code}
-                        </code>
-                      </div>
-                      <p className="text-sm text-gray-500 mt-2">
-                        Share this code with external participants to allow them to register.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
+                  {/* Description */}
+                  <section aria-labelledby="event-description" className="prose max-w-none">
+                    <h3 id="event-description" className="text-lg font-semibold text-gray-900">
+                      About This Event
+                    </h3>
+                    <p className="text-gray-600 whitespace-pre-line">{event.description}</p>
+                  </section>
 
-              {/* Description */}
-              <section aria-labelledby="event-description" className="prose max-w-none">
-                <h3 id="event-description" className="text-lg font-semibold text-gray-900">
-                  About This Event
-                </h3>
-                <p className="text-gray-600 whitespace-pre-line">{event.description}</p>
-              </section>
-
-              {/* Details Grid */}
-              <div 
-                className="grid grid-cols-1 md:grid-cols-2 gap-6"
-                role="complementary"
-                aria-label="Event details"
-              >
-                {/* Time & Duration */}
-                <section aria-labelledby="time-duration" className="space-y-4">
-                  <h3 id="time-duration" className="text-lg font-semibold text-gray-900">
-                    Time & Duration
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3 text-gray-600">
-                      <CalendarDays className="w-5 h-5" />
-                      <div>
-                        <p className="text-sm font-medium">
-                          {formatFullDate(event.date)}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          {formatTime(event.date)}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3 text-gray-600">
-                      <Clock className="w-5 h-5" />
-                      <span className="text-sm">{formatDuration(event.duration)}</span>
-                    </div>
-                  </div>
-                </section>
-
-                {/* Location & Capacity */}
-                <section aria-labelledby="location-capacity" className="space-y-4">
-                  <h3 id="location-capacity" className="text-lg font-semibold text-gray-900">
-                    Location & Capacity
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="flex items-start space-x-3 text-gray-600">
-                      <MapPin className="w-5 h-5 mt-0.5" />
-                      <span className="text-sm">{event.venue}</span>
-                    </div>
-                    <div className="flex items-center space-x-3 text-gray-600">
-                      <Users className="w-5 h-5" />
-                      <div className="text-sm">
-                        <span className={participantCount >= event.max_participants ? 'text-red-600 font-medium' : ''}>
-                          {participantCount}
-                        </span>
-                        <span className="mx-1">/</span>
-                        <span>{event.max_participants}</span>
-                        <span className="ml-1">participants</span>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-              </div>
-
-              {/* Prizes Section */}
-              {event.prizes && (
-                <section aria-labelledby="prizes-section" className="space-y-4">
-                  <h3 id="prizes-section" className="text-lg font-semibold text-gray-900">
-                    Prizes
-                  </h3>
+                  {/* Details Grid */}
                   <div 
-                    role="list"
-                    className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"
+                    className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                    role="complementary"
+                    aria-label="Event details"
                   >
-                    {event.prizes.split(',').map((prize, index) => (
-                      <div 
-                        key={index}
-                        className="bg-gradient-to-br from-indigo-50 to-blue-50 p-4 rounded-xl"
-                      >
-                        <div className="text-xs font-semibold text-indigo-600 mb-1">
-                          {index === 0 ? '1st Prize' : index === 1 ? '2nd Prize' : index === 2 ? '3rd Prize' : `${index + 1}th Prize`}
+                    {/* Time & Duration */}
+                    <section aria-labelledby="time-duration" className="space-y-4">
+                      <h3 id="time-duration" className="text-lg font-semibold text-gray-900">
+                        Time & Duration
+                      </h3>
+                      <div className="space-y-3">
+                        <div className="flex items-center space-x-3 text-gray-600">
+                          <CalendarDays className="w-5 h-5" />
+                          <div>
+                            <p className="text-sm font-medium">
+                              {formatFullDate(event.date)}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              {formatTime(event.date)}
+                            </p>
+                          </div>
                         </div>
-                        <div className="text-sm text-gray-800 font-medium">
-                          {prize.trim()}
+                        <div className="flex items-center space-x-3 text-gray-600">
+                          <Clock className="w-5 h-5" />
+                          <span className="text-sm">{formatDuration(event.duration)}</span>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                </section>
-              )}
+                    </section>
 
-              {/* Registration Status */}
-              <section 
-                aria-label="Registration status"
-                className="pt-6 border-t"
-              >
-                {isRegistered ? (
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center space-x-2 text-green-600">
-                      <CheckCircle className="w-5 h-5" />
-                      <span className="text-sm font-medium">Registered</span>
-                    </span>
-                    <button
-                      onClick={() => setOpenUnregisterDialog(true)}
-                      disabled={isPastEvent() || isUnregistering}
-                      className="text-sm text-red-600 hover:text-red-700 font-medium disabled:opacity-50"
-                    >
-                      {isUnregistering ? 'Unregistering...' : 'Unregister'}
-                    </button>
+                    {/* Location & Capacity */}
+                    <section aria-labelledby="location-capacity" className="space-y-4">
+                      <h3 id="location-capacity" className="text-lg font-semibold text-gray-900">
+                        Location & Capacity
+                      </h3>
+                      <div className="space-y-3">
+                        <div className="flex items-start space-x-3 text-gray-600">
+                          <MapPin className="w-5 h-5 mt-0.5" />
+                          <span className="text-sm">{event.venue}</span>
+                        </div>
+                        <div className="flex items-center space-x-3 text-gray-600">
+                          <Users className="w-5 h-5" />
+                          <div className="text-sm">
+                            <span className={participantCount >= event.max_participants ? 'text-red-600 font-medium' : ''}>
+                              {participantCount}
+                            </span>
+                            <span className="mx-1">/</span>
+                            <span>{event.max_participants}</span>
+                            <span className="ml-1">participants</span>
+                          </div>
+                        </div>
+                      </div>
+                    </section>
                   </div>
-                ) : (
-                  <button
-                    onClick={() => setShowRegistrationModal(true)}
-                    disabled={
-                      isPastEvent() ||
-                      participantCount >= event.max_participants ||
-                      isRegistering
-                    }
-                    className="w-full py-2 px-4 rounded-lg font-medium transition-colors duration-300
-                      bg-indigo-600 text-white hover:bg-indigo-700 
-                      disabled:bg-gray-300 disabled:cursor-not-allowed"
+
+                  {/* Prizes Section */}
+                  {event.prizes && (
+                    <section aria-labelledby="prizes-section" className="space-y-4">
+                      <h3 id="prizes-section" className="text-lg font-semibold text-gray-900">
+                        Prizes
+                      </h3>
+                      <div 
+                        role="list"
+                        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"
+                      >
+                        {event.prizes.split(',').map((prize, index) => (
+                          <div 
+                            key={index}
+                            className="bg-gradient-to-br from-indigo-50 to-blue-50 p-4 rounded-xl"
+                          >
+                            <div className="text-xs font-semibold text-indigo-600 mb-1">
+                              {index === 0 ? '1st Prize' : index === 1 ? '2nd Prize' : index === 2 ? '3rd Prize' : `${index + 1}th Prize`}
+                            </div>
+                            <div className="text-sm text-gray-800 font-medium">
+                              {prize.trim()}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+
+                  {/* Registration Status */}
+                  <section 
+                    aria-label="Registration status"
+                    className="pt-6 border-t"
                   >
-                    {isPastEvent()
-                      ? 'Event Ended'
-                      : participantCount >= event.max_participants
-                      ? 'Full'
-                      : isRegistering
-                      ? 'Registering...'
-                      : 'Register Now'}
-                  </button>
-                )}
-              </section>
+                    {isRegistered ? (
+                      <div className="flex items-center justify-between">
+                        <span className="flex items-center space-x-2 text-green-600">
+                          <CheckCircle className="w-5 h-5" />
+                          <span className="text-sm font-medium">Registered</span>
+                        </span>
+                        <button
+                          onClick={() => setOpenUnregisterDialog(true)}
+                          disabled={isPastEvent() || isUnregistering}
+                          className="text-sm text-red-600 hover:text-red-700 font-medium disabled:opacity-50"
+                        >
+                          {isUnregistering ? 'Unregistering...' : 'Unregister'}
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setShowRegistrationModal(true)}
+                        disabled={
+                          isPastEvent() ||
+                          participantCount >= event.max_participants ||
+                          isRegistering
+                        }
+                        className="w-full py-2 px-4 rounded-lg font-medium transition-colors duration-300
+                          bg-indigo-600 text-white hover:bg-indigo-700 
+                          disabled:bg-gray-300 disabled:cursor-not-allowed"
+                      >
+                        {isPastEvent()
+                          ? 'Event Ended'
+                          : participantCount >= event.max_participants
+                          ? 'Full'
+                          : isRegistering
+                          ? 'Registering...'
+                          : 'Register Now'}
+                      </button>
+                    )}
+                  </section>
+                </div>
+              </div>
             </div>
           </div>
         </div>

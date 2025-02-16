@@ -132,7 +132,8 @@ const EventList = () => {
             </div>
           ) : (
             <div 
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 opacity-80 hover:opacity-100 transition-opacity duration-300 relative z-[10]"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 
+                         opacity-80 hover:opacity-100 transition-opacity duration-300"
             >
               {pastEvents.map((event) => (
                 <EventCard 
