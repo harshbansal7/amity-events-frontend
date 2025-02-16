@@ -119,7 +119,13 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setImage(file);
+      // Set the actual file for form submission
+      setFormData(prev => ({
+        ...prev,
+        image: file
+      }));
+
+      // Create preview URL
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
@@ -129,43 +135,46 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
   };
 
   const handleRemoveImage = () => {
-    setImage(null);
+    setFormData(prev => ({
+      ...prev,
+      image: null
+    }));
     setImagePreview(null);
+    // Reset the file input
+    const fileInput = document.getElementById('image-upload');
+    if (fileInput) {
+      fileInput.value = '';
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    setIsCreating(true);
+    setError('');
 
     try {
-      setIsCreating(true);
-      setError('');
-
-      // Create FormData object
-      const eventFormData = new FormData();
-
-      // Add all form fields
+      // Create FormData object for multipart/form-data submission
+      const formDataToSend = new FormData();
+      
+      // Add all form fields to FormData
       Object.keys(formData).forEach(key => {
-        if (key === 'custom_fields') {
-          // Handle custom fields array properly
-          eventFormData.append('custom_fields', formData.custom_fields.join(','));
-        } else if (key === 'image') {
-          // Only append image if it exists
-          if (formData.image) {
-            eventFormData.append('image', formData.image);
-          }
+        if (key === 'image' && formData[key]) {
+          formDataToSend.append('image', formData[key]);
+        } else if (key === 'custom_fields') {
+          formDataToSend.append('custom_fields', formData[key].join(','));
         } else if (key === 'date') {
-          // Format date properly
-          eventFormData.append('date', formData.date.toISOString());
+          formDataToSend.append('date', formData[key].toISOString());
         } else {
-          // Handle all other fields
-          eventFormData.append(key, formData[key]);
+          formDataToSend.append(key, formData[key]);
         }
       });
 
-      // Create event
-      await createEvent(eventFormData);
-      if (onSuccess) onSuccess();
+      // Make API call with FormData
+      const response = await createEvent(formDataToSend);
+
+      if (onSuccess) {
+        onSuccess(response.data);
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create event');
     } finally {
