@@ -283,6 +283,11 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
                 <span className="mx-1">/</span>
                 <span>{event.max_participants}</span>
                 <span className="ml-1">participants</span>
+                {event.max_participants - participantCount <= Math.ceil(event.max_participants * 0.10) && 
+                  participantCount < event.max_participants && (
+                    <span className="text-red-600 font-medium ml-2">Last few slots left!!</span>
+                  )
+                }
               </div>
             </div>
 

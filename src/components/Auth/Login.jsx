@@ -77,7 +77,7 @@ const Login = () => {
         <div className="text-center space-y-2">
           <img
             src="/assets/amity-logo.png"
-            alt="Amity Events"
+            alt="AUP Events"
             className="h-16 sm:h-10 mx-auto mb-2 drop-shadow-xl"
           />
           <h2 className="text-3xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
