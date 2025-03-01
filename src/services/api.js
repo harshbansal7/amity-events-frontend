@@ -94,12 +94,20 @@ export const getEvents = async () => {
 };
 
 export const createEvent = async (eventData) => {
-  const response = await api.post('/events', eventData, {
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    }
-  });
-  return response.data;
+  try {
+    // console.log("Sending event creation request:", eventData);
+    const response = await api.post('/events', eventData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    // console.log("Raw API response:", response);
+    // Make sure we return the data object that contains approval_status
+    return response.data;
+  } catch (error) {
+    console.error("API error in createEvent:", error);
+    throw error;
+  }
 };
 
 export const registerForEvent = async (eventId, data) => {
@@ -284,4 +292,4 @@ export const resetPassword = async (data) => {
   return response.data;
 };
 
-export default api; 
+export default api;
