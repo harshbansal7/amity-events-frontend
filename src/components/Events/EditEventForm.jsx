@@ -38,6 +38,7 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
     prizes: Array.isArray(initialEvent.prizes) ? initialEvent.prizes.join(', ') : initialEvent.prizes || '',
     image: null,
     image_url: initialEvent.image_url || null,
+    has_image_been_changed: false,
     custom_fields: initialCustomFields
   });
   const [error, setError] = useState('');
@@ -53,9 +54,7 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
       const formData = new FormData();
       
       Object.keys(editedEvent).forEach(key => {
-        if (key === 'image' && editedEvent[key]) {
-          formData.append('image', editedEvent[key]);
-        } else if (key === 'custom_fields') {
+        if (key === 'custom_fields') {
           formData.append('custom_fields', editedEvent.custom_fields.join(','));
         } else if (key === 'date') {
           formData.append('date', editedEvent.date.toISOString());
@@ -79,7 +78,8 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
       setEditedEvent({
         ...editedEvent,
         image: file,
-        image_url: URL.createObjectURL(file)
+        image_url: URL.createObjectURL(file),
+        has_image_been_changed: true
       });
     }
   };
@@ -88,7 +88,8 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
     setEditedEvent({
       ...editedEvent,
       image: null,
-      image_url: null
+      image_url: null,
+      has_image_been_changed: true
     });
   };
 
