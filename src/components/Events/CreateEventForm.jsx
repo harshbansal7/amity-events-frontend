@@ -8,6 +8,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { TextField } from '@mui/material';
 import useRotatingMessage from '../../hooks/useRotatingMessage';
 import { Plus, Minus } from 'lucide-react';
+import ApprovalModal from '../UI/ApprovalModal';
 
 const CreateEventForm = ({ onSuccess, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -32,6 +33,9 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
   const [imagePreview, setImagePreview] = useState(null);
   const [error, setError] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  // New state for approval modal
+  const [showApprovalModal, setShowApprovalModal] = useState(false);
+
   const maxParticipantsRef = useRef(null);
   const durationDaysRef = useRef(null);
   const durationHoursRef = useRef(null);
@@ -171,11 +175,27 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
 
       // Make API call with FormData
       const response = await createEvent(formDataToSend);
-
-      if (onSuccess) {
-        onSuccess(response.data);
+      
+      // Debug logs to check the response
+      // console.log("Event creation response:", response);
+      // console.log("Approval status:", response.approval_status);
+      
+      // Store the response to use after modal is closed
+      const eventResponse = response;
+      
+      // Check if the event is pending approval
+      if (response.approval_status === 'pending') {
+        // console.log("Setting show approval modal to true");
+        setShowApprovalModal(true);
+        // Don't call onSuccess yet, it will be called after the modal is closed
+      } else {
+        // If not pending approval, call onSuccess immediately
+        if (onSuccess) {
+          onSuccess(eventResponse);
+        }
       }
     } catch (err) {
+      console.error("Error creating event:", err);
       setError(err.response?.data?.message || 'Failed to create event');
     } finally {
       setIsCreating(false);
@@ -227,6 +247,24 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
       ...prev,
       custom_fields: prev.custom_fields.filter(field => field !== fieldToRemove)
     }));
+  };
+
+  // Store the response from the API call
+  const [createdEventResponse, setCreatedEventResponse] = useState(null);
+
+  const handleApprovalModalClose = () => {
+    // console.log("Modal close handler called");
+    setShowApprovalModal(false);
+    
+    // Now call onSuccess after modal is closed
+    if (onSuccess && createdEventResponse) {
+      onSuccess(createdEventResponse);
+    }
+    
+    // If there's no onSuccess or we want to always close the form
+    if (onCancel) {
+      onCancel();
+    }
   };
 
   return (
@@ -621,8 +659,16 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
           ) : 'Create Event'}
         </button>
       </div>
+
+      {/* Approval Modal debugging */}
+      {/* {console.log("Rendering component, showApprovalModal =", showApprovalModal)} */}
+      <ApprovalModal 
+        isOpen={showApprovalModal} 
+        onClose={handleApprovalModalClose} 
+        eventName={formData.name}
+      />
     </div>
   );
 };
 
-export default CreateEventForm; 
+export default CreateEventForm;
