@@ -517,7 +517,7 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
                   </div>
                   <div className="ml-3">
                     <p className="text-sm text-yellow-700">
-                      Please enter the prizes in a comma-separated format. It is not necessary to mention all 3, you can write a single value in-case you only have a first prize. For example: "First Prize, Second Prize, Third Prize".
+                      Please enter upto 3 prizes in a comma-separated format. It is not necessary to mention all 3, you can write a single value in-case you only have a first prize. For example: "First Prize, Second Prize, Third Prize".
                     </p>
                   </div>
                 </div>
