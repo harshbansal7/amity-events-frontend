@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { createEvent } from '../../services/api';
+import { createEvent, getCurrentUserEmail } from '../../services/api';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import CloseIcon from '@mui/icons-material/Close';
 import { TextField } from '@mui/material';
@@ -12,6 +12,7 @@ import ApprovalModal from '../UI/ApprovalModal';
 import { Info } from 'react-feather';
 
 const CreateEventForm = ({ onSuccess, onCancel }) => {
+  const userEmail = getCurrentUserEmail();
   const [formData, setFormData] = useState({
     name: '',
     date: new Date(),
@@ -689,6 +690,60 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
               </div>
             )}
           </div>
+         
+                <div className="mt-8 bg-gradient-to-r from-red-50 to-red-100 border-l-4 border-red-500 rounded-lg overflow-hidden shadow-sm">
+                <div className="p-4 text-red-700">
+                  <h4 className="font-bold text-lg flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                  Disclaimer
+                  </h4>
+                  <div className="space-y-2 mt-2">
+                  <p className="flex items-center text-sm">
+                    <span className="mr-2">⚠️</span>
+                    Think before you type—inappropriate content here could land you in hot water.
+                  </p>
+                  <p className="flex items-center text-sm">
+                    <span className="mr-2">✅</span>
+                    Honesty is the best policy—false info will only cause trouble (for you).
+                  </p>
+                  <p className="flex items-center text-sm">
+                    <span className="mr-2">🚫</span>
+                    Scamming? Not on our watch. Any misuse of this form is a strict no-go.
+                  </p>
+                  <p className="flex items-center text-sm">
+                    <span className="mr-2">⭐</span>
+                    Quality matters. Low-effort entries may disappear without a trace.
+                  </p>
+                  <p className="flex items-center text-sm">
+                    <span className="mr-2">📝</span>
+                    Do not add Google Form links or any other external links in the description.
+                  </p>
+                  </div>
+
+                  {/* Fun section */}
+              {/* <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <h4 className="font-medium text-blue-800 flex items-center">
+                
+                Just so you know!
+                </h4>
+                <p className="mt-2 text-blue-700">
+                  Each event created will be reviewed within 24 hours. If the event is approved, you will receive an email notification.
+                </p>
+              </div> */}
+
+              {/* Signed by section */}
+              <div className="mt-4 pt-3 border-t border-red-200 flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                <span className="font-medium">By submitting, you accept these terms</span>
+                <div className="mt-2 sm:mt-0 text-right">
+                  <span className="text-sm text-red-600">Signed By:</span>
+                  <div className="font-semibold">{userEmail}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        
         </form>
       </div>
 
