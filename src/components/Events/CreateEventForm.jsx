@@ -2,15 +2,17 @@ import React, { useState, useEffect, useRef } from 'react';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { createEvent } from '../../services/api';
+import { createEvent, getCurrentUserEmail } from '../../services/api';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import CloseIcon from '@mui/icons-material/Close';
 import { TextField } from '@mui/material';
 import useRotatingMessage from '../../hooks/useRotatingMessage';
 import { Plus, Minus } from 'lucide-react';
 import ApprovalModal from '../UI/ApprovalModal';
+import { Info } from 'react-feather';
 
 const CreateEventForm = ({ onSuccess, onCancel }) => {
+  const userEmail = getCurrentUserEmail();
   const [formData, setFormData] = useState({
     name: '',
     date: new Date(),
@@ -196,7 +198,16 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
       }
     } catch (err) {
       console.error("Error creating event:", err);
-      setError(err.response?.data?.message || 'Failed to create event');
+      // Display specific field errors if they exist in the response
+      if (err.response?.data?.fieldErrors) {
+        const fieldErrors = err.response.data.fieldErrors;
+        const errorMessages = Object.keys(fieldErrors).map(field => 
+          `${field}: ${fieldErrors[field]}`
+        ).join(', ');
+        setError(`Validation errors: ${errorMessages}`);
+      } else {
+        setError(err.response?.data?.message || 'Failed to create event');
+      }
     } finally {
       setIsCreating(false);
     }
@@ -228,10 +239,14 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
   };
 
   const handleAddCustomField = () => {
-    if (!customFieldInput.trim()) return;
+    if (!customFieldInput.trim()) {
+      setError('Custom field name cannot be empty');
+      return;
+    }
     
     // Don't allow duplicates
     if (formData.custom_fields.includes(customFieldInput.trim())) {
+      setError('This custom field already exists');
       return;
     }
 
@@ -240,6 +255,7 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
       custom_fields: [...prev.custom_fields, customFieldInput.trim()]
     }));
     setCustomFieldInput('');
+    setError(''); // Clear error when successful
   };
 
   const handleRemoveCustomField = (fieldToRemove) => {
@@ -487,7 +503,26 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
                 error={touched.description && !!validationErrors.description}
                 helperText={touched.description && validationErrors.description}
               />
+            </div>
 
+            {/* Prizes Section */}
+            <div className="bg-white/70 rounded-xl p-6 shadow-sm space-y-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <Info className="w-5 h-5 text-indigo-600" />
+                <h3 className="text-lg font-semibold text-gray-900">Prizes</h3>
+              </div>
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 rounded-md">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <Info className="h-5 w-5 text-yellow-400" />
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-yellow-700">
+                      Please enter upto 3 prizes in a comma-separated format. It is not necessary to mention all 3, you can write a single value in-case you only have a first prize. For example: "First Prize, Second Prize, Third Prize".
+                    </p>
+                  </div>
+                </div>
+              </div>
               <TextField
                 label="Prizes (comma-separated)"
                 value={formData.prizes}
@@ -581,6 +616,23 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
                 <h3 className="text-lg font-semibold text-gray-900">Custom Fields</h3>
               </div>
               
+              {/* Info box about custom fields */}
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 rounded-md">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-yellow-700">
+                      Custom fields allow you to collect specific information from participants during registration.
+                      Each field will still be optional for participants to fill when they register for your event.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div className="space-y-4">
                 {/* Custom Fields List */}
                 {formData.custom_fields.length > 0 && (
@@ -625,7 +677,73 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
                 </div>
               </div>
             </div>
+            
+            {/* Error display */}
+            {error && (
+              <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl border border-red-200">
+                <div className="flex items-center space-x-2">
+                  <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                  <span>{error}</span>
+                </div>
+              </div>
+            )}
           </div>
+         
+                <div className="mt-8 bg-gradient-to-r from-red-50 to-red-100 border-l-4 border-red-500 rounded-lg overflow-hidden shadow-sm">
+                <div className="p-4 text-red-700">
+                  <h4 className="font-bold text-lg flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                  Disclaimer
+                  </h4>
+                  <div className="space-y-2 mt-2">
+                  <p className="flex items-center text-sm">
+                    <span className="mr-2">⚠️</span>
+                    Think before you type—inappropriate content here could land you in hot water.
+                  </p>
+                  <p className="flex items-center text-sm">
+                    <span className="mr-2">✅</span>
+                    Honesty is the best policy—false info will only cause trouble (for you).
+                  </p>
+                  <p className="flex items-center text-sm">
+                    <span className="mr-2">🚫</span>
+                    Scamming? Not on our watch. Any misuse of this form is a strict no-go.
+                  </p>
+                  <p className="flex items-center text-sm">
+                    <span className="mr-2">⭐</span>
+                    Quality matters. Low-effort entries may disappear without a trace.
+                  </p>
+                  <p className="flex items-center text-sm">
+                    <span className="mr-2">📝</span>
+                    Do not add Google Form links or any other external links in the description.
+                  </p>
+                  </div>
+
+                  {/* Fun section */}
+              {/* <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <h4 className="font-medium text-blue-800 flex items-center">
+                
+                Just so you know!
+                </h4>
+                <p className="mt-2 text-blue-700">
+                  Each event created will be reviewed within 24 hours. If the event is approved, you will receive an email notification.
+                </p>
+              </div> */}
+
+              {/* Signed by section */}
+              <div className="mt-4 pt-3 border-t border-red-200 flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                <span className="font-medium">By submitting, you accept these terms</span>
+                <div className="mt-2 sm:mt-0 text-right">
+                  <span className="text-sm text-red-600">Signed By:</span>
+                  <div className="font-semibold">{userEmail}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        
         </form>
       </div>
 

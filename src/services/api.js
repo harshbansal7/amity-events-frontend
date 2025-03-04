@@ -190,6 +190,20 @@ export const getCurrentUserName = () => {
   }
 };
 
+export const getCurrentUserEmail = () => {
+  const token = localStorage.getItem('token');
+  if (!token) return null;
+  
+  try {
+    const payload = token.split('.')[1];
+    const decodedPayload = JSON.parse(atob(payload));
+    return decodedPayload.email;
+  } catch (error) {
+    console.error('Error decoding token:', error);
+    return null;
+  }
+}
+
 export const isExternalUser = () => {
   const token = localStorage.getItem('token');
   if (!token) return false;
