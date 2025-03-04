@@ -9,6 +9,7 @@ import { TextField } from '@mui/material';
 import useRotatingMessage from '../../hooks/useRotatingMessage';
 import { Plus, Minus } from 'lucide-react';
 import ApprovalModal from '../UI/ApprovalModal';
+import { Info } from 'react-feather';
 
 const CreateEventForm = ({ onSuccess, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -196,7 +197,16 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
       }
     } catch (err) {
       console.error("Error creating event:", err);
-      setError(err.response?.data?.message || 'Failed to create event');
+      // Display specific field errors if they exist in the response
+      if (err.response?.data?.fieldErrors) {
+        const fieldErrors = err.response.data.fieldErrors;
+        const errorMessages = Object.keys(fieldErrors).map(field => 
+          `${field}: ${fieldErrors[field]}`
+        ).join(', ');
+        setError(`Validation errors: ${errorMessages}`);
+      } else {
+        setError(err.response?.data?.message || 'Failed to create event');
+      }
     } finally {
       setIsCreating(false);
     }
@@ -228,10 +238,14 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
   };
 
   const handleAddCustomField = () => {
-    if (!customFieldInput.trim()) return;
+    if (!customFieldInput.trim()) {
+      setError('Custom field name cannot be empty');
+      return;
+    }
     
     // Don't allow duplicates
     if (formData.custom_fields.includes(customFieldInput.trim())) {
+      setError('This custom field already exists');
       return;
     }
 
@@ -240,6 +254,7 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
       custom_fields: [...prev.custom_fields, customFieldInput.trim()]
     }));
     setCustomFieldInput('');
+    setError(''); // Clear error when successful
   };
 
   const handleRemoveCustomField = (fieldToRemove) => {
@@ -487,7 +502,26 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
                 error={touched.description && !!validationErrors.description}
                 helperText={touched.description && validationErrors.description}
               />
+            </div>
 
+            {/* Prizes Section */}
+            <div className="bg-white/70 rounded-xl p-6 shadow-sm space-y-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <Info className="w-5 h-5 text-indigo-600" />
+                <h3 className="text-lg font-semibold text-gray-900">Prizes</h3>
+              </div>
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 rounded-md">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <Info className="h-5 w-5 text-yellow-400" />
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-yellow-700">
+                      Please enter the prizes in a comma-separated format. It is not necessary to mention all 3, you can write a single value in-case you only have a first prize. For example: "First Prize, Second Prize, Third Prize".
+                    </p>
+                  </div>
+                </div>
+              </div>
               <TextField
                 label="Prizes (comma-separated)"
                 value={formData.prizes}
@@ -581,6 +615,23 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
                 <h3 className="text-lg font-semibold text-gray-900">Custom Fields</h3>
               </div>
               
+              {/* Info box about custom fields */}
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 rounded-md">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-yellow-700">
+                      Custom fields allow you to collect specific information from participants during registration.
+                      Each field will still be optional for participants to fill when they register for your event.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div className="space-y-4">
                 {/* Custom Fields List */}
                 {formData.custom_fields.length > 0 && (
@@ -625,6 +676,18 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
                 </div>
               </div>
             </div>
+            
+            {/* Error display */}
+            {error && (
+              <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl border border-red-200">
+                <div className="flex items-center space-x-2">
+                  <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                  <span>{error}</span>
+                </div>
+              </div>
+            )}
           </div>
         </form>
       </div>

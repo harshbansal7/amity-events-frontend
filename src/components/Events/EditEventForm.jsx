@@ -11,9 +11,11 @@ import {
   FileText, 
   AlertCircle,
   Plus,
-  Minus
+  Minus,
+  Info
 } from 'lucide-react';
 import Toast from '../UI/Toast';
+import { Info as FeatherInfo } from 'react-feather';
 
 const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
   // Convert custom_fields from string to array if needed
@@ -41,6 +43,7 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
     has_image_been_changed: false,
     custom_fields: initialCustomFields
   });
+
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [customFieldInput, setCustomFieldInput] = useState('');
@@ -66,7 +69,16 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
       await updateEvent(event._id, formData);
       onSuccess();
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to update event');
+      // Display specific field errors if they exist in the response
+      if (err.response?.data?.fieldErrors) {
+        const fieldErrors = err.response.data.fieldErrors;
+        const errorMessages = Object.keys(fieldErrors).map(field => 
+          `${field}: ${fieldErrors[field]}`
+        ).join(', ');
+        setError(`Validation errors: ${errorMessages}`);
+      } else {
+        setError(err.response?.data?.error || 'Failed to update event');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -94,11 +106,15 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
   };
 
   const handleAddCustomField = () => {
-    if (!customFieldInput.trim()) return;
+    if (!customFieldInput.trim()) {
+      setError('Custom field name cannot be empty');
+      return;
+    }
     
     const currentFields = Array.isArray(editedEvent.custom_fields) ? editedEvent.custom_fields : [];
     
     if (currentFields.includes(customFieldInput.trim())) {
+      setError('This custom field already exists');
       return;
     }
 
@@ -107,6 +123,7 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
       custom_fields: [...currentFields, customFieldInput.trim()]
     }));
     setCustomFieldInput('');
+    setError(''); // Clear error when successful
   };
 
   const handleRemoveCustomField = (fieldToRemove) => {
@@ -302,16 +319,34 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
             sx={textFieldStyle}
           />
 
-          <TextField
-            label="Prizes (comma-separated)"
-            value={editedEvent.prizes}
-            onChange={(e) => setEditedEvent({ ...editedEvent, prizes: e.target.value })}
-            variant="outlined"
-            fullWidth
-            placeholder="First Prize, Second Prize, Third Prize"
-            className="bg-white/50"
-            sx={textFieldStyle}
-          />
+          <div className="bg-white/70 rounded-xl p-6 shadow-sm space-y-4">
+            <div className="flex items-center space-x-2 mb-2">
+              <FeatherInfo className="w-5 h-5 text-indigo-600" />
+              <h3 className="text-lg font-semibold text-gray-900">Prizes</h3>
+            </div>
+            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 rounded-md">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <FeatherInfo className="h-5 w-5 text-yellow-400" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-yellow-700">
+                    Please enter upto 3 prizes in a comma-separated format. It is not necessary to mention all 3, you can write a single value in-case you only have a first prize. For example: "First Prize, Second Prize, Third Prize".
+                  </p>
+                </div>
+              </div>
+            </div>
+            <TextField
+              label="Prizes (comma-separated)"
+              value={editedEvent.prizes}
+              onChange={(e) => setEditedEvent({ ...editedEvent, prizes: e.target.value })}
+              variant="outlined"
+              fullWidth
+              placeholder="First Prize, Second Prize, Third Prize"
+              className="bg-white/50"
+              sx={textFieldStyle}
+            />
+          </div>
         </div>
 
         {/* Custom Fields Section */}
@@ -319,6 +354,21 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
           <div className="flex items-center space-x-2 mb-2">
             <div className="w-2 h-2 rounded-full bg-gradient-to-r from-indigo-500 to-blue-500"></div>
             <h3 className="text-lg font-semibold text-gray-900">Custom Fields</h3>
+          </div>
+
+          {/* Info box about custom fields */}
+          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 rounded-md">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <Info className="h-5 w-5 text-yellow-400" />
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-yellow-700">
+                  Custom fields allow you to collect specific information from participants during registration.
+                  Each field will still be optional for participants to fill when they register for your event.
+                </p>
+              </div>
+            </div>
           </div>
 
           <div className="space-y-4">
@@ -366,6 +416,7 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
           </div>
         </div>
 
+        {/* Error display */}
         {error && (
           <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl border border-red-200">
             <div className="flex items-center space-x-2">
@@ -413,4 +464,4 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
   );
 };
 
-export default EditEventForm; 
+export default EditEventForm;
