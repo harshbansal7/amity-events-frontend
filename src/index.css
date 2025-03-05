@@ -1,6 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Outfit', system-ui, sans-serif;
+  }
+}
+
+@layer utilities {
+  .drop-shadow-glow {
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6));
+  }
+}
 
 /* Your custom styles below */
 body {
@@ -39,4 +53,33 @@ body {
 
 .animate-scaleIn {
   animation: scaleIn 0.3s ease-out forwards;
+}
+
+/* Custom animations */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 1.5s infinite;
+}
+
+/* Custom form styles */
+.form-input-focus {
+  @apply ring-2 ring-[#3C28DC]/20 border-[#3C28DC];
+}
+
+.form-label-active {
+  @apply -top-2.5 text-xs text-[#3C28DC];
+}
+
+/* Enhanced background gradient */
+.enhanced-gradient {
+  background: linear-gradient(
+    135deg,
+    rgba(60, 40, 220, 0.08) 0%,
+    rgba(60, 40, 220, 0.02) 100%
+  );
 }
