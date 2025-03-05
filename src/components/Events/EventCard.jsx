@@ -20,9 +20,11 @@ import {
   X
 } from 'lucide-react';
 import { Dialog } from '@headlessui/react';
+import { useNavigate } from 'react-router-dom';
 // import AdminTools from './AdminTools';
 
 const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal = false, onCloseModal }) => {
+  const navigate = useNavigate();
   const [openEditForm, setOpenEditForm] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openUnregisterDialog, setOpenUnregisterDialog] = useState(false);
@@ -172,6 +174,11 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
     setShowShareModal(true);
   };
 
+  const handleViewDetails = () => {
+    // Instead of just setting state, navigate to the event details URL
+    navigate(`/events/${event._id}`);
+  };
+
   return (
     <div className="relative group">
       <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300">
@@ -307,7 +314,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
           <div className="pt-4 border-t">
             <div className="flex gap-3 flex-col sm:flex-row">
               <button
-                onClick={() => setShowDetailsModalState(true)}
+                onClick={handleViewDetails}
                 className="flex-1 py-2 px-4 rounded-lg font-medium transition-colors duration-300
                   bg-gray-100 text-gray-700 hover:bg-gray-200 
                   flex items-center justify-center space-x-2"

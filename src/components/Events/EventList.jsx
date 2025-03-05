@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { getEvents, getCurrentUserId, isExternalUser } from '../../services/api';
+import { getEvents, getCurrentUserId, isExternalUser, getEvent } from '../../services/api';
 import EventCard from './EventCard';
 import CreateEventForm from './CreateEventForm';
 import { CircularProgress } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import useRotatingMessage from '../../hooks/useRotatingMessage';
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 
 const EventList = () => {
   const [events, setEvents] = useState([]);
@@ -15,9 +15,9 @@ const EventList = () => {
   const [error, setError] = useState('');
   const { eventId } = useParams();
   const [selectedEventForModal, setSelectedEventForModal] = useState(null);
-
   const rotatingMessage = useRotatingMessage('eventList');
   const noEventsMessage = useRotatingMessage('noEvents');
+  const navigate = useNavigate();
 
   const fetchEvents = async () => {
     try {
@@ -35,19 +35,46 @@ const EventList = () => {
     }
   };
 
+  // Handle direct navigation to an event via URL
+  const loadEventDetails = async () => {
+    if (!eventId) return;
+    
+    // First look for the event in the already loaded events
+    if (events.length > 0) {
+      const event = events.find(e => e._id === eventId);
+      if (event) {
+        setSelectedEventForModal(event);
+        return;
+      }
+    }
+    
+    // If not found in local state, try to fetch it directly
+    try {
+      const event = await getEvent(eventId);
+      if (event) {
+        setSelectedEventForModal(event);
+      }
+    } catch (error) {
+      console.error('Failed to fetch event details:', error);
+      // Silently fail and just show the event list
+    }
+  };
+
   useEffect(() => {
     fetchEvents();
     setIsExternal(isExternalUser());
   }, []);
 
   useEffect(() => {
-    if (eventId && events.length > 0) {
-      const event = events.find(e => e._id === eventId);
-      if (event) {
-        setSelectedEventForModal(event);
-      }
-    }
+    loadEventDetails();
   }, [eventId, events]);
+
+  // Handle modal close
+  const handleCloseModal = () => {
+    setSelectedEventForModal(null);
+    // Update the URL to remove the event ID without full page refresh
+    navigate('/events', { replace: true });
+  };
 
   if (loading) {
     return (
@@ -114,7 +141,6 @@ const EventList = () => {
             </div>
           )}
         </div>
-
         <div>
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-2">
@@ -146,7 +172,6 @@ const EventList = () => {
             </div>
           )}
         </div>
-
         {!isExternal && (
           <button
             onClick={() => setShowCreateModal(true)}
@@ -166,7 +191,6 @@ const EventList = () => {
             </div>
           </button>
         )}
-
         {showCreateModal && (
           <div className="fixed inset-0 z-[200] overflow-y-auto">
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
@@ -184,17 +208,13 @@ const EventList = () => {
             </div>
           </div>
         )}
-
         {selectedEventForModal && (
           <EventCard 
             event={selectedEventForModal}
             onRegister={fetchEvents}
             onDelete={fetchEvents}
             showDetailsModal={true}
-            onCloseModal={() => {
-              setSelectedEventForModal(null);
-              window.history.pushState({}, '', '/events');
-            }}
+            onCloseModal={handleCloseModal}
           />
         )}
       </div>
@@ -202,4 +222,4 @@ const EventList = () => {
   );
 };
 
-export default EventList; 
+export default EventList;

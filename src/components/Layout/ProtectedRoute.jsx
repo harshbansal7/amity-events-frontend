@@ -9,6 +9,7 @@ const ProtectedRoute = ({ children }) => {
   const location = useLocation();
 
   if (!isAuthenticated) {
+    // We keep the current location including the event ID in the pathname
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
