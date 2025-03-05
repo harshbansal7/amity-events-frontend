@@ -21,7 +21,7 @@ const ShareModal = ({ isOpen, onClose, event }) => {
   };
 
   const shareToWhatsApp = () => {
-    const message = `Check out this event: ${event.name}\n\n${customShareUrl}\n\n${event.description?.substring(0, 500)}${event.description?.length > 500 ? '...' : ''}`;
+    const message = `*You're Invited!*\n\n*${event.name}*\nDate: ${new Date(event.date).toLocaleDateString()}\nVenue: ${event.venue}\nMax Participants: ${event.max_participants}\n\n${event.description?.substring(0, 500)}${event.description?.length > 500 ? '...' : ''}\n\nRegister Now: ${customShareUrl}\n\nJoin us and spread the word!`;
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
     onClose();
