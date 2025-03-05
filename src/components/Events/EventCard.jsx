@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import {registerForEvent, deleteEvent, getCurrentUserId, unregisterFromEvent } from '../../services/api';
 import EditEventForm from './EditEventForm';
 import Toast from '../UI/Toast';
+import ShareModal from '../UI/ShareModal';
 import { 
   CalendarDays, 
   MapPin, 
@@ -35,6 +36,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
   const [customFieldValues, setCustomFieldValues] = useState({});
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const [showShareToast, setShowShareToast] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   // Check if participants is a number (for non-creators) or array (for creators)
   const participantCount = Array.isArray(event.participants) 
@@ -166,15 +168,8 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
     }
   };
 
-  const handleShare = async () => {
-    try {
-      const eventUrl = `${window.location.origin}/events/${event._id}`;
-      await navigator.clipboard.writeText(eventUrl);
-      setShowShareToast(true);
-      setTimeout(() => setShowShareToast(false), 3000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
-    }
+  const handleShare = () => {
+    setShowShareModal(true);
   };
 
   return (
@@ -570,6 +565,15 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
               >
                 <X className="w-6 h-6" />
               </button>
+              
+              {/* Share button - Adding in details modal */}
+              <button
+                onClick={handleShare}
+                className="absolute top-4 right-14 p-2 text-gray-400 hover:text-gray-500 
+                         hover:bg-gray-100 rounded-full z-[10]"
+              >
+                <Share2 className="w-6 h-6" />
+              </button>
 
               {/* Modal content */}
               <div className="overflow-y-auto max-h-[90vh]">
@@ -783,7 +787,14 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
         </div>
       )}
 
-      {/* Share Toast Notification */}
+      {/* Share Modal */}
+      <ShareModal 
+        isOpen={showShareModal} 
+        onClose={() => setShowShareModal(false)} 
+        event={event} 
+      />
+
+      {/* Share Toast Notification - can be removed if using ShareModal instead */}
       {showShareToast && (
         <Toast
           message="Event link copied to clipboard!"
@@ -795,4 +806,4 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
   );
 };
 
-export default EventCard; 
+export default EventCard;

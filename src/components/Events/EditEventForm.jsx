@@ -30,6 +30,7 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
 
   const [editedEvent, setEditedEvent] = useState({
     name: initialEvent.name,
+    custom_slug: initialEvent.custom_slug || '',
     date: initialEvent.date ? new Date(initialEvent.date) : new Date(),
     duration_days: initialEvent.duration?.days || 0,
     duration_hours: initialEvent.duration?.hours || 0,
@@ -146,6 +147,13 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
     }
   };
 
+  // Validate the slug
+  const validateSlug = (custom_slug) => {
+    if (!custom_slug) return true; // Empty slug is valid (will use default ID)
+    const slugRegex = /^[a-z0-9-]+$/;
+    return slugRegex.test(custom_slug);
+  };
+
   return (
     <div className="relative">
       {/* <div className="sticky top-0 z-[100] bg-white border-b">
@@ -228,6 +236,42 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
             sx={textFieldStyle}
           />
 
+          {/* Custom URL Slug */}
+          <div className="space-y-2">
+            <TextField
+              label="Custom URL Slug (Optional)"
+              value={editedEvent.custom_slug}
+              onChange={(e) => setEditedEvent({ 
+                ...editedEvent, 
+                custom_slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') 
+              })}
+              variant="outlined"
+              fullWidth
+              placeholder="my-awesome-event"
+              className="bg-white/50"
+              sx={textFieldStyle}
+              error={!validateSlug(editedEvent.custom_slug)}
+              helperText={!validateSlug(editedEvent.custom_slug) ? "Slug can only contain lowercase letters, numbers, and hyphens" : ""}
+            />
+            <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-md">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-blue-700">
+                    A custom URL slug makes your event link more memorable and shareable. For example, your event will be accessible at: <strong>/events/{editedEvent.custom_slug || 'my-awesome-event'}</strong> instead of a random ID.
+                  </p>
+                  <p className="text-sm text-blue-700 mt-1">
+                    Only use lowercase letters, numbers, and hyphens.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <DateTimePicker
@@ -247,7 +291,6 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
                 format="dd/MM/yyyy hh:mm a"
               />
             </LocalizationProvider>
-
             <TextField
               label="Venue"
               value={editedEvent.venue}
@@ -258,7 +301,7 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
               sx={textFieldStyle}
             />
           </div>
-
+          
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <TextField
               type="number"
@@ -355,7 +398,7 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
             <div className="w-2 h-2 rounded-full bg-gradient-to-r from-indigo-500 to-blue-500"></div>
             <h3 className="text-lg font-semibold text-gray-900">Custom Fields</h3>
           </div>
-
+          
           {/* Info box about custom fields */}
           <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 rounded-md">
             <div className="flex">

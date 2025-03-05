@@ -15,6 +15,7 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
   const userEmail = getCurrentUserEmail();
   const [formData, setFormData] = useState({
     name: '',
+    custom_slug: '',
     date: new Date(),
     duration_days: 0,
     duration_hours: 0,
@@ -103,6 +104,14 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
     // Event code validation for external events
     if (formData.allow_external && formData.use_existing_code && !formData.existing_event_code) {
       errors.existing_event_code = 'Event code is required when using existing code';
+    }
+    
+    // Validate slug
+    if (formData.custom_slug?.trim()) {
+      const slugRegex = /^[a-z0-9-]+$/;
+      if (!slugRegex.test(formData.custom_slug)) {
+        errors.custom_slug = 'Slug can only contain lowercase letters, numbers, and hyphens';
+      }
     }
     
     // Custom fields validation
@@ -392,6 +401,40 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
                 error={touched.name && !!validationErrors.name}
                 helperText={touched.name && validationErrors.name}
               />
+
+              {/* Custom URL Slug */}
+              <div className="space-y-2">
+                <TextField
+                  label="Custom URL Slug (Optional)"
+                  value={formData.custom_slug}
+                  onChange={(e) => setFormData({ ...formData, custom_slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') })}
+                  onBlur={() => handleBlur('custom_slug')}
+                  variant="outlined"
+                  fullWidth
+                  placeholder="my-awesome-event"
+                  className="bg-white/50"
+                  sx={textFieldStyle}
+                  error={touched.custom_slug && !!validationErrors.custom_slug}
+                  helperText={touched.custom_slug && validationErrors.custom_slug}
+                />
+                <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-md">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm text-blue-700">
+                        A custom URL slug makes your event link more memorable and shareable. For example, your event will be accessible at: <strong>/events/{formData.custom_slug || 'my-awesome-event'}</strong> instead of a random ID.
+                      </p>
+                      <p className="text-sm text-blue-700 mt-1">
+                        Only use lowercase letters, numbers, and hyphens.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               {/* Date and Duration */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gradient-to-r from-indigo-50/30 to-blue-50/30 p-4 rounded-xl">
