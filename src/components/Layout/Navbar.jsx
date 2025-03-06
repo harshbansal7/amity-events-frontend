@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Menu, X, LogOut, Settings } from 'lucide-react';
+import { Menu, X, LogOut, Settings, MessageCircleQuestion} from 'lucide-react';
 import { getCurrentUserId, getCurrentUserName, isExternalUser } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
@@ -31,6 +31,12 @@ const Navbar = () => {
       path: '/admin',
       icon: Settings,
       className: 'text-indigo-600 hover:bg-indigo-50'
+    },
+    {
+      name: "Whatsapp Group",
+      path: 'https://chat.whatsapp.com/KbxaESVsBuzDV1JdS6QbIQ',
+      icon: MessageCircleQuestion,
+      className: 'text-green-600 hover:bg-green-50'
     }
   ].filter(Boolean);
 
