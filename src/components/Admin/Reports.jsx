@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getEvents, downloadParticipantsPDF, downloadParticipantsExcel, getCurrentUserId } from '../../services/api';
+import { getEvents, downloadParticipantsPDF, downloadParticipantsExcel, getCurrentUserId, getEventParticipants } from '../../services/api';
 import { format } from 'date-fns';
 import { 
   FileText, 
@@ -26,8 +26,9 @@ const Reports = () => {
     registered_at: true,
     attendance: true
   });
-
-  const fields = [
+  
+  // Store all fields, including dynamic custom fields
+  const [availableFields, setAvailableFields] = useState([
     { id: 'name', label: 'Name' },
     { id: 'enrollment_number', label: 'Enrollment Number' },
     { id: 'amity_email', label: 'Email' },
@@ -36,7 +37,7 @@ const Reports = () => {
     { id: 'year', label: 'Year' },
     { id: 'registered_at', label: 'Registration Date' },
     { id: 'attendance', label: 'Attendance Status' }
-  ];
+  ]);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -46,6 +47,7 @@ const Reports = () => {
         setEvents(userEvents);
         if (userEvents.length > 0) {
           setSelectedEvent(userEvents[0]);
+          await fetchCustomFields(userEvents[0]);
         }
       } catch (error) {
         setError('Failed to fetch events');
@@ -54,6 +56,70 @@ const Reports = () => {
 
     fetchEvents();
   }, []);
+
+  // Fetch custom fields when selected event changes
+  useEffect(() => {
+    if (selectedEvent) {
+      fetchCustomFields(selectedEvent);
+    }
+  }, [selectedEvent]);
+
+  // Function to extract custom fields from participants
+  const fetchCustomFields = async (event) => {
+    try {
+      // First check if the event has custom fields defined
+      const eventCustomFields = Array.isArray(event.custom_fields) 
+        ? event.custom_fields 
+        : typeof event.custom_fields === 'string' 
+          ? event.custom_fields.split(',').filter(f => f.trim()) 
+          : [];
+      
+      if (eventCustomFields.length > 0) {
+        // Get participants to extract actual custom field values
+        const participants = await getEventParticipants(event._id);
+        
+        // Get unique custom fields from all participants
+        const customFieldsSet = new Set();
+        
+        // Add fields defined in the event
+        eventCustomFields.forEach(field => customFieldsSet.add(field));
+        
+        // Also check if any participants have additional fields (shouldn't happen, but just to be safe)
+        participants.forEach(participant => {
+          if (participant.custom_field_values) {
+            Object.keys(participant.custom_field_values).forEach(field => {
+              customFieldsSet.add(field);
+            });
+          }
+        });
+        
+        // Create custom field objects for UI
+        const customFields = Array.from(customFieldsSet).map(field => ({
+          id: `custom_${field}`,
+          label: field,
+          isCustom: true
+        }));
+        
+        // Update available fields with standard + custom fields
+        const standardFields = availableFields.filter(field => !field.isCustom);
+        setAvailableFields([...standardFields, ...customFields]);
+        
+        // Add custom fields to selected fields with default value false
+        const updatedSelectedFields = { ...selectedFields };
+        customFields.forEach(field => {
+          if (updatedSelectedFields[field.id] === undefined) {
+            updatedSelectedFields[field.id] = false;
+          }
+        });
+        setSelectedFields(updatedSelectedFields);
+      } else {
+        // Reset to standard fields if no custom fields present
+        setAvailableFields(availableFields.filter(field => !field.isCustom));
+      }
+    } catch (error) {
+      console.error("Error fetching custom fields:", error);
+    }
+  };
 
   const handleExport = async (format) => {
     try {
@@ -127,7 +193,11 @@ const Reports = () => {
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {fields.map(field => (
+          {/* Standard Fields */}
+          <div className="col-span-full mb-3">
+            <h4 className="text-md font-medium text-gray-700">Standard Fields</h4>
+          </div>
+          {availableFields.filter(field => !field.isCustom).map(field => (
             <div key={field.id} className="flex items-center space-x-3">
               <button
                 onClick={() => setSelectedFields(prev => ({
@@ -147,6 +217,35 @@ const Reports = () => {
               <label className="text-sm text-gray-700">{field.label}</label>
             </div>
           ))}
+          
+          {/* Custom Fields */}
+          {availableFields.some(field => field.isCustom) && (
+            <>
+              <div className="col-span-full mt-4 mb-2">
+                <h4 className="text-md font-medium text-gray-700">Custom Fields</h4>
+              </div>
+              {availableFields.filter(field => field.isCustom).map(field => (
+                <div key={field.id} className="flex items-center space-x-3">
+                  <button
+                    onClick={() => setSelectedFields(prev => ({
+                      ...prev,
+                      [field.id]: !prev[field.id]
+                    }))}
+                    className={`flex items-center justify-center w-5 h-5 rounded border 
+                      ${selectedFields[field.id] 
+                        ? 'bg-indigo-600 border-indigo-600' 
+                        : 'border-gray-300 hover:border-indigo-500'
+                      } transition-colors`}
+                  >
+                    {selectedFields[field.id] && (
+                      <CheckSquare className="h-4 w-4 text-white" />
+                    )}
+                  </button>
+                  <label className="text-sm text-gray-700">{field.label}</label>
+                </div>
+              ))}
+            </>
+          )}
         </div>
       </div>
 
@@ -193,4 +292,4 @@ const Reports = () => {
   );
 };
 
-export default Reports; 
+export default Reports;
