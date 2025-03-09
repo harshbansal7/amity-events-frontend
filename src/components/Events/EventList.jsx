@@ -1,22 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { getEvents, getCurrentUserId, isExternalUser, getEvent } from '../../services/api';
-import EventCard from './EventCard';
-import CreateEventForm from './CreateEventForm';
-import { CircularProgress } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import useRotatingMessage from '../../hooks/useRotatingMessage';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from "react";
+import {
+  getEvents,
+  isExternalUser,
+  getEvent,
+} from "../../services/api";
+import EventCard from "./EventCard";
+import CreateEventForm from "./CreateEventForm";
+import { CircularProgress } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import useRotatingMessage from "../../hooks/useRotatingMessage";
+import { useParams, useNavigate } from "react-router-dom";
 
 const EventList = () => {
   const [events, setEvents] = useState([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [isExternal, setIsExternal] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const { eventId } = useParams();
   const [selectedEventForModal, setSelectedEventForModal] = useState(null);
-  const rotatingMessage = useRotatingMessage('eventList');
-  const noEventsMessage = useRotatingMessage('noEvents');
+  const rotatingMessage = useRotatingMessage("eventList");
+  const noEventsMessage = useRotatingMessage("noEvents");
   const navigate = useNavigate();
 
   const fetchEvents = async () => {
@@ -29,7 +33,7 @@ const EventList = () => {
       });
       setEvents(sortedEvents);
     } catch (error) {
-      console.error('Failed to fetch events:', error);
+      console.error("Failed to fetch events:", error);
     } finally {
       setLoading(false);
     }
@@ -38,16 +42,16 @@ const EventList = () => {
   // Handle direct navigation to an event via URL
   const loadEventDetails = async () => {
     if (!eventId) return;
-    
+
     // First look for the event in the already loaded events
     if (events.length > 0) {
-      const event = events.find(e => e._id === eventId);
+      const event = events.find((e) => e._id === eventId);
       if (event) {
         setSelectedEventForModal(event);
         return;
       }
     }
-    
+
     // If not found in local state, try to fetch it directly
     try {
       const event = await getEvent(eventId);
@@ -55,7 +59,7 @@ const EventList = () => {
         setSelectedEventForModal(event);
       }
     } catch (error) {
-      console.error('Failed to fetch event details:', error);
+      console.error("Failed to fetch event details:", error);
       // Silently fail and just show the event list
     }
   };
@@ -73,7 +77,7 @@ const EventList = () => {
   const handleCloseModal = () => {
     setSelectedEventForModal(null);
     // Update the URL to remove the event ID without full page refresh
-    navigate('/events', { replace: true });
+    navigate("/events", { replace: true });
   };
 
   if (loading) {
@@ -86,8 +90,12 @@ const EventList = () => {
 
   const currentDate = new Date();
   currentDate.setHours(0, 0, 0, 0); // Set to beginning of the day (12 AM)
-  const upcomingEvents = events.filter(event => new Date(event.date) >= currentDate);
-  const pastEvents = events.filter(event => new Date(event.date) < currentDate);
+  const upcomingEvents = events.filter(
+    (event) => new Date(event.date) >= currentDate,
+  );
+  const pastEvents = events.filter(
+    (event) => new Date(event.date) < currentDate,
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-100 py-8">
@@ -103,7 +111,7 @@ const EventList = () => {
             {rotatingMessage}
           </p>
         </div>
-        
+
         <div className="mb-12">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-2">
@@ -119,8 +127,18 @@ const EventList = () => {
           {upcomingEvents.length === 0 ? (
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-12 text-center shadow-sm">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
-                <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                <svg
+                  className="w-8 h-8 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
                 </svg>
               </div>
               <p className="text-gray-600 text-lg">No upcoming events</p>
@@ -131,10 +149,10 @@ const EventList = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 transition-all duration-300">
               {upcomingEvents.map((event) => (
-                <EventCard 
-                  key={event._id} 
-                  event={event} 
-                  onRegister={fetchEvents} 
+                <EventCard
+                  key={event._id}
+                  event={event}
+                  onRegister={fetchEvents}
                   onDelete={fetchEvents}
                 />
               ))}
@@ -151,21 +169,19 @@ const EventList = () => {
             </div>
           </div>
           {pastEvents.length === 0 ? (
-            <div 
-              className="bg-white/60 backdrop-blur-sm rounded-2xl p-8 text-center relative z-[10]"
-            >
+            <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-8 text-center relative z-[10]">
               <p className="text-gray-500">No past events to show</p>
             </div>
           ) : (
-            <div 
+            <div
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 
                          opacity-80 hover:opacity-100 transition-opacity duration-300"
             >
               {pastEvents.map((event) => (
-                <EventCard 
-                  key={event._id} 
-                  event={event} 
-                  onRegister={fetchEvents} 
+                <EventCard
+                  key={event._id}
+                  event={event}
+                  onRegister={fetchEvents}
                   onDelete={fetchEvents}
                 />
               ))}
@@ -193,11 +209,13 @@ const EventList = () => {
         )}
         {showCreateModal && (
           <div className="fixed inset-0 z-[200] overflow-y-auto">
-            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
-                 onClick={() => setShowCreateModal(false)} />
+            <div
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+              onClick={() => setShowCreateModal(false)}
+            />
             <div className="flex items-center justify-center min-h-screen p-4">
               <div className="relative bg-white w-full max-w-2xl mx-auto rounded-lg shadow-xl">
-                <CreateEventForm 
+                <CreateEventForm
                   onSuccess={() => {
                     setShowCreateModal(false);
                     fetchEvents();
@@ -209,7 +227,7 @@ const EventList = () => {
           </div>
         )}
         {selectedEventForModal && (
-          <EventCard 
+          <EventCard
             event={selectedEventForModal}
             onRegister={fetchEvents}
             onDelete={fetchEvents}

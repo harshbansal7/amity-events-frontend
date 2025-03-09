@@ -1,8 +1,7 @@
-import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import Navbar from './Navbar';
-import Footer from './Footer';
+import { Navigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import Navbar from "./Navbar";
+import Footer from "./Footer";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
@@ -16,9 +15,7 @@ const ProtectedRoute = ({ children }) => {
   return (
     <>
       <Navbar />
-      <div className="min-h-[calc(100vh-64px)] mt-16">
-        {children}
-      </div>
+      <div className="min-h-[calc(100vh-64px)] mt-16">{children}</div>
       <Footer />
     </>
   );

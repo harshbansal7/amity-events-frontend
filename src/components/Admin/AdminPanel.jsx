@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
-import AdminSidebar from './AdminSidebar';
-import { Menu, X } from 'lucide-react';
+import { useState } from "react";
+import { Outlet } from "react-router-dom";
+import AdminSidebar from "./AdminSidebar";
+import { Menu, X } from "lucide-react";
 
 const AdminPanel = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -34,11 +34,13 @@ const AdminPanel = () => {
         )}
 
         {/* Sidebar */}
-        <div className={`
+        <div
+          className={`
           fixed lg:static inset-y-0 left-0 z-[150]
-          transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+          transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
           lg:translate-x-0 transition-transform duration-300 ease-in-out
-        `}>
+        `}
+        >
           <AdminSidebar onClose={() => setSidebarOpen(false)} />
         </div>
 
@@ -53,4 +55,4 @@ const AdminPanel = () => {
   );
 };
 
-export default AdminPanel; 
+export default AdminPanel;

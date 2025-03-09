@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { getEvents, getRegisteredEvents, getCreatedEvents } from '../../services/api';
-import { 
-  Users, 
-  Calendar,
-  TrendingUp,
-  Clock
-} from 'lucide-react';
+import { useState, useEffect } from "react";
+import {
+  getEvents,
+  getRegisteredEvents,
+  getCreatedEvents,
+} from "../../services/api";
+import { Users, Calendar, TrendingUp, Clock } from "lucide-react";
 
 const StatCard = ({ title, value, icon: Icon, trend }) => (
   <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
@@ -14,10 +13,12 @@ const StatCard = ({ title, value, icon: Icon, trend }) => (
         <p className="text-sm font-medium text-gray-600">{title}</p>
         <p className="text-2xl font-semibold mt-2">{value}</p>
         {trend && (
-          <p className={`text-sm mt-2 ${
-            trend > 0 ? 'text-green-600' : 'text-red-600'
-          }`}>
-            {trend > 0 ? '↑' : '↓'} {Math.abs(trend)}% from last month
+          <p
+            className={`text-sm mt-2 ${
+              trend > 0 ? "text-green-600" : "text-red-600"
+            }`}
+          >
+            {trend > 0 ? "↑" : "↓"} {Math.abs(trend)}% from last month
           </p>
         )}
       </div>
@@ -33,7 +34,7 @@ const Dashboard = () => {
     totalEvents: 0,
     activeEvents: 0,
     totalParticipants: 0,
-    upcomingEvents: 0
+    upcomingEvents: 0,
   });
 
   useEffect(() => {
@@ -42,20 +43,25 @@ const Dashboard = () => {
         const [allEvents, registeredEvents, createdEvents] = await Promise.all([
           getEvents(),
           getRegisteredEvents(),
-          getCreatedEvents()
+          getCreatedEvents(),
         ]);
 
         const currentDate = new Date();
-        const activeEvents = allEvents.filter(event => new Date(event.date) >= currentDate);
-        
+        const activeEvents = allEvents.filter(
+          (event) => new Date(event.date) >= currentDate,
+        );
+
         setStats({
           totalEvents: allEvents.length,
           activeEvents: activeEvents.length,
-          totalParticipants: allEvents.reduce((acc, event) => acc + event.participants.length, 0),
-          upcomingEvents: activeEvents.length
+          totalParticipants: allEvents.reduce(
+            (acc, event) => acc + event.participants.length,
+            0,
+          ),
+          upcomingEvents: activeEvents.length,
         });
       } catch (error) {
-        console.error('Failed to fetch dashboard stats:', error);
+        console.error("Failed to fetch dashboard stats:", error);
       }
     };
 
@@ -101,4 +107,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard; 
+export default Dashboard;

@@ -1,35 +1,34 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { 
-  Calendar, 
-  Users, 
+import { NavLink } from "react-router-dom";
+import {
+  Calendar,
+  Users,
   FileSpreadsheet,
   ClipboardList,
-  X
-} from 'lucide-react';
+  X,
+} from "lucide-react";
 
 const AdminSidebar = ({ onClose }) => {
   const navItems = [
-    { 
-      name: 'Events', 
-      path: '/admin/events', 
-      icon: Calendar 
+    {
+      name: "Events",
+      path: "/admin/events",
+      icon: Calendar,
     },
-    { 
-      name: 'Participants', 
-      path: '/admin/participants', 
-      icon: Users 
+    {
+      name: "Participants",
+      path: "/admin/participants",
+      icon: Users,
     },
-    { 
-      name: 'Reports', 
-      path: '/admin/reports', 
-      icon: FileSpreadsheet 
+    {
+      name: "Reports",
+      path: "/admin/reports",
+      icon: FileSpreadsheet,
     },
-    { 
-      name: 'Attendance', 
-      path: '/admin/attendance', 
-      icon: ClipboardList 
-    }
+    {
+      name: "Attendance",
+      path: "/admin/attendance",
+      icon: ClipboardList,
+    },
   ];
 
   return (
@@ -45,20 +44,22 @@ const AdminSidebar = ({ onClose }) => {
           <X className="w-5 h-5 text-gray-500" />
         </button>
       </div>
-      
+
       <nav className="mt-6 px-4">
         {navItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
-            end={item.path === '/admin'}
+            end={item.path === "/admin"}
             onClick={onClose}
             className={({ isActive }) => `
               flex items-center space-x-3 px-4 py-3 rounded-lg mb-1
               transition-colors duration-200
-              ${isActive 
-                ? 'bg-indigo-50 text-indigo-600' 
-                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}
+              ${
+                isActive
+                  ? "bg-indigo-50 text-indigo-600"
+                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+              }
             `}
           >
             <item.icon className="w-5 h-5" />
@@ -70,4 +71,4 @@ const AdminSidebar = ({ onClose }) => {
   );
 };
 
-export default AdminSidebar; 
+export default AdminSidebar;

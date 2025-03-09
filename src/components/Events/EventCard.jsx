@@ -1,14 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { format } from 'date-fns';
-import {registerForEvent, deleteEvent, getCurrentUserId, unregisterFromEvent } from '../../services/api';
-import EditEventForm from './EditEventForm';
-import Toast from '../UI/Toast';
-import ShareModal from '../UI/ShareModal';
-import { 
-  CalendarDays, 
-  MapPin, 
-  Users, 
-  Clock, 
+import React, { useState, useEffect } from "react";
+import { format } from "date-fns";
+import {
+  registerForEvent,
+  deleteEvent,
+  getCurrentUserId,
+  unregisterFromEvent,
+} from "../../services/api";
+import EditEventForm from "./EditEventForm";
+import Toast from "../UI/Toast";
+import ShareModal from "../UI/ShareModal";
+import {
+  CalendarDays,
+  MapPin,
+  Users,
+  Clock,
   Trophy,
   Edit2,
   Trash2,
@@ -17,13 +22,20 @@ import {
   Info,
   Key,
   Share2,
-  X
-} from 'lucide-react';
-import { Dialog } from '@headlessui/react';
-import { useNavigate } from 'react-router-dom';
+  X,
+} from "lucide-react";
+import { Dialog } from "@headlessui/react";
+import { useNavigate } from "react-router-dom";
 // import AdminTools from './AdminTools';
 
-const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal = false, onCloseModal }) => {
+const EventCard = ({
+  event,
+  onRegister,
+  onDelete,
+  onUnregister,
+  showDetailsModal = false,
+  onCloseModal,
+}) => {
   const navigate = useNavigate();
   const [openEditForm, setOpenEditForm] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
@@ -32,7 +44,8 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
   const [isRegistering, setIsRegistering] = useState(false);
   const currentUserId = getCurrentUserId();
   const isCreator = currentUserId === event.creator_id;
-  const [showDetailsModalState, setShowDetailsModalState] = useState(showDetailsModal);
+  const [showDetailsModalState, setShowDetailsModalState] =
+    useState(showDetailsModal);
   const detailsModalRef = React.useRef(null);
   const closeButtonRef = React.useRef(null);
   const [customFieldValues, setCustomFieldValues] = useState({});
@@ -41,20 +54,20 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
   const [showShareModal, setShowShareModal] = useState(false);
 
   // Check if participants is a number (for non-creators) or array (for creators)
-  const participantCount = Array.isArray(event.participants) 
-    ? event.participants.length 
+  const participantCount = Array.isArray(event.participants)
+    ? event.participants.length
     : event.participants;
 
   const isRegistered = Array.isArray(event.participants)
-    ? event.participants.some(p => p.enrollment_number === getCurrentUserId())
+    ? event.participants.some((p) => p.enrollment_number === getCurrentUserId())
     : event.is_registered;
 
   // Helper function to parse custom fields
   const getCustomFields = () => {
     if (!event.custom_fields) return [];
     if (Array.isArray(event.custom_fields)) return event.custom_fields;
-    if (typeof event.custom_fields === 'string') {
-      return event.custom_fields.split(',').filter(field => field.trim());
+    if (typeof event.custom_fields === "string") {
+      return event.custom_fields.split(",").filter((field) => field.trim());
     }
     return [];
   };
@@ -63,8 +76,8 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
     const customFields = getCustomFields();
     // Initialize custom field values
     const initialValues = {};
-    customFields.forEach(field => {
-      initialValues[field] = '';
+    customFields.forEach((field) => {
+      initialValues[field] = "";
     });
     setCustomFieldValues(initialValues);
     setShowRegistrationModal(true);
@@ -73,17 +86,17 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
   const handleRegisterSubmit = async () => {
     try {
       setIsRegistering(true);
-      
+
       // Create the request data
       const requestData = {
-        custom_field_values: JSON.stringify(customFieldValues)
+        custom_field_values: JSON.stringify(customFieldValues),
       };
 
       await registerForEvent(event._id, requestData);
       if (onRegister) onRegister();
       setShowRegistrationModal(false);
     } catch (error) {
-      console.error('Failed to register:', error);
+      console.error("Failed to register:", error);
     } finally {
       setIsRegistering(false);
     }
@@ -100,7 +113,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
       }
       setOpenUnregisterDialog(false);
     } catch (error) {
-      console.error('Failed to unregister:', error);
+      console.error("Failed to unregister:", error);
     } finally {
       setIsUnregistering(false);
     }
@@ -112,7 +125,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
       setOpenDeleteDialog(false);
       if (onDelete) onDelete();
     } catch (error) {
-      console.error('Failed to delete event:', error);
+      console.error("Failed to delete event:", error);
     }
   };
 
@@ -125,35 +138,37 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
 
   const formatDuration = (duration) => {
     const parts = [];
-    if (duration.days) parts.push(`${duration.days} day${duration.days > 1 ? 's' : ''}`);
-    if (duration.hours) parts.push(`${duration.hours} hr${duration.hours > 1 ? 's' : ''}`);
+    if (duration.days)
+      parts.push(`${duration.days} day${duration.days > 1 ? "s" : ""}`);
+    if (duration.hours)
+      parts.push(`${duration.hours} hr${duration.hours > 1 ? "s" : ""}`);
     if (duration.minutes) parts.push(`${duration.minutes} min`);
-    return parts.join(' ');
+    return parts.join(" ");
   };
 
-  const formatDate = (date) => format(new Date(date), 'dd MMM yyyy');
-  const formatFullDate = (date) => format(new Date(date), 'EEEE, dd MMMM yyyy');
-  const formatTime = (date) => format(new Date(date), 'h:mm a');
+  const formatDate = (date) => format(new Date(date), "dd MMM yyyy");
+  const formatFullDate = (date) => format(new Date(date), "EEEE, dd MMMM yyyy");
+  const formatTime = (date) => format(new Date(date), "h:mm a");
 
   // Handle keyboard events for modal
   React.useEffect(() => {
     const handleEscape = (e) => {
-      if (e.key === 'Escape' && showDetailsModalState) {
+      if (e.key === "Escape" && showDetailsModalState) {
         handleCloseModal();
       }
     };
 
     if (showDetailsModalState) {
-      document.addEventListener('keydown', handleEscape);
+      document.addEventListener("keydown", handleEscape);
       // Lock body scroll
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
       // Focus the modal
       closeButtonRef.current?.focus();
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "unset";
     };
   }, [showDetailsModalState]);
 
@@ -185,7 +200,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
         {/* Admin Tools */}
         <div className="absolute top-4 right-4 z-10 flex space-x-2">
           {/* Share button - visible to everyone */}
-          <button 
+          <button
             onClick={handleShare}
             className="p-2 bg-white/90 hover:bg-white rounded-full shadow-md hover:shadow-lg transition-all"
           >
@@ -195,13 +210,13 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
           {/* Edit and Delete - only visible to creator */}
           {isCreator && (
             <>
-              <button 
+              <button
                 onClick={() => setOpenEditForm(true)}
                 className="p-2 bg-white/90 hover:bg-white rounded-full shadow-md hover:shadow-lg transition-all"
               >
                 <Edit2 className="text-indigo-600 w-5 h-5" />
               </button>
-              <button 
+              <button
                 onClick={() => setOpenDeleteDialog(true)}
                 className="p-2 bg-white/90 hover:bg-white rounded-full shadow-md hover:shadow-lg transition-all"
               >
@@ -214,7 +229,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
         {/* Event Image */}
         <div className="relative h-48">
           <img
-            src={event.image_url || '/assets/default-event.jpg'}
+            src={event.image_url || "/assets/default-event.jpg"}
             alt={event.name}
             className="w-full h-full object-cover"
           />
@@ -248,8 +263,12 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
               <div className="flex items-center space-x-3 text-gray-600 bg-indigo-50 p-3 rounded-lg">
                 <Key className="w-5 h-5 flex-shrink-0 text-indigo-600" />
                 <div>
-                  <p className="text-xs text-indigo-600 font-medium">Event Code</p>
-                  <p className="text-sm font-mono font-bold">{event.event_code}</p>
+                  <p className="text-xs text-indigo-600 font-medium">
+                    Event Code
+                  </p>
+                  <p className="text-sm font-mono font-bold">
+                    {event.event_code}
+                  </p>
                 </div>
               </div>
             )}
@@ -257,9 +276,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
             <div className="flex items-start space-x-3 text-gray-600">
               <CalendarDays className="w-5 h-5 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm">
-                  {formatFullDate(event.date)}
-                </p>
+                <p className="text-sm">{formatFullDate(event.date)}</p>
                 <p className="text-xs text-gray-500">
                   {formatTime(event.date)}
                 </p>
@@ -279,17 +296,25 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
             <div className="flex items-center space-x-3 text-gray-600">
               <Users className="w-5 h-5 flex-shrink-0" />
               <div className="text-sm">
-                <span className={participantCount >= event.max_participants ? 'text-red-600 font-medium' : ''}>
+                <span
+                  className={
+                    participantCount >= event.max_participants
+                      ? "text-red-600 font-medium"
+                      : ""
+                  }
+                >
                   {participantCount}
                 </span>
                 <span className="mx-1">/</span>
                 <span>{event.max_participants}</span>
                 <span className="ml-1">participants</span>
-                {event.max_participants - participantCount <= Math.ceil(event.max_participants * 0.10) && 
+                {event.max_participants - participantCount <=
+                  Math.ceil(event.max_participants * 0.1) &&
                   participantCount < event.max_participants && (
-                    <span className="text-red-600 font-medium ml-2">Last few slots left!!</span>
-                  )
-                }
+                    <span className="text-red-600 font-medium ml-2">
+                      Last few slots left!!
+                    </span>
+                  )}
               </div>
             </div>
 
@@ -297,10 +322,17 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
               <div className="flex items-start space-x-3 text-gray-600">
                 <Trophy className="w-5 h-5 flex-shrink-0 mt-0.5" />
                 <div className="text-sm space-y-1">
-                  {event.prizes.split(',').map((prize, index) => (
+                  {event.prizes.split(",").map((prize, index) => (
                     <div key={index} className="flex items-center space-x-2">
                       <span className="w-4 text-xs text-indigo-600 font-medium">
-                        {index + 1}{index === 0 ? 'st' : index === 1 ? 'nd' : index === 2 ? 'rd' : 'th'}
+                        {index + 1}
+                        {index === 0
+                          ? "st"
+                          : index === 1
+                            ? "nd"
+                            : index === 2
+                              ? "rd"
+                              : "th"}
                       </span>
                       <span>{prize.trim()}</span>
                     </div>
@@ -331,7 +363,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
                     hover:bg-red-50 disabled:opacity-50 
                     transition-colors duration-200"
                 >
-                  {isUnregistering ? 'Unregistering...' : 'Unregister'}
+                  {isUnregistering ? "Unregistering..." : "Unregister"}
                 </button>
               ) : (
                 <button
@@ -346,12 +378,12 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
                     disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
                   {isPastEvent()
-                    ? 'Event Ended'
+                    ? "Event Ended"
                     : participantCount >= event.max_participants
-                    ? 'Full'
-                    : isRegistering
-                    ? 'Registering...'
-                    : 'Register Now'}
+                      ? "Full"
+                      : isRegistering
+                        ? "Registering..."
+                        : "Register Now"}
                 </button>
               )}
             </div>
@@ -361,7 +393,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
 
       {/* Delete Confirmation Dialog */}
       {openDeleteDialog && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[200]"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
@@ -369,12 +401,11 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
             }
           }}
         >
-          <div 
-            className="bg-white rounded-lg p-6 max-w-sm mx-4 relative z-[201]"
-          >
+          <div className="bg-white rounded-lg p-6 max-w-sm mx-4 relative z-[201]">
             <h3 className="text-xl font-semibold mb-4">Delete Event</h3>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to delete this event? This action cannot be undone.
+              Are you sure you want to delete this event? This action cannot be
+              undone.
             </p>
             <div className="flex justify-end space-x-4">
               <button
@@ -403,17 +434,20 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
               onClose={() => setShowRegistrationModal(false)}
               className="relative z-[250]"
             >
-              <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" aria-hidden="true" />
-              
+              <div
+                className="fixed inset-0 bg-black/30 backdrop-blur-sm"
+                aria-hidden="true"
+              />
+
               <div className="fixed inset-0 flex items-center justify-center p-4">
                 <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 shadow-xl transition-all">
                   <Dialog.Title className="text-lg font-medium text-gray-900 mb-4">
                     Register for {event.name}
                   </Dialog.Title>
-                  
+
                   <div className="space-y-4">
                     <p className="text-sm text-gray-500">
-                      {getCustomFields().length > 0 
+                      {getCustomFields().length > 0
                         ? "Please provide the following optional information for your registration"
                         : "Are you sure you want to register for this event?"}
                     </p>
@@ -425,11 +459,13 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
                         </label>
                         <input
                           type="text"
-                          value={customFieldValues[field] || ''}
-                          onChange={(e) => setCustomFieldValues(prev => ({
-                            ...prev,
-                            [field]: e.target.value
-                          }))}
+                          value={customFieldValues[field] || ""}
+                          onChange={(e) =>
+                            setCustomFieldValues((prev) => ({
+                              ...prev,
+                              [field]: e.target.value,
+                            }))
+                          }
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg 
                                    focus:outline-none focus:ring-2 focus:ring-indigo-500"
                           placeholder={`Enter ${field.toLowerCase()}`}
@@ -455,7 +491,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
                                  bg-indigo-600 rounded-lg hover:bg-indigo-700
                                  disabled:opacity-50"
                       >
-                        {isRegistering ? 'Registering...' : 'Register'}
+                        {isRegistering ? "Registering..." : "Register"}
                       </button>
                     </div>
                   </div>
@@ -468,7 +504,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
 
       {/* Unregistration Confirmation Modal */}
       {openUnregisterDialog && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[250]"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
@@ -476,10 +512,10 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
             }
           }}
         >
-          <div 
-            className="bg-white rounded-lg p-6 max-w-sm mx-4 relative z-[250]"
-          >
-            <h3 className="text-xl font-semibold mb-4">Unregister from Event</h3>
+          <div className="bg-white rounded-lg p-6 max-w-sm mx-4 relative z-[250]">
+            <h3 className="text-xl font-semibold mb-4">
+              Unregister from Event
+            </h3>
             <p className="text-gray-600 mb-6">
               Are you sure you want to unregister from {event.name}?
             </p>
@@ -495,7 +531,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
                 disabled={isUnregistering}
                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
               >
-                {isUnregistering ? 'Unregistering...' : 'Yes'}
+                {isUnregistering ? "Unregistering..." : "Yes"}
               </button>
             </div>
           </div>
@@ -504,7 +540,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
 
       {/* Edit Event Modal */}
       {openEditForm && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[200]"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
@@ -512,9 +548,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
             }
           }}
         >
-          <div 
-            className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto relative z-[201]"
-          >
+          <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto relative z-[201]">
             <div className="sticky top-0 z-[100] p-6 border-b bg-white/50 backdrop-blur-sm rounded-t-2xl relative">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
@@ -533,7 +567,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
                 </button>
               </div>
             </div>
-            
+
             <div className="p-8">
               <EditEventForm
                 initialEvent={event}
@@ -552,8 +586,8 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
       {/* Event Details Modal */}
       {showDetailsModalState && (
         <div className="fixed inset-0 z-[205] overflow-y-auto">
-          <div 
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
             onClick={() => {
               setShowDetailsModalState(false);
               if (onCloseModal) onCloseModal();
@@ -572,7 +606,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
               >
                 <X className="w-6 h-6" />
               </button>
-              
+
               {/* Share button - Adding in details modal */}
               <button
                 onClick={handleShare}
@@ -586,13 +620,13 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
               <div className="overflow-y-auto max-h-[90vh]">
                 <div className="relative">
                   {/* Header Image */}
-                  <div 
+                  <div
                     className="h-48 sm:h-64 relative"
                     role="img"
                     aria-label={`Cover image for ${event.name}`}
                   >
                     <img
-                      src={event.image_url || '/assets/default-event.jpg'}
+                      src={event.image_url || "/assets/default-event.jpg"}
                       alt={event.name}
                       className="w-full h-full object-cover"
                     />
@@ -604,17 +638,14 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
                 <div className="p-6 space-y-6">
                   {/* Title Section */}
                   <div className="space-y-2">
-                    <h2 
+                    <h2
                       id="event-details-title"
                       className="text-2xl font-bold text-gray-900"
                     >
                       {event.name}
                     </h2>
-                    <div 
-                      role="list"
-                      className="flex flex-wrap gap-2"
-                    >
-                      <span 
+                    <div role="list" className="flex flex-wrap gap-2">
+                      <span
                         role="listitem"
                         className="px-3 py-1 rounded-full text-sm bg-indigo-100 text-indigo-800"
                       >
@@ -639,9 +670,12 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
                       <div className="flex items-start space-x-3">
                         <Key className="w-5 h-5 text-indigo-600 mt-1" />
                         <div>
-                          <h4 className="font-semibold text-gray-900 mb-1">External Registration</h4>
+                          <h4 className="font-semibold text-gray-900 mb-1">
+                            External Registration
+                          </h4>
                           <p className="text-sm text-gray-600">
-                            This event allows external participants to register using the event code:
+                            This event allows external participants to register
+                            using the event code:
                           </p>
                           <div className="mt-2 bg-white/50 px-4 py-2 rounded-lg inline-block">
                             <code className="text-lg font-mono font-bold text-indigo-600">
@@ -649,7 +683,8 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
                             </code>
                           </div>
                           <p className="text-sm text-gray-500 mt-2">
-                            Share this code with external participants to allow them to register.
+                            Share this code with external participants to allow
+                            them to register.
                           </p>
                         </div>
                       </div>
@@ -657,22 +692,36 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
                   )}
 
                   {/* Description */}
-                  <section aria-labelledby="event-description" className="prose max-w-none">
-                    <h3 id="event-description" className="text-lg font-semibold text-gray-900">
+                  <section
+                    aria-labelledby="event-description"
+                    className="prose max-w-none"
+                  >
+                    <h3
+                      id="event-description"
+                      className="text-lg font-semibold text-gray-900"
+                    >
                       About This Event
                     </h3>
-                    <p className="text-gray-600 whitespace-pre-line">{event.description}</p>
+                    <p className="text-gray-600 whitespace-pre-line">
+                      {event.description}
+                    </p>
                   </section>
 
                   {/* Details Grid */}
-                  <div 
+                  <div
                     className="grid grid-cols-1 md:grid-cols-2 gap-6"
                     role="complementary"
                     aria-label="Event details"
                   >
                     {/* Time & Duration */}
-                    <section aria-labelledby="time-duration" className="space-y-4">
-                      <h3 id="time-duration" className="text-lg font-semibold text-gray-900">
+                    <section
+                      aria-labelledby="time-duration"
+                      className="space-y-4"
+                    >
+                      <h3
+                        id="time-duration"
+                        className="text-lg font-semibold text-gray-900"
+                      >
                         Time & Duration
                       </h3>
                       <div className="space-y-3">
@@ -689,14 +738,22 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
                         </div>
                         <div className="flex items-center space-x-3 text-gray-600">
                           <Clock className="w-5 h-5" />
-                          <span className="text-sm">{formatDuration(event.duration)}</span>
+                          <span className="text-sm">
+                            {formatDuration(event.duration)}
+                          </span>
                         </div>
                       </div>
                     </section>
 
                     {/* Location & Capacity */}
-                    <section aria-labelledby="location-capacity" className="space-y-4">
-                      <h3 id="location-capacity" className="text-lg font-semibold text-gray-900">
+                    <section
+                      aria-labelledby="location-capacity"
+                      className="space-y-4"
+                    >
+                      <h3
+                        id="location-capacity"
+                        className="text-lg font-semibold text-gray-900"
+                      >
                         Location & Capacity
                       </h3>
                       <div className="space-y-3">
@@ -707,7 +764,13 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
                         <div className="flex items-center space-x-3 text-gray-600">
                           <Users className="w-5 h-5" />
                           <div className="text-sm">
-                            <span className={participantCount >= event.max_participants ? 'text-red-600 font-medium' : ''}>
+                            <span
+                              className={
+                                participantCount >= event.max_participants
+                                  ? "text-red-600 font-medium"
+                                  : ""
+                              }
+                            >
                               {participantCount}
                             </span>
                             <span className="mx-1">/</span>
@@ -721,21 +784,33 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
 
                   {/* Prizes Section */}
                   {event.prizes && (
-                    <section aria-labelledby="prizes-section" className="space-y-4">
-                      <h3 id="prizes-section" className="text-lg font-semibold text-gray-900">
+                    <section
+                      aria-labelledby="prizes-section"
+                      className="space-y-4"
+                    >
+                      <h3
+                        id="prizes-section"
+                        className="text-lg font-semibold text-gray-900"
+                      >
                         Prizes
                       </h3>
-                      <div 
+                      <div
                         role="list"
                         className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"
                       >
-                        {event.prizes.split(',').map((prize, index) => (
-                          <div 
+                        {event.prizes.split(",").map((prize, index) => (
+                          <div
                             key={index}
                             className="bg-gradient-to-br from-indigo-50 to-blue-50 p-4 rounded-xl"
                           >
                             <div className="text-xs font-semibold text-indigo-600 mb-1">
-                              {index === 0 ? '1st Prize' : index === 1 ? '2nd Prize' : index === 2 ? '3rd Prize' : `${index + 1}th Prize`}
+                              {index === 0
+                                ? "1st Prize"
+                                : index === 1
+                                  ? "2nd Prize"
+                                  : index === 2
+                                    ? "3rd Prize"
+                                    : `${index + 1}th Prize`}
                             </div>
                             <div className="text-sm text-gray-800 font-medium">
                               {prize.trim()}
@@ -747,7 +822,7 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
                   )}
 
                   {/* Registration Status */}
-                  <section 
+                  <section
                     aria-label="Registration status"
                     className="pt-6 border-t"
                   >
@@ -755,14 +830,16 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
                       <div className="flex items-center justify-between">
                         <span className="flex items-center space-x-2 text-green-600">
                           <CheckCircle className="w-5 h-5" />
-                          <span className="text-sm font-medium">Registered</span>
+                          <span className="text-sm font-medium">
+                            Registered
+                          </span>
                         </span>
                         <button
                           onClick={() => setOpenUnregisterDialog(true)}
                           disabled={isPastEvent() || isUnregistering}
                           className="text-sm text-red-600 hover:text-red-700 font-medium disabled:opacity-50"
                         >
-                          {isUnregistering ? 'Unregistering...' : 'Unregister'}
+                          {isUnregistering ? "Unregistering..." : "Unregister"}
                         </button>
                       </div>
                     ) : (
@@ -778,12 +855,12 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
                           disabled:bg-gray-300 disabled:cursor-not-allowed"
                       >
                         {isPastEvent()
-                          ? 'Event Ended'
+                          ? "Event Ended"
                           : participantCount >= event.max_participants
-                          ? 'Full'
-                          : isRegistering
-                          ? 'Registering...'
-                          : 'Register Now'}
+                            ? "Full"
+                            : isRegistering
+                              ? "Registering..."
+                              : "Register Now"}
                       </button>
                     )}
                   </section>
@@ -795,10 +872,10 @@ const EventCard = ({ event, onRegister, onDelete, onUnregister, showDetailsModal
       )}
 
       {/* Share Modal */}
-      <ShareModal 
-        isOpen={showShareModal} 
-        onClose={() => setShowShareModal(false)} 
-        event={event} 
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        event={event}
       />
 
       {/* Share Toast Notification - can be removed if using ShareModal instead */}

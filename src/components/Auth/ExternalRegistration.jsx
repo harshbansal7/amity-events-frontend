@@ -1,36 +1,36 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { verifyEventCode, registerExternal } from '../../services/api';
-import Toast from '../UI/Toast';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { verifyEventCode, registerExternal } from "../../services/api";
+import Toast from "../UI/Toast";
 
 const ExternalRegistration = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
-  const [eventCode, setEventCode] = useState('');
-  const [eventName, setEventName] = useState('');
+  const [eventCode, setEventCode] = useState("");
+  const [eventName, setEventName] = useState("");
   const [credentials, setCredentials] = useState(null);
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone_number: '',
-    event_code: ''
+    name: "",
+    email: "",
+    phone_number: "",
+    event_code: "",
   });
 
   const handleEventCodeSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       const response = await verifyEventCode({ event_code: eventCode });
       setEventName(response.event_name);
-      setFormData(prev => ({ ...prev, event_code: eventCode }));
+      setFormData((prev) => ({ ...prev, event_code: eventCode }));
       setStep(2);
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to verify event code');
+      setError(err.response?.data?.error || "Failed to verify event code");
     } finally {
       setLoading(false);
     }
@@ -39,15 +39,15 @@ const ExternalRegistration = () => {
   const handleRegistrationSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       const response = await registerExternal(formData);
       setCredentials(response.credentials);
-      setSuccess('Registration successful! Please save your credentials.');
+      setSuccess("Registration successful! Please save your credentials.");
       setStep(3);
     } catch (err) {
-      setError(err.response?.data?.error || 'Registration failed');
+      setError(err.response?.data?.error || "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -59,8 +59,18 @@ const ExternalRegistration = () => {
         <div>
           <div className="text-center space-y-3 mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-indigo-600 to-blue-600 mb-2">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+              <svg
+                className="w-8 h-8 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 4v16m8-8H4"
+                />
               </svg>
             </div>
             <h2 className="text-3xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
@@ -72,13 +82,24 @@ const ExternalRegistration = () => {
           </div>
         </div>
 
-        {error && <Toast message={error} type="error" onClose={() => setError('')} />}
-        {success && <Toast message={success} type="success" onClose={() => setSuccess('')} />}
+        {error && (
+          <Toast message={error} type="error" onClose={() => setError("")} />
+        )}
+        {success && (
+          <Toast
+            message={success}
+            type="success"
+            onClose={() => setSuccess("")}
+          />
+        )}
 
         {step === 1 && (
           <form onSubmit={handleEventCodeSubmit} className="space-y-4">
             <div>
-              <label htmlFor="event_code" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="event_code"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Event Code
               </label>
               <input
@@ -110,7 +131,7 @@ const ExternalRegistration = () => {
                       focus:ring-indigo-500 transition-all duration-200
                       disabled:opacity-50 shadow-lg hover:shadow-xl"
             >
-              {loading ? 'Verifying...' : 'Verify Event Code'}
+              {loading ? "Verifying..." : "Verify Event Code"}
             </button>
           </form>
         )}
@@ -120,17 +141,30 @@ const ExternalRegistration = () => {
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 mb-6">
               <div className="flex items-center space-x-3">
                 <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <svg
+                    className="h-5 w-5 text-blue-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
                   </svg>
                 </div>
                 <p className="text-blue-800">Registering for: {eventName}</p>
               </div>
             </div>
-            
+
             <div className="space-y-5">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Full Name
                 </label>
                 <input
@@ -138,13 +172,18 @@ const ExternalRegistration = () => {
                   type="text"
                   required
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 />
               </div>
 
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Email Address
                 </label>
                 <input
@@ -152,13 +191,18 @@ const ExternalRegistration = () => {
                   type="email"
                   required
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 />
               </div>
 
               <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="phone"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Phone Number
                 </label>
                 <input
@@ -166,7 +210,9 @@ const ExternalRegistration = () => {
                   type="tel"
                   required
                   value={formData.phone_number}
-                  onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, phone_number: e.target.value })
+                  }
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                   pattern="[0-9]{10}"
                 />
@@ -178,7 +224,7 @@ const ExternalRegistration = () => {
               disabled={loading}
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
             >
-              {loading ? 'Registering...' : 'Register'}
+              {loading ? "Registering..." : "Register"}
             </button>
           </form>
         )}
@@ -186,16 +232,18 @@ const ExternalRegistration = () => {
         {step === 3 && credentials && (
           <div className="space-y-6">
             <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6">
-              <h3 className="text-lg font-medium text-green-900 mb-4">Registration Successful!</h3>
+              <h3 className="text-lg font-medium text-green-900 mb-4">
+                Registration Successful!
+              </h3>
               <div className="space-y-3">
-                <p className="text-green-800">Please save your login credentials:</p>
+                <p className="text-green-800">
+                  Please save your login credentials:
+                </p>
                 <div className="bg-white/50 backdrop-blur-sm p-4 rounded-xl border border-green-200 font-mono">
                   <p className="font-mono">
                     Enrollment Number: {credentials.enrollment_number}
                   </p>
-                  <p className="font-mono">
-                    Password: {credentials.password}
-                  </p>
+                  <p className="font-mono">Password: {credentials.password}</p>
                 </div>
                 <p className="text-sm text-green-700">
                   You can use these credentials to login and view event details.
@@ -207,12 +255,22 @@ const ExternalRegistration = () => {
 
         <div className="text-center">
           <button
-            onClick={() => navigate('/login')}
+            onClick={() => navigate("/login")}
             className="text-sm font-medium text-gray-600 hover:text-indigo-600 
                     transition-colors duration-200 flex items-center justify-center space-x-1"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
             </svg>
             <span>Back to Login</span>
           </button>
@@ -222,4 +280,4 @@ const ExternalRegistration = () => {
   );
 };
 
-export default ExternalRegistration; 
+export default ExternalRegistration;

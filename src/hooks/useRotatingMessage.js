@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 const messages = {
   login: [
@@ -21,7 +21,7 @@ const messages = {
     "Welcome to the better side of student life 🎡",
     "Procrastination level: Expert 🏆",
     "Your future self will thank you for this 🙌",
-    "Making your college life legendary 💫"
+    "Making your college life legendary 💫",
   ],
 
   eventList: [
@@ -44,7 +44,7 @@ const messages = {
     "Your semester's highlight reel 🎥",
     "More exciting than your textbooks 📚",
     "Where fun meets \'networking\' 😉",
-    "Creating stories worth telling 📖"
+    "Creating stories worth telling 📖",
   ],
 
   register: [
@@ -62,7 +62,7 @@ const messages = {
     "Where memories begin and studies... well... 📚",
     "Your parents think you're registering for extra classes 🤫",
     "Achievement unlocked: Social Life Activated 🎮",
-    "Loading your excuse generator... 🔄"
+    "Loading your excuse generator... 🔄",
   ],
 
   myEvents: [
@@ -80,7 +80,7 @@ const messages = {
     "More events than study hours... oops! 😅",
     "Collecting memories faster than credits 🎓",
     "Your social life is thriving, your GPA... not so much 📊",
-    "Making your college stories legendary 🌟"
+    "Making your college stories legendary 🌟",
   ],
 
   createEvent: [
@@ -98,7 +98,7 @@ const messages = {
     "Your event > Their assignments 📝",
     "About to become everyone's favorite person 🤗",
     "Making college memories official ✨",
-    "Future legendary event loading... 🔄"
+    "Future legendary event loading... 🔄",
   ],
 
   forgotPassword: [
@@ -116,7 +116,7 @@ const messages = {
     "Your password is playing hide and seek 🙈",
     "Memory.exe has stopped working 💻",
     "Your password needs a vacation from you 🏖️",
-    "This is why we can't have nice things 😅"
+    "This is why we can't have nice things 😅",
   ],
 
   noEvents: [
@@ -139,12 +139,12 @@ const messages = {
     "Your professors are winning right now 👨‍🏫",
     "Quick, someone create an event! 🆘",
     "This is your chance to actually do homework 📝",
-    "Plot twist: Maybe it's time to be productive 🤔"
-  ]
+    "Plot twist: Maybe it's time to be productive 🤔",
+  ],
 };
 
 const useRotatingMessage = (type) => {
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     const getRandomMessage = () => {

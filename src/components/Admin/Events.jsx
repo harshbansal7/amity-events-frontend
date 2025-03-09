@@ -1,20 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { getEvents, deleteEvent, getCurrentUserId } from '../../services/api';
-import { format } from 'date-fns';
-import { 
-  Plus, 
-  Edit2, 
-  Trash2, 
-  Users,
-  FileSpreadsheet,
-  FileText,
+import { useState, useEffect } from "react";
+import { getEvents, deleteEvent, getCurrentUserId } from "../../services/api";
+import { format } from "date-fns";
+import {
+  Plus,
+  Edit2,
+  Trash2,
   Search,
   Filter,
-  X
-} from 'lucide-react';
-import CreateEventForm from '../Events/CreateEventForm';
-import EditEventForm from '../Events/EditEventForm';
-import Toast from '../UI/Toast';
+  X,
+} from "lucide-react";
+import CreateEventForm from "../Events/CreateEventForm";
+import EditEventForm from "../Events/EditEventForm";
+import Toast from "../UI/Toast";
 
 const Events = () => {
   const [events, setEvents] = useState([]);
@@ -22,18 +19,20 @@ const Events = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [error, setError] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all'); // all, active, past
+  const [error, setError] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all"); // all, active, past
   const currentUserId = getCurrentUserId();
 
   const fetchEvents = async () => {
     try {
       const data = await getEvents();
-      const userEvents = data.filter(event => event.creator_id === currentUserId);
+      const userEvents = data.filter(
+        (event) => event.creator_id === currentUserId,
+      );
       setEvents(userEvents);
     } catch (error) {
-      setError('Failed to fetch events');
+      setError("Failed to fetch events");
     } finally {
       setLoading(false);
     }
@@ -44,26 +43,28 @@ const Events = () => {
   }, []);
 
   const handleDelete = async (eventId) => {
-    if (window.confirm('Are you sure you want to delete this event?')) {
+    if (window.confirm("Are you sure you want to delete this event?")) {
       try {
         await deleteEvent(eventId);
         await fetchEvents();
       } catch (error) {
-        setError('Failed to delete event');
+        setError("Failed to delete event");
       }
     }
   };
 
   const filteredEvents = events
-    .filter(event => {
-      const matchesSearch = event.name.toLowerCase().includes(searchTerm.toLowerCase());
+    .filter((event) => {
+      const matchesSearch = event.name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
       const eventDate = new Date(event.date);
       const now = new Date();
 
       switch (filterStatus) {
-        case 'active':
+        case "active":
           return matchesSearch && eventDate >= now;
-        case 'past':
+        case "past":
           return matchesSearch && eventDate < now;
         default:
           return matchesSearch;
@@ -146,11 +147,11 @@ const Events = () => {
                       </div>
                       {/* Show date on mobile */}
                       <div className="sm:hidden text-xs text-gray-500 mt-1">
-                        {format(new Date(event.date), 'MMM d, yyyy')}
+                        {format(new Date(event.date), "MMM d, yyyy")}
                       </div>
                     </td>
                     <td className="hidden sm:table-cell px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {format(new Date(event.date), 'MMM d, yyyy')}
+                      {format(new Date(event.date), "MMM d, yyyy")}
                     </td>
                     <td className="hidden md:table-cell px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                       {event.participants.length} / {event.max_participants}
@@ -185,11 +186,13 @@ const Events = () => {
       {/* Create Event Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 overflow-y-auto z-[200]">
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" 
-               onClick={() => setShowCreateModal(false)} />
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowCreateModal(false)}
+          />
           <div className="flex items-center justify-center min-h-screen p-4">
             <div className="relative bg-white w-full max-w-2xl mx-auto rounded-xl shadow-xl">
-              <CreateEventForm 
+              <CreateEventForm
                 onSuccess={() => {
                   setShowCreateModal(false);
                   fetchEvents();
@@ -204,8 +207,10 @@ const Events = () => {
       {/* Edit Event Modal */}
       {showEditModal && selectedEvent && (
         <div className="fixed inset-0 overflow-y-auto z-[200]">
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" 
-               onClick={() => setShowEditModal(false)} />
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowEditModal(false)}
+          />
           <div className="flex items-center justify-center min-h-screen p-4">
             <div className="relative bg-white w-full max-w-3xl mx-auto rounded-xl shadow-xl">
               {/* Header */}
@@ -249,14 +254,10 @@ const Events = () => {
       )}
 
       {error && (
-        <Toast 
-          message={error} 
-          type="error" 
-          onClose={() => setError('')} 
-        />
+        <Toast message={error} type="error" onClose={() => setError("")} />
       )}
     </div>
   );
 };
 
-export default Events; 
+export default Events;

@@ -1,8 +1,5 @@
 {
-  "PROFESSOR / UNIVERSITY STAFF": [
-    "FACULTY",
-    "UNIVERSITY STAFF"
-  ],
+  "PROFESSOR / UNIVERSITY STAFF": ["FACULTY", "UNIVERSITY STAFF"],
   "MANAGEMENT": [
     "BBA",
     "BBA (Marketing)",
@@ -12,12 +9,8 @@
     "MBA - 3 Continent",
     "MBA (Healthcare Management)"
   ],
-  "ANIMATION AND GAME DESIGN": [
-    "B.Sc Animation Game Design"
-  ],
-  "ARCHITECTURE": [
-    "B.Arch (Bachelor of Architecture)"
-  ],
+  "ANIMATION AND GAME DESIGN": ["B.Sc Animation Game Design"],
+  "ARCHITECTURE": ["B.Arch (Bachelor of Architecture)"],
   "BIOTECHNOLOGY": [
     "B.Sc. Biotechnology (Honours/Research)",
     "B.Sc. Biotechnology integrated",
@@ -40,9 +33,7 @@
     "B.Sc. M.Sc. (H) Ecology & Environmental Science Integrated",
     "M.Sc (H) Ecology & Environmental Science"
   ],
-  "FINE ARTS": [
-    "RFA (Bachelor of Fine Arts)"
-  ],
+  "FINE ARTS": ["RFA (Bachelor of Fine Arts)"],
   "FORENSIC SCIENCES": [
     "B.Sc. Forensic Science (Honours/Research)",
     "B.Sc. M.Sc. (H) Forensic Sciences Integrated",
@@ -73,15 +64,8 @@
     "B.Sc. (Operation Theatre Technology)",
     "B.Sc. (Anaesthesia Technology)"
   ],
-  "INTERIOR DESIGN": [
-    "BID (Bachelor of Interior Design)"
-  ],
-  "LAW": [
-    "B.A. LL.B. (H)",
-    "BBA LLB (H)",
-    "LLB (H)",
-    "LLM"
-  ],
+  "INTERIOR DESIGN": ["BID (Bachelor of Interior Design)"],
+  "LAW": ["B.A. LL.B. (H)", "BBA LLB (H)", "LLB (H)", "LLM"],
   "MATHEMATICS": [
     "B.Sc. (H) Mathematics",
     "B.Sc. Mathematics (Honours/Research)",
@@ -153,12 +137,8 @@
     "B.Tech Biotechnology",
     "B.Tech Food Sc. Tech & Processing"
   ],
-  "COMMERCE": [
-    "B. Com. (Honours/Research)"
-  ],
-  "COMMUNICATION": [
-    "BA (Journalism & Mass Communication)"
-  ],
+  "COMMERCE": ["B. Com. (Honours/Research)"],
+  "COMMUNICATION": ["BA (Journalism & Mass Communication)"],
   "BSC IT / COMPUTER APPLICATIONS": [
     "BCA",
     "BCA (Honours/Research)",

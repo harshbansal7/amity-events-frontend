@@ -1,33 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import { getEvents, getEventParticipants, removeParticipant, getCurrentUserId } from '../../services/api';
-import { format } from 'date-fns';
-import { 
+import { useState, useEffect } from "react";
+import {
+  getEvents,
+  getEventParticipants,
+  removeParticipant,
+  getCurrentUserId,
+} from "../../services/api";
+import { format } from "date-fns";
+import {
   Search,
   Filter,
   UserMinus,
-  Download,
-  FileSpreadsheet,
-  FileText,
   CheckCircle,
-  XCircle
-} from 'lucide-react';
-import Toast from '../UI/Toast';
+  XCircle,
+} from "lucide-react";
+import Toast from "../UI/Toast";
 
 const Participants = () => {
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [participants, setParticipants] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterAttendance, setFilterAttendance] = useState('all'); // all, present, absent
+  const [error, setError] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterAttendance, setFilterAttendance] = useState("all"); // all, present, absent
   const currentUserId = getCurrentUserId();
-  const [apiError, setApiError] = useState(''); // Separate state for API errors
+  const [apiError, setApiError] = useState(""); // Separate state for API errors
 
   const fetchEvents = async () => {
     try {
       const data = await getEvents();
-      const userEvents = data.filter(event => event.creator_id === currentUserId);
+      const userEvents = data.filter(
+        (event) => event.creator_id === currentUserId,
+      );
       setEvents(userEvents);
       if (userEvents.length > 0) {
         setSelectedEvent(userEvents[0]);
@@ -36,25 +40,25 @@ const Participants = () => {
         setLoading(false);
       }
     } catch (error) {
-      setError('Failed to fetch events');
+      setError("Failed to fetch events");
       setLoading(false);
     }
   };
 
   const fetchParticipants = async (eventId) => {
     try {
-      const event = events.find(e => e._id === eventId);
+      const event = events.find((e) => e._id === eventId);
       if (!event || event.creator_id !== currentUserId) {
-        setApiError('Unauthorized to view these participants');
+        setApiError("Unauthorized to view these participants");
         return;
       }
 
-      setApiError(''); // Clear any existing error
+      setApiError(""); // Clear any existing error
       setLoading(true);
       const data = await getEventParticipants(eventId);
       setParticipants(data);
     } catch (error) {
-      setApiError('Failed to fetch participants');
+      setApiError("Failed to fetch participants");
     } finally {
       setLoading(false);
     }
@@ -71,25 +75,27 @@ const Participants = () => {
   }, [selectedEvent]);
 
   const handleRemoveParticipant = async (eventId, enrollmentNumber) => {
-    if (window.confirm('Are you sure you want to remove this participant?')) {
+    if (window.confirm("Are you sure you want to remove this participant?")) {
       try {
         await removeParticipant(eventId, enrollmentNumber);
         await fetchParticipants(eventId);
       } catch (error) {
-        setError('Failed to remove participant');
+        setError("Failed to remove participant");
       }
     }
   };
 
-  const filteredParticipants = participants.filter(participant => {
-    const matchesSearch = 
+  const filteredParticipants = participants.filter((participant) => {
+    const matchesSearch =
       participant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      participant.enrollment_number.toLowerCase().includes(searchTerm.toLowerCase());
+      participant.enrollment_number
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
 
     switch (filterAttendance) {
-      case 'present':
+      case "present":
         return matchesSearch && participant.attendance;
-      case 'absent':
+      case "absent":
         return matchesSearch && !participant.attendance;
       default:
         return matchesSearch;
@@ -99,8 +105,12 @@ const Participants = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Participants Management</h1>
-        <p className="text-gray-500">Manage event participants and attendance</p>
+        <h1 className="text-2xl font-bold text-gray-900">
+          Participants Management
+        </h1>
+        <p className="text-gray-500">
+          Manage event participants and attendance
+        </p>
       </div>
 
       {/* Event Selector */}
@@ -109,9 +119,9 @@ const Participants = () => {
           Select Event
         </label>
         <select
-          value={selectedEvent?._id || ''}
+          value={selectedEvent?._id || ""}
           onChange={(e) => {
-            const event = events.find(evt => evt._id === e.target.value);
+            const event = events.find((evt) => evt._id === e.target.value);
             setSelectedEvent(event);
           }}
           className="w-full max-w-2xl border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 
@@ -119,7 +129,7 @@ const Participants = () => {
         >
           {events.map((event) => (
             <option key={event._id} value={event._id}>
-              {event.name} - {format(new Date(event.date), 'MMM d, yyyy')}
+              {event.name} - {format(new Date(event.date), "MMM d, yyyy")}
             </option>
           ))}
         </select>
@@ -159,28 +169,49 @@ const Participants = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Name
                 </th>
-                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Enrollment Number
                 </th>
-                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Email
                 </th>
                 {/* <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Registration Date
                 </th> */}
-                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Branch
                 </th>
-                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Year
                 </th>
-                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Attendance
                 </th>
-                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Custom Fields
                 </th>
                 <th scope="col" className="relative px-4 py-3">
@@ -225,27 +256,39 @@ const Participants = () => {
                     )}
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap">
-                    {participant.custom_field_values && 
-                     Object.keys(participant.custom_field_values).length > 0 ? (
+                    {participant.custom_field_values &&
+                    Object.keys(participant.custom_field_values).length > 0 ? (
                       <div className="space-y-1">
-                        {Object.entries(participant.custom_field_values).map(([field, value]) => (
-                          <div key={field} className="flex items-start space-x-1 text-sm">
-                            <span className="font-medium text-gray-600">
-                              {field}:
-                            </span>
-                            <span className="text-gray-900">
-                              {value || '-'}
-                            </span>
-                          </div>
-                        ))}
+                        {Object.entries(participant.custom_field_values).map(
+                          ([field, value]) => (
+                            <div
+                              key={field}
+                              className="flex items-start space-x-1 text-sm"
+                            >
+                              <span className="font-medium text-gray-600">
+                                {field}:
+                              </span>
+                              <span className="text-gray-900">
+                                {value || "-"}
+                              </span>
+                            </div>
+                          ),
+                        )}
                       </div>
                     ) : (
-                      <span className="text-gray-400 text-sm">No custom fields</span>
+                      <span className="text-gray-400 text-sm">
+                        No custom fields
+                      </span>
                     )}
                   </td>
                   <td className="sticky right-0 bg-white px-4 py-4 whitespace-nowrap text-right">
                     <button
-                      onClick={() => handleRemoveParticipant(selectedEvent._id, participant.enrollment_number)}
+                      onClick={() =>
+                        handleRemoveParticipant(
+                          selectedEvent._id,
+                          participant.enrollment_number,
+                        )
+                      }
                       className="text-red-600 hover:text-red-900"
                     >
                       <UserMinus className="w-5 h-5" />
@@ -280,14 +323,14 @@ const Participants = () => {
       </div> */}
 
       {apiError && (
-        <Toast 
-          message={apiError} 
-          type="error" 
-          onClose={() => setApiError('')} 
+        <Toast
+          message={apiError}
+          type="error"
+          onClose={() => setApiError("")}
         />
       )}
     </div>
   );
 };
 
-export default Participants; 
+export default Participants;

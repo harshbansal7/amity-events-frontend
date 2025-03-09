@@ -1,31 +1,37 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { forgotPassword, verifyResetOTP, resetPassword } from '../../services/api';
-import Toast from '../UI/Toast';
-import useRotatingMessage from '../../hooks/useRotatingMessage';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  forgotPassword,
+  verifyResetOTP,
+  resetPassword,
+} from "../../services/api";
+import Toast from "../UI/Toast";
+import useRotatingMessage from "../../hooks/useRotatingMessage";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
-  const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [resetToken, setResetToken] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [resetToken, setResetToken] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const rotatingMessage = useRotatingMessage('forgotPassword');
+  const rotatingMessage = useRotatingMessage("forgotPassword");
 
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       await forgotPassword({ email });
       setStep(2);
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to send reset instructions');
+      setError(
+        err.response?.data?.error || "Failed to send reset instructions",
+      );
     } finally {
       setLoading(false);
     }
@@ -34,14 +40,14 @@ const ForgotPassword = () => {
   const handleOTPSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       const response = await verifyResetOTP({ email, otp });
       setResetToken(response.reset_token);
       setStep(3);
     } catch (err) {
-      setError(err.response?.data?.error || 'Invalid OTP');
+      setError(err.response?.data?.error || "Invalid OTP");
     } finally {
       setLoading(false);
     }
@@ -50,21 +56,27 @@ const ForgotPassword = () => {
   const handlePasswordReset = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     if (newPassword !== confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       setLoading(false);
       return;
     }
 
     try {
-      await resetPassword({ reset_token: resetToken, new_password: newPassword });
-      navigate('/login', { 
-        state: { message: 'Password reset successful! Please login with your new password.' }
+      await resetPassword({
+        reset_token: resetToken,
+        new_password: newPassword,
+      });
+      navigate("/login", {
+        state: {
+          message:
+            "Password reset successful! Please login with your new password.",
+        },
       });
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to reset password');
+      setError(err.response?.data?.error || "Failed to reset password");
     } finally {
       setLoading(false);
     }
@@ -87,12 +99,17 @@ const ForgotPassword = () => {
           </p>
         </div>
 
-        {error && <Toast message={error} type="error" onClose={() => setError('')} />}
+        {error && (
+          <Toast message={error} type="error" onClose={() => setError("")} />
+        )}
 
         {step === 1 && (
           <form onSubmit={handleEmailSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Amity Email
               </label>
               <input
@@ -116,7 +133,7 @@ const ForgotPassword = () => {
               disabled={loading}
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
             >
-              {loading ? 'Sending...' : 'Send Reset Instructions'}
+              {loading ? "Sending..." : "Send Reset Instructions"}
             </button>
           </form>
         )}
@@ -124,7 +141,10 @@ const ForgotPassword = () => {
         {step === 2 && (
           <form onSubmit={handleOTPSubmit} className="space-y-6">
             <div>
-              <label htmlFor="otp" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="otp"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Enter OTP
               </label>
               <input
@@ -140,17 +160,29 @@ const ForgotPassword = () => {
               />
             </div>
             <div className="text-sm text-amber-600 bg-amber-50 p-3 rounded-lg border border-amber-200 flex items-start space-x-2">
-              <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              <svg
+                className="w-5 h-5 flex-shrink-0 mt-0.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
               </svg>
-              <span>Can't find the OTP? Please check your spam/junk folder.</span>
+              <span>
+                Can't find the OTP? Please check your spam/junk folder.
+              </span>
             </div>
             <button
               type="submit"
               disabled={loading}
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
             >
-              {loading ? 'Verifying...' : 'Verify OTP'}
+              {loading ? "Verifying..." : "Verify OTP"}
             </button>
           </form>
         )}
@@ -158,7 +190,10 @@ const ForgotPassword = () => {
         {step === 3 && (
           <form onSubmit={handlePasswordReset} className="space-y-6">
             <div>
-              <label htmlFor="new-password" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="new-password"
+                className="block text-sm font-medium text-gray-700"
+              >
                 New Password
               </label>
               <input
@@ -171,7 +206,10 @@ const ForgotPassword = () => {
               />
             </div>
             <div>
-              <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="confirm-password"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Confirm New Password
               </label>
               <input
@@ -188,14 +226,14 @@ const ForgotPassword = () => {
               disabled={loading}
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
             >
-              {loading ? 'Resetting...' : 'Reset Password'}
+              {loading ? "Resetting..." : "Reset Password"}
             </button>
           </form>
         )}
 
         <div className="text-center">
           <button
-            onClick={() => navigate('/login')}
+            onClick={() => navigate("/login")}
             className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
           >
             Back to Login
@@ -206,4 +244,4 @@ const ForgotPassword = () => {
   );
 };
 
-export default ForgotPassword; 
+export default ForgotPassword;
