@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Fragment } from "react";
 import { format } from "date-fns";
 import {
   registerForEvent,
@@ -24,9 +24,18 @@ import {
   Share2,
   X,
 } from "lucide-react";
-import { Dialog } from "@headlessui/react";
+import { Dialog, Transition } from "@headlessui/react";
 import { useNavigate } from "react-router-dom";
-// import AdminTools from './AdminTools';
+import {
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  FormControlLabel,
+  Checkbox,
+  FormHelperText,
+} from "@mui/material";
 
 const EventCard = ({
   event,
@@ -49,9 +58,13 @@ const EventCard = ({
   const detailsModalRef = React.useRef(null);
   const closeButtonRef = React.useRef(null);
   const [customFieldValues, setCustomFieldValues] = useState({});
+  const [customFieldErrors, setCustomFieldErrors] = useState({});
+  const [customFieldSchema, setCustomFieldSchema] = useState([]);
+  const [isLoadingSchema, setIsLoadingSchema] = useState(false);
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
-  const [showShareToast, setShowShareToast] = useState(false);
+  const [registrationError, setRegistrationError] = useState("");
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showShareToast, setShowShareToast] = useState(false);
 
   // Check if participants is a number (for non-creators) or array (for creators)
   const participantCount = Array.isArray(event.participants)
@@ -65,38 +78,75 @@ const EventCard = ({
   // Helper function to parse custom fields
   const getCustomFields = () => {
     if (!event.custom_fields) return [];
+    
+    // If already an array, return as is
     if (Array.isArray(event.custom_fields)) return event.custom_fields;
+    
+    // If string, try to parse as JSON first
     if (typeof event.custom_fields === "string") {
-      return event.custom_fields.split(",").filter((field) => field.trim());
+      try {
+        const parsed = JSON.parse(event.custom_fields);
+        if (Array.isArray(parsed)) {
+          return parsed.map(field => {
+            if (typeof field === "string") {
+              return {
+                name: field.trim(),
+                type: "string",
+                required: false
+              };
+            }
+            return {
+              name: field.name,
+              type: field.type || "string",
+              required: field.required || false,
+              ...(field.type === "select" && { options: field.options || [] })
+            };
+          });
+        }
+      } catch {
+        // If JSON parsing fails, treat as comma-separated string
+        return event.custom_fields.split(",").map(field => ({
+          name: field.trim(),
+          type: "string",
+          required: false
+        })).filter(field => field.name);
+      }
     }
     return [];
   };
 
   const handleRegisterClick = () => {
-    const customFields = getCustomFields();
-    // Initialize custom field values
-    const initialValues = {};
-    customFields.forEach((field) => {
-      initialValues[field] = "";
-    });
-    setCustomFieldValues(initialValues);
     setShowRegistrationModal(true);
   };
 
   const handleRegisterSubmit = async () => {
+    // Only validate required fields, let backend handle type validation
+    const errors = {};
+    getCustomFields().forEach((field) => {
+      if (field.required && !customFieldValues[field.name]) {
+        errors[field.name] = "This field is required";
+      }
+    });
+    setCustomFieldErrors(errors);
+
+    if (Object.keys(errors).length > 0) {
+      return;
+    }
+
     try {
       setIsRegistering(true);
-
-      // Create the request data
       const requestData = {
-        custom_field_values: JSON.stringify(customFieldValues),
+        custom_field_values: customFieldValues,
       };
 
       await registerForEvent(event._id, requestData);
-      if (onRegister) onRegister();
       setShowRegistrationModal(false);
+      if (onRegister) onRegister();
     } catch (error) {
-      console.error("Failed to register:", error);
+      console.error("Registration error:", error);
+      setRegistrationError(
+        error.response?.data?.message || "Failed to register for event"
+      );
     } finally {
       setIsRegistering(false);
     }
@@ -192,6 +242,254 @@ const EventCard = ({
   const handleViewDetails = () => {
     // Instead of just setting state, navigate to the event details URL
     navigate(`/events/${event._id}`);
+  };
+
+  const fetchCustomFieldSchema = async () => {
+    try {
+      setIsLoadingSchema(true);
+      const response = await api.get(`/events/${event._id}/custom-fields`);
+      setCustomFieldSchema(response.data.custom_fields);
+
+      // Initialize custom field values
+      const initialValues = {};
+      response.data.custom_fields.forEach((field) => {
+        initialValues[field.name] = field.type === "boolean" ? false : "";
+      });
+      setCustomFieldValues(initialValues);
+    } catch (error) {
+      console.error("Error fetching custom field schema:", error);
+    } finally {
+      setIsLoadingSchema(false);
+    }
+  };
+
+  const validateCustomFields = () => {
+    const errors = {};
+    customFieldSchema.forEach((field) => {
+      if (field.required && !customFieldValues[field.name]) {
+        errors[field.name] = "This field is required";
+      }
+
+      if (field.type === "number" && customFieldValues[field.name]) {
+        const value = Number(customFieldValues[field.name]);
+        if (isNaN(value)) {
+          errors[field.name] = "Must be a valid number";
+        }
+      }
+    });
+    return errors;
+  };
+
+  const renderCustomFieldInput = (field) => {
+    const commonProps = {
+      key: field.name,
+      error: !!customFieldErrors[field.name],
+      helperText: customFieldErrors[field.name],
+      required: field.required,
+      size: "small",
+      fullWidth: true,
+      className: "mb-4",
+    };
+
+    switch (field.type) {
+      case "number":
+        return (
+          <TextField
+            {...commonProps}
+            label={field.name}
+            type="number"
+            value={customFieldValues[field.name] || ""}
+            onChange={(e) =>
+              setCustomFieldValues((prev) => ({
+                ...prev,
+                [field.name]: e.target.value,
+              }))
+            }
+          />
+        );
+
+      case "boolean":
+        return (
+          <FormControl {...commonProps} error={!!customFieldErrors[field.name]}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={!!customFieldValues[field.name]}
+                  onChange={(e) =>
+                    setCustomFieldValues((prev) => ({
+                      ...prev,
+                      [field.name]: e.target.checked,
+                    }))
+                  }
+                />
+              }
+              label={field.name}
+            />
+            {customFieldErrors[field.name] && (
+              <FormHelperText>{customFieldErrors[field.name]}</FormHelperText>
+            )}
+          </FormControl>
+        );
+
+      case "select":
+        return (
+          <FormControl {...commonProps}>
+            <InputLabel>{field.name}</InputLabel>
+            <Select
+              value={customFieldValues[field.name] || ""}
+              label={field.name}
+              onChange={(e) =>
+                setCustomFieldValues((prev) => ({
+                  ...prev,
+                  [field.name]: e.target.value,
+                }))
+              }
+            >
+              {field.options?.map((option) => (
+                <MenuItem key={option} value={option}>
+                  {option}
+                </MenuItem>
+              ))}
+            </Select>
+            {customFieldErrors[field.name] && (
+              <FormHelperText error>
+                {customFieldErrors[field.name]}
+              </FormHelperText>
+            )}
+          </FormControl>
+        );
+
+      default: // 'string' type
+        return (
+          <TextField
+            {...commonProps}
+            label={field.name}
+            value={customFieldValues[field.name] || ""}
+            onChange={(e) =>
+              setCustomFieldValues((prev) => ({
+                ...prev,
+                [field.name]: e.target.value,
+              }))
+            }
+          />
+        );
+    }
+  };
+
+  // Registration modal content
+  const renderRegistrationFields = () => {
+    const fields = getCustomFields();
+    return fields.map((field, index) => {
+      const fieldName = field.name;
+      const fieldType = field.type || "string";
+
+      switch (fieldType) {
+        case "number":
+          return (
+            <div key={`${fieldName}-${index}`} className="space-y-1">
+              <label className="block text-sm font-medium text-gray-700">
+                {fieldName} {field.required && <span className="text-red-500">*</span>}
+              </label>
+              <input
+                type="number"
+                value={customFieldValues[fieldName] || ""}
+                onChange={(e) =>
+                  setCustomFieldValues((prev) => ({
+                    ...prev,
+                    [fieldName]: e.target.value,
+                  }))
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg 
+                         focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder={`Enter ${fieldName.toLowerCase()}`}
+              />
+              {customFieldErrors[fieldName] && (
+                <p className="text-red-500 text-xs mt-1">{customFieldErrors[fieldName]}</p>
+              )}
+            </div>
+          );
+
+        case "boolean":
+          return (
+            <div key={`${fieldName}-${index}`} className="space-y-1">
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={!!customFieldValues[fieldName]}
+                  onChange={(e) =>
+                    setCustomFieldValues((prev) => ({
+                      ...prev,
+                      [fieldName]: e.target.checked,
+                    }))
+                  }
+                  className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <span className="text-sm font-medium text-gray-700">
+                  {fieldName} {field.required && <span className="text-red-500">*</span>}
+                </span>
+              </label>
+              {customFieldErrors[fieldName] && (
+                <p className="text-red-500 text-xs mt-1">{customFieldErrors[fieldName]}</p>
+              )}
+            </div>
+          );
+
+        case "select":
+          return (
+            <div key={`${fieldName}-${index}`} className="space-y-1">
+              <label className="block text-sm font-medium text-gray-700">
+                {fieldName} {field.required && <span className="text-red-500">*</span>}
+              </label>
+              <select
+                value={customFieldValues[fieldName] || ""}
+                onChange={(e) =>
+                  setCustomFieldValues((prev) => ({
+                    ...prev,
+                    [fieldName]: e.target.value,
+                  }))
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg 
+                         focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="">Select {fieldName.toLowerCase()}</option>
+                {field.options?.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+              {customFieldErrors[fieldName] && (
+                <p className="text-red-500 text-xs mt-1">{customFieldErrors[fieldName]}</p>
+              )}
+            </div>
+          );
+
+        default: // string type
+          return (
+            <div key={`${fieldName}-${index}`} className="space-y-1">
+              <label className="block text-sm font-medium text-gray-700">
+                {fieldName} {field.required && <span className="text-red-500">*</span>}
+              </label>
+              <input
+                type="text"
+                value={customFieldValues[fieldName] || ""}
+                onChange={(e) =>
+                  setCustomFieldValues((prev) => ({
+                    ...prev,
+                    [fieldName]: e.target.value,
+                  }))
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg 
+                         focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder={`Enter ${fieldName.toLowerCase()}`}
+              />
+              {customFieldErrors[fieldName] && (
+                <p className="text-red-500 text-xs mt-1">{customFieldErrors[fieldName]}</p>
+              )}
+            </div>
+          );
+      }
+    });
   };
 
   return (
@@ -329,10 +627,10 @@ const EventCard = ({
                         {index === 0
                           ? "st"
                           : index === 1
-                            ? "nd"
-                            : index === 2
-                              ? "rd"
-                              : "th"}
+                          ? "nd"
+                          : index === 2
+                          ? "rd"
+                          : "th"}
                       </span>
                       <span>{prize.trim()}</span>
                     </div>
@@ -380,10 +678,10 @@ const EventCard = ({
                   {isPastEvent()
                     ? "Event Ended"
                     : participantCount >= event.max_participants
-                      ? "Full"
-                      : isRegistering
-                        ? "Registering..."
-                        : "Register Now"}
+                    ? "Full"
+                    : isRegistering
+                    ? "Registering..."
+                    : "Register Now"}
                 </button>
               )}
             </div>
@@ -448,30 +746,19 @@ const EventCard = ({
                   <div className="space-y-4">
                     <p className="text-sm text-gray-500">
                       {getCustomFields().length > 0
-                        ? "Please provide the following optional information for your registration"
+                        ? "Please provide the following information for your registration"
                         : "Are you sure you want to register for this event?"}
                     </p>
 
-                    {getCustomFields().map((field) => (
-                      <div key={field} className="space-y-1">
-                        <label className="block text-sm font-medium text-gray-700">
-                          {field}
-                        </label>
-                        <input
-                          type="text"
-                          value={customFieldValues[field] || ""}
-                          onChange={(e) =>
-                            setCustomFieldValues((prev) => ({
-                              ...prev,
-                              [field]: e.target.value,
-                            }))
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg 
-                                   focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                          placeholder={`Enter ${field.toLowerCase()}`}
-                        />
+                    <div className="space-y-4">
+                      {renderRegistrationFields()}
+                    </div>
+
+                    {registrationError && (
+                      <div className="mb-4 text-sm text-red-600 bg-red-50 p-3 rounded-lg">
+                        {registrationError}
                       </div>
-                    ))}
+                    )}
 
                     <div className="mt-6 flex justify-end space-x-3">
                       <button
@@ -807,10 +1094,10 @@ const EventCard = ({
                               {index === 0
                                 ? "1st Prize"
                                 : index === 1
-                                  ? "2nd Prize"
-                                  : index === 2
-                                    ? "3rd Prize"
-                                    : `${index + 1}th Prize`}
+                                ? "2nd Prize"
+                                : index === 2
+                                ? "3rd Prize"
+                                : `${index + 1}th Prize`}
                             </div>
                             <div className="text-sm text-gray-800 font-medium">
                               {prize.trim()}
@@ -857,10 +1144,10 @@ const EventCard = ({
                         {isPastEvent()
                           ? "Event Ended"
                           : participantCount >= event.max_participants
-                            ? "Full"
-                            : isRegistering
-                              ? "Registering..."
-                              : "Register Now"}
+                          ? "Full"
+                          : isRegistering
+                          ? "Registering..."
+                          : "Register Now"}
                       </button>
                     )}
                   </section>

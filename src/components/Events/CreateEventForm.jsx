@@ -2,11 +2,19 @@ import { useState, useEffect, useRef } from "react";
 import { createEvent, getCurrentUserEmail } from "../../services/api";
 import PhotoCamera from "@mui/icons-material/PhotoCamera";
 import CloseIcon from "@mui/icons-material/Close";
-import { TextField } from "@mui/material";
+import { TextField, Select, MenuItem, FormControl, InputLabel, FormControlLabel, Switch } from "@mui/material";
 import useRotatingMessage from "../../hooks/useRotatingMessage";
-import { Plus, Minus } from "lucide-react";
+import { Plus, Minus, Settings } from "lucide-react";
 import ApprovalModal from "../UI/ApprovalModal";
 import { Info } from "react-feather";
+
+// Custom field types
+const FIELD_TYPES = {
+  STRING: "string",
+  NUMBER: "number",
+  BOOLEAN: "boolean",
+  SELECT: "select"
+};
 
 const CreateEventForm = ({ onSuccess, onCancel }) => {
   const userEmail = getCurrentUserEmail();
@@ -27,6 +35,18 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
     image: null,
     custom_fields: [],
   });
+
+  // New state for custom field editing
+  const [customFieldInput, setCustomFieldInput] = useState({
+    name: "",
+    type: FIELD_TYPES.STRING,
+    required: false,
+    options: "" // For select type, comma-separated options
+  });
+
+  // Edit mode for existing fields
+  const [editingFieldIndex, setEditingFieldIndex] = useState(-1);
+
   const [touched, setTouched] = useState({});
   const [validationErrors, setValidationErrors] = useState({});
   const [image, setImage] = useState(null);
@@ -40,7 +60,6 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
   const durationDaysRef = useRef(null);
   const durationHoursRef = useRef(null);
   const durationMinutesRef = useRef(null);
-  const [customFieldInput, setCustomFieldInput] = useState("");
 
   const rotatingMessage = useRotatingMessage("createEvent");
 
@@ -185,7 +204,8 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
         if (key === "image" && formData[key]) {
           formDataToSend.append("image", formData[key]);
         } else if (key === "custom_fields") {
-          formDataToSend.append("custom_fields", formData[key].join(","));
+          // Stringify the enhanced custom fields array
+          formDataToSend.append("custom_fields", JSON.stringify(formData[key]));
         } else if (key === "date") {
           formDataToSend.append("date", formData[key].toISOString());
         } else {
@@ -262,32 +282,77 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
   };
 
   const handleAddCustomField = () => {
-    if (!customFieldInput.trim()) {
+    if (!customFieldInput.name.trim()) {
       setError("Custom field name cannot be empty");
       return;
     }
 
     // Don't allow duplicates
-    if (formData.custom_fields.includes(customFieldInput.trim())) {
-      setError("This custom field already exists");
+    if (formData.custom_fields.some(field => field.name === customFieldInput.name.trim())) {
+      setError("This custom field name already exists");
       return;
     }
 
-    setFormData((prev) => ({
-      ...prev,
-      custom_fields: [...prev.custom_fields, customFieldInput.trim()],
-    }));
-    setCustomFieldInput("");
-    setError(""); // Clear error when successful
+    const newField = {
+      name: customFieldInput.name.trim(),
+      type: customFieldInput.type,
+      required: customFieldInput.required,
+      ...(customFieldInput.type === FIELD_TYPES.SELECT && {
+        options: customFieldInput.options.split(',').map(opt => opt.trim()).filter(Boolean)
+      })
+    };
+
+    if (editingFieldIndex >= 0) {
+      // Update existing field
+      const updatedFields = [...formData.custom_fields];
+      updatedFields[editingFieldIndex] = newField;
+      setFormData(prev => ({
+        ...prev,
+        custom_fields: updatedFields
+      }));
+      setEditingFieldIndex(-1);
+    } else {
+      // Add new field
+      setFormData(prev => ({
+        ...prev,
+        custom_fields: [...prev.custom_fields, newField]
+      }));
+    }
+
+    // Reset input
+    setCustomFieldInput({
+      name: "",
+      type: FIELD_TYPES.STRING,
+      required: false,
+      options: ""
+    });
+    setError("");
   };
 
-  const handleRemoveCustomField = (fieldToRemove) => {
-    setFormData((prev) => ({
+  const handleEditCustomField = (field, index) => {
+    setCustomFieldInput({
+      name: field.name,
+      type: field.type || FIELD_TYPES.STRING,
+      required: field.required || false,
+      options: field.options ? field.options.join(',') : ''
+    });
+    setEditingFieldIndex(index);
+  };
+
+  const handleRemoveCustomField = (index) => {
+    setFormData(prev => ({
       ...prev,
-      custom_fields: prev.custom_fields.filter(
-        (field) => field !== fieldToRemove,
-      ),
+      custom_fields: prev.custom_fields.filter((_, i) => i !== index)
     }));
+    if (editingFieldIndex === index) {
+      setEditingFieldIndex(-1);
+      setCustomFieldInput({
+        name: "",
+        type: FIELD_TYPES.STRING,
+        required: false,
+        options: ""
+      });
+    }
   };
 
   // Store the response from the API call
@@ -472,7 +537,7 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
                       >
                         <path
                           fillRule="evenodd"
-                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 100-2v-3a1 1 0 00-1-1H9z"
                           clipRule="evenodd"
                         />
                       </svg>
@@ -799,7 +864,7 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
                     >
                       <path
                         fillRule="evenodd"
-                        d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"
+                        d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 100-2 1 1 000 2z"
                         clipRule="evenodd"
                       />
                     </svg>
@@ -824,38 +889,107 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
                         key={index}
                         className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                       >
-                        <span className="text-sm text-gray-700">{field}</span>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveCustomField(field)}
-                          className="p-1 hover:bg-red-100 rounded-full text-red-600 transition-colors"
-                        >
-                          <Minus className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center space-x-3">
+                          <span className="text-sm text-gray-700">{field.name}</span>
+                          <div className="flex items-center space-x-2">
+                            <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                              {field.type}
+                            </span>
+                            {field.required && (
+                              <span className="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">
+                                Required
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <button
+                            type="button"
+                            onClick={() => handleEditCustomField(field, index)}
+                            className="p-1 hover:bg-blue-100 rounded-full text-blue-600 transition-colors"
+                          >
+                            <Settings className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveCustomField(index)}
+                            className="p-1 hover:bg-red-100 rounded-full text-red-600 transition-colors"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
                 )}
 
-                {/* Add Custom Field Input */}
-                <div className="flex space-x-2">
-                  <input
-                    type="text"
-                    value={customFieldInput}
-                    onChange={(e) => setCustomFieldInput(e.target.value)}
-                    placeholder="Enter custom field name"
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg 
-                             focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                {/* Add/Edit Custom Field Form */}
+                <div className="bg-white p-4 rounded-lg border border-gray-200 space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <TextField
+                      label="Field Name"
+                      value={customFieldInput.name}
+                      onChange={(e) => setCustomFieldInput(prev => ({ ...prev, name: e.target.value }))}
+                      placeholder="Enter field name"
+                      fullWidth
+                      size="small"
+                    />
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Field Type</InputLabel>
+                      <Select
+                        value={customFieldInput.type}
+                        onChange={(e) => setCustomFieldInput(prev => ({ ...prev, type: e.target.value }))}
+                        label="Field Type"
+                      >
+                        <MenuItem value={FIELD_TYPES.STRING}>Text</MenuItem>
+                        <MenuItem value={FIELD_TYPES.NUMBER}>Number</MenuItem>
+                        <MenuItem value={FIELD_TYPES.BOOLEAN}>Yes/No</MenuItem>
+                        <MenuItem value={FIELD_TYPES.SELECT}>Select</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </div>
+
+                  {customFieldInput.type === FIELD_TYPES.SELECT && (
+                    <TextField
+                      label="Options (comma-separated)"
+                      value={customFieldInput.options}
+                      onChange={(e) => setCustomFieldInput(prev => ({ ...prev, options: e.target.value }))}
+                      placeholder="Option 1, Option 2, Option 3"
+                      fullWidth
+                      size="small"
+                    />
+                  )}
+
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={customFieldInput.required}
+                        onChange={(e) => setCustomFieldInput(prev => ({ ...prev, required: e.target.checked }))}
+                      />
+                    }
+                    label="Required field"
                   />
-                  <button
-                    type="button"
-                    onClick={handleAddCustomField}
-                    className="px-3 py-2 bg-indigo-600 text-white rounded-lg 
-                             hover:bg-indigo-700 transition-colors flex items-center space-x-1"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Add Field</span>
-                  </button>
+
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={handleAddCustomField}
+                      className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 
+                               transition-colors flex items-center space-x-2"
+                    >
+                      {editingFieldIndex >= 0 ? (
+                        <>
+                          <Settings className="w-4 h-4" />
+                          <span>Update Field</span>
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="w-4 h-4" />
+                          <span>Add Field</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -871,7 +1005,7 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
                   >
                     <path
                       fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 101.414 1.414L10 11.414l1.293 1.293a1 1 001.414-1.414L11.414 10l1.293-1.293a1 1 00-1.414-1.414L10 8.586 8.707 7.293z"
                       clipRule="evenodd"
                     />
                   </svg>
@@ -892,7 +1026,7 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
                 >
                   <path
                     fillRule="evenodd"
-                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.625-1.516 2.625H3.72c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 11-2 0 1 1 11-2 0zm-1-8a1 1 00-1 1v3a1 1 002 0V6a1 1 00-1-1z"
                     clipRule="evenodd"
                   />
                 </svg>

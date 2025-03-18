@@ -73,24 +73,24 @@ const Reports = () => {
   // Function to extract custom fields from participants
   const fetchCustomFields = async (event) => {
     try {
-      // First check if the event has custom fields defined
+      // Get custom fields from event
       const eventCustomFields = Array.isArray(event.custom_fields)
         ? event.custom_fields
         : typeof event.custom_fields === "string"
-          ? event.custom_fields.split(",").filter((f) => f.trim())
+          ? JSON.parse(event.custom_fields)
           : [];
 
       if (eventCustomFields.length > 0) {
-        // Get participants to extract actual custom field values
         const participants = await getEventParticipants(event._id);
-
-        // Get unique custom fields from all participants
         const customFieldsSet = new Set();
 
-        // Add fields defined in the event
-        eventCustomFields.forEach((field) => customFieldsSet.add(field));
+        // Add fields defined in the event, handling both string and object formats
+        eventCustomFields.forEach((field) => {
+          const fieldName = typeof field === 'string' ? field : field.name;
+          customFieldsSet.add(fieldName);
+        });
 
-        // Also check if any participants have additional fields (shouldn't happen, but just to be safe)
+        // Check participant values
         participants.forEach((participant) => {
           if (participant.custom_field_values) {
             Object.keys(participant.custom_field_values).forEach((field) => {
@@ -106,13 +106,13 @@ const Reports = () => {
           isCustom: true,
         }));
 
-        // Update available fields with standard + custom fields
+        // Update available fields
         const standardFields = availableFields.filter(
           (field) => !field.isCustom,
         );
         setAvailableFields([...standardFields, ...customFields]);
 
-        // Add custom fields to selected fields with default value false
+        // Update selected fields
         const updatedSelectedFields = { ...selectedFields };
         customFields.forEach((field) => {
           if (updatedSelectedFields[field.id] === undefined) {
@@ -121,7 +121,6 @@ const Reports = () => {
         });
         setSelectedFields(updatedSelectedFields);
       } else {
-        // Reset to standard fields if no custom fields present
         setAvailableFields(availableFields.filter((field) => !field.isCustom));
       }
     } catch (error) {

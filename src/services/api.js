@@ -115,12 +115,31 @@ export const createEvent = async (eventData) => {
 };
 
 export const registerForEvent = async (eventId, data) => {
-  const response = await api.post(`/events/${eventId}/register`, data, {
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-  return response.data;
+  // Set a timeout for the registration request
+  const timeoutDuration = 8000; // 8 seconds
+  
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutDuration);
+
+  try {
+    const response = await api.post(`/events/${eventId}/register`, data, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      signal: controller.signal,
+      // Add retry logic
+      retry: 1,
+      retryDelay: 1000,
+    });
+    clearTimeout(timeoutId);
+    return response.data;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError') {
+      throw new Error('Request timed out. Please try again.');
+    }
+    throw error;
+  }
 };
 
 export const deleteEvent = async (eventId) => {

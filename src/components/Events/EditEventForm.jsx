@@ -3,7 +3,7 @@ import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { updateEvent } from "../../services/api";
-import { TextField } from "@mui/material";
+import { TextField, Select, MenuItem, FormControl, InputLabel, FormControlLabel, Switch, Checkbox } from "@mui/material";
 import {
   Camera,
   X as XIcon,
@@ -13,8 +13,17 @@ import {
   Plus,
   Minus,
   Info,
+  Settings,
 } from "lucide-react";
 import { Info as FeatherInfo } from "react-feather";
+
+// Custom field types
+const FIELD_TYPES = {
+  STRING: "string",
+  NUMBER: "number",
+  BOOLEAN: "boolean",
+  SELECT: "select"
+};
 
 const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
   // Convert custom_fields from string to array if needed
@@ -51,7 +60,15 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
 
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [customFieldInput, setCustomFieldInput] = useState("");
+  const [customFieldInput, setCustomFieldInput] = useState({
+    name: "",
+    type: FIELD_TYPES.STRING,
+    required: false,
+    options: "" // For select type, comma-separated options
+  });
+
+  // Edit mode for existing fields
+  const [editingFieldIndex, setEditingFieldIndex] = useState(-1);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -63,7 +80,7 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
 
       Object.keys(editedEvent).forEach((key) => {
         if (key === "custom_fields") {
-          formData.append("custom_fields", editedEvent.custom_fields.join(","));
+          formData.append("custom_fields", JSON.stringify(editedEvent.custom_fields));
         } else if (key === "date") {
           formData.append("date", editedEvent.date.toISOString());
         } else if (key !== "image_url") {
@@ -111,37 +128,77 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
   };
 
   const handleAddCustomField = () => {
-    if (!customFieldInput.trim()) {
+    if (!customFieldInput.name.trim()) {
       setError("Custom field name cannot be empty");
       return;
     }
 
-    const currentFields = Array.isArray(editedEvent.custom_fields)
-      ? editedEvent.custom_fields
-      : [];
-
-    if (currentFields.includes(customFieldInput.trim())) {
-      setError("This custom field already exists");
+    // Don't allow duplicates
+    if (editedEvent.custom_fields.some(field => field.name === customFieldInput.name.trim()) && editingFieldIndex === -1) {
+      setError("This custom field name already exists");
       return;
     }
 
-    setEditedEvent((prev) => ({
-      ...prev,
-      custom_fields: [...currentFields, customFieldInput.trim()],
-    }));
-    setCustomFieldInput("");
-    setError(""); // Clear error when successful
+    const newField = {
+      name: customFieldInput.name.trim(),
+      type: customFieldInput.type,
+      required: customFieldInput.required,
+      ...(customFieldInput.type === FIELD_TYPES.SELECT && {
+        options: customFieldInput.options.split(',').map(opt => opt.trim()).filter(Boolean)
+      })
+    };
+
+    if (editingFieldIndex >= 0) {
+      // Update existing field
+      const updatedFields = [...editedEvent.custom_fields];
+      updatedFields[editingFieldIndex] = newField;
+      setEditedEvent(prev => ({
+        ...prev,
+        custom_fields: updatedFields
+      }));
+      setEditingFieldIndex(-1);
+    } else {
+      // Add new field
+      setEditedEvent(prev => ({
+        ...prev,
+        custom_fields: [...prev.custom_fields, newField]
+      }));
+    }
+
+    // Reset input
+    setCustomFieldInput({
+      name: "",
+      type: FIELD_TYPES.STRING,
+      required: false,
+      options: ""
+    });
+    setError("");
   };
 
-  const handleRemoveCustomField = (fieldToRemove) => {
-    const currentFields = Array.isArray(editedEvent.custom_fields)
-      ? editedEvent.custom_fields
-      : [];
+  const handleEditCustomField = (field, index) => {
+    setCustomFieldInput({
+      name: field.name,
+      type: field.type || FIELD_TYPES.STRING,
+      required: field.required || false,
+      options: field.options ? field.options.join(',') : ''
+    });
+    setEditingFieldIndex(index);
+  };
 
-    setEditedEvent((prev) => ({
+  const handleRemoveCustomField = (index) => {
+    setEditedEvent(prev => ({
       ...prev,
-      custom_fields: currentFields.filter((field) => field !== fieldToRemove),
+      custom_fields: prev.custom_fields.filter((_, i) => i !== index)
     }));
+    if (editingFieldIndex === index) {
+      setEditingFieldIndex(-1);
+      setCustomFieldInput({
+        name: "",
+        type: FIELD_TYPES.STRING,
+        required: false,
+        options: ""
+      });
+    }
   };
 
   const textFieldStyle = {
@@ -481,9 +538,7 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
               <div className="ml-3">
                 <p className="text-sm text-yellow-700">
                   Custom fields allow you to collect specific information from
-                  participants during registration. Each field will still be
-                  optional for participants to fill when they register for your
-                  event.
+                  participants during registration.
                 </p>
               </div>
             </div>
@@ -498,38 +553,107 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
                     key={index}
                     className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                   >
-                    <span className="text-sm text-gray-700">{field}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveCustomField(field)}
-                      className="p-1 hover:bg-red-100 rounded-full text-red-600 transition-colors"
-                    >
-                      <Minus className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center space-x-3">
+                      <span className="text-sm text-gray-700">{field.name}</span>
+                      <div className="flex items-center space-x-2">
+                        <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                          {field.type}
+                        </span>
+                        {field.required && (
+                          <span className="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">
+                            Required
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        type="button"
+                        onClick={() => handleEditCustomField(field, index)}
+                        className="p-1 hover:bg-blue-100 rounded-full text-blue-600 transition-colors"
+                      >
+                        <Settings className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveCustomField(index)}
+                        className="p-1 hover:bg-red-100 rounded-full text-red-600 transition-colors"
+                      >
+                        <Minus className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
             )}
 
-            {/* Add Custom Field Input */}
-            <div className="flex space-x-2">
-              <input
-                type="text"
-                value={customFieldInput}
-                onChange={(e) => setCustomFieldInput(e.target.value)}
-                placeholder="Enter custom field name"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg 
-                         focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            {/* Add/Edit Custom Field Form */}
+            <div className="bg-white p-4 rounded-lg border border-gray-200 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <TextField
+                  label="Field Name"
+                  value={customFieldInput.name}
+                  onChange={(e) => setCustomFieldInput(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="Enter field name"
+                  fullWidth
+                  size="small"
+                />
+                <FormControl fullWidth size="small">
+                  <InputLabel>Field Type</InputLabel>
+                  <Select
+                    value={customFieldInput.type}
+                    onChange={(e) => setCustomFieldInput(prev => ({ ...prev, type: e.target.value }))}
+                    label="Field Type"
+                  >
+                    <MenuItem value={FIELD_TYPES.STRING}>Text</MenuItem>
+                    <MenuItem value={FIELD_TYPES.NUMBER}>Number</MenuItem>
+                    <MenuItem value={FIELD_TYPES.BOOLEAN}>Yes/No</MenuItem>
+                    <MenuItem value={FIELD_TYPES.SELECT}>Select</MenuItem>
+                  </Select>
+                </FormControl>
+              </div>
+
+              {customFieldInput.type === FIELD_TYPES.SELECT && (
+                <TextField
+                  label="Options (comma-separated)"
+                  value={customFieldInput.options}
+                  onChange={(e) => setCustomFieldInput(prev => ({ ...prev, options: e.target.value }))}
+                  placeholder="Option 1, Option 2, Option 3"
+                  fullWidth
+                  size="small"
+                />
+              )}
+
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={customFieldInput.required}
+                    onChange={(e) => setCustomFieldInput(prev => ({ ...prev, required: e.target.checked }))}
+                  />
+                }
+                label="Required field"
               />
-              <button
-                type="button"
-                onClick={handleAddCustomField}
-                className="px-3 py-2 bg-indigo-600 text-white rounded-lg 
-                         hover:bg-indigo-700 transition-colors flex items-center space-x-1"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Add Field</span>
-              </button>
+
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleAddCustomField}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 
+                           transition-colors flex items-center space-x-2"
+                >
+                  {editingFieldIndex >= 0 ? (
+                    <>
+                      <Settings className="w-4 h-4" />
+                      <span>Update Field</span>
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4" />
+                      <span>Add Field</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
