@@ -65,13 +65,14 @@ api.interceptors.response.use(
 export const login = async (credentials) => {
   try {
     const response = await api.post("/auth/login", credentials);
-    if (response.data.token) {
-      localStorage.setItem("token", response.data.token);
+    const { token } = response.data;
+    if (token) {
+      localStorage.setItem("token", token);
       return response.data;
     }
     throw new Error("No token received");
   } catch (error) {
-    // Don't remove token on login failure
+    console.error("Login error:", error);
     throw error;
   }
 };
@@ -117,7 +118,7 @@ export const createEvent = async (eventData) => {
 export const registerForEvent = async (eventId, data) => {
   // Set a timeout for the registration request
   const timeoutDuration = 8000; // 8 seconds
-  
+
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutDuration);
 
@@ -135,8 +136,8 @@ export const registerForEvent = async (eventId, data) => {
     return response.data;
   } catch (error) {
     clearTimeout(timeoutId);
-    if (error.name === 'AbortError') {
-      throw new Error('Request timed out. Please try again.');
+    if (error.name === "AbortError") {
+      throw new Error("Request timed out. Please try again.");
     }
     throw error;
   }
@@ -180,6 +181,7 @@ export const isTokenValid = () => {
 
     return true;
   } catch (error) {
+    console.error("Error decoding token:", error);
     localStorage.removeItem("token"); // Clean up invalid token
     return false;
   }

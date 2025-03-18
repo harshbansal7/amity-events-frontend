@@ -7,11 +7,7 @@ import {
   getEventParticipants,
 } from "../../services/api";
 import { format } from "date-fns";
-import {
-  FileText,
-  FileSpreadsheet,
-  CheckSquare,
-} from "lucide-react";
+import { FileText, FileSpreadsheet, CheckSquare } from "lucide-react";
 import Toast from "../UI/Toast";
 
 const Reports = () => {
@@ -86,7 +82,7 @@ const Reports = () => {
 
         // Add fields defined in the event, handling both string and object formats
         eventCustomFields.forEach((field) => {
-          const fieldName = typeof field === 'string' ? field : field.name;
+          const fieldName = typeof field === "string" ? field : field.name;
           customFieldsSet.add(fieldName);
         });
 

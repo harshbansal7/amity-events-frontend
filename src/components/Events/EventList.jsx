@@ -1,9 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  getEvents,
-  isExternalUser,
-  getEvent,
-} from "../../services/api";
+import { getEvents, isExternalUser, getEvent } from "../../services/api";
 import EventCard from "./EventCard";
 import CreateEventForm from "./CreateEventForm";
 import { CircularProgress } from "@mui/material";

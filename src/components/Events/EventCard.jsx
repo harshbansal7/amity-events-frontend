@@ -78,38 +78,41 @@ const EventCard = ({
   // Helper function to parse custom fields
   const getCustomFields = () => {
     if (!event.custom_fields) return [];
-    
+
     // If already an array, return as is
     if (Array.isArray(event.custom_fields)) return event.custom_fields;
-    
+
     // If string, try to parse as JSON first
     if (typeof event.custom_fields === "string") {
       try {
         const parsed = JSON.parse(event.custom_fields);
         if (Array.isArray(parsed)) {
-          return parsed.map(field => {
+          return parsed.map((field) => {
             if (typeof field === "string") {
               return {
                 name: field.trim(),
                 type: "string",
-                required: false
+                required: false,
               };
             }
             return {
               name: field.name,
               type: field.type || "string",
               required: field.required || false,
-              ...(field.type === "select" && { options: field.options || [] })
+              ...(field.type === "select" && { options: field.options || [] }),
             };
           });
         }
       } catch {
         // If JSON parsing fails, treat as comma-separated string
-        return event.custom_fields.split(",").map(field => ({
-          name: field.trim(),
-          type: "string",
-          required: false
-        })).filter(field => field.name);
+        return event.custom_fields
+          .split(",")
+          .map((field) => ({
+            name: field.trim(),
+            type: "string",
+            required: false,
+          }))
+          .filter((field) => field.name);
       }
     }
     return [];
@@ -145,7 +148,7 @@ const EventCard = ({
     } catch (error) {
       console.error("Registration error:", error);
       setRegistrationError(
-        error.response?.data?.message || "Failed to register for event"
+        error.response?.data?.message || "Failed to register for event",
       );
     } finally {
       setIsRegistering(false);
@@ -388,7 +391,8 @@ const EventCard = ({
           return (
             <div key={`${fieldName}-${index}`} className="space-y-1">
               <label className="block text-sm font-medium text-gray-700">
-                {fieldName} {field.required && <span className="text-red-500">*</span>}
+                {fieldName}{" "}
+                {field.required && <span className="text-red-500">*</span>}
               </label>
               <input
                 type="number"
@@ -404,7 +408,9 @@ const EventCard = ({
                 placeholder={`Enter ${fieldName.toLowerCase()}`}
               />
               {customFieldErrors[fieldName] && (
-                <p className="text-red-500 text-xs mt-1">{customFieldErrors[fieldName]}</p>
+                <p className="text-red-500 text-xs mt-1">
+                  {customFieldErrors[fieldName]}
+                </p>
               )}
             </div>
           );
@@ -425,11 +431,14 @@ const EventCard = ({
                   className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                 />
                 <span className="text-sm font-medium text-gray-700">
-                  {fieldName} {field.required && <span className="text-red-500">*</span>}
+                  {fieldName}{" "}
+                  {field.required && <span className="text-red-500">*</span>}
                 </span>
               </label>
               {customFieldErrors[fieldName] && (
-                <p className="text-red-500 text-xs mt-1">{customFieldErrors[fieldName]}</p>
+                <p className="text-red-500 text-xs mt-1">
+                  {customFieldErrors[fieldName]}
+                </p>
               )}
             </div>
           );
@@ -438,7 +447,8 @@ const EventCard = ({
           return (
             <div key={`${fieldName}-${index}`} className="space-y-1">
               <label className="block text-sm font-medium text-gray-700">
-                {fieldName} {field.required && <span className="text-red-500">*</span>}
+                {fieldName}{" "}
+                {field.required && <span className="text-red-500">*</span>}
               </label>
               <select
                 value={customFieldValues[fieldName] || ""}
@@ -459,7 +469,9 @@ const EventCard = ({
                 ))}
               </select>
               {customFieldErrors[fieldName] && (
-                <p className="text-red-500 text-xs mt-1">{customFieldErrors[fieldName]}</p>
+                <p className="text-red-500 text-xs mt-1">
+                  {customFieldErrors[fieldName]}
+                </p>
               )}
             </div>
           );
@@ -468,7 +480,8 @@ const EventCard = ({
           return (
             <div key={`${fieldName}-${index}`} className="space-y-1">
               <label className="block text-sm font-medium text-gray-700">
-                {fieldName} {field.required && <span className="text-red-500">*</span>}
+                {fieldName}{" "}
+                {field.required && <span className="text-red-500">*</span>}
               </label>
               <input
                 type="text"
@@ -484,7 +497,9 @@ const EventCard = ({
                 placeholder={`Enter ${fieldName.toLowerCase()}`}
               />
               {customFieldErrors[fieldName] && (
-                <p className="text-red-500 text-xs mt-1">{customFieldErrors[fieldName]}</p>
+                <p className="text-red-500 text-xs mt-1">
+                  {customFieldErrors[fieldName]}
+                </p>
               )}
             </div>
           );
@@ -627,10 +642,10 @@ const EventCard = ({
                         {index === 0
                           ? "st"
                           : index === 1
-                          ? "nd"
-                          : index === 2
-                          ? "rd"
-                          : "th"}
+                            ? "nd"
+                            : index === 2
+                              ? "rd"
+                              : "th"}
                       </span>
                       <span>{prize.trim()}</span>
                     </div>
@@ -678,10 +693,10 @@ const EventCard = ({
                   {isPastEvent()
                     ? "Event Ended"
                     : participantCount >= event.max_participants
-                    ? "Full"
-                    : isRegistering
-                    ? "Registering..."
-                    : "Register Now"}
+                      ? "Full"
+                      : isRegistering
+                        ? "Registering..."
+                        : "Register Now"}
                 </button>
               )}
             </div>
@@ -1094,10 +1109,10 @@ const EventCard = ({
                               {index === 0
                                 ? "1st Prize"
                                 : index === 1
-                                ? "2nd Prize"
-                                : index === 2
-                                ? "3rd Prize"
-                                : `${index + 1}th Prize`}
+                                  ? "2nd Prize"
+                                  : index === 2
+                                    ? "3rd Prize"
+                                    : `${index + 1}th Prize`}
                             </div>
                             <div className="text-sm text-gray-800 font-medium">
                               {prize.trim()}
@@ -1144,10 +1159,10 @@ const EventCard = ({
                         {isPastEvent()
                           ? "Event Ended"
                           : participantCount >= event.max_participants
-                          ? "Full"
-                          : isRegistering
-                          ? "Registering..."
-                          : "Register Now"}
+                            ? "Full"
+                            : isRegistering
+                              ? "Registering..."
+                              : "Register Now"}
                       </button>
                     )}
                   </section>

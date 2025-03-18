@@ -3,7 +3,16 @@ import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { updateEvent } from "../../services/api";
-import { TextField, Select, MenuItem, FormControl, InputLabel, FormControlLabel, Switch, Checkbox } from "@mui/material";
+import {
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  FormControlLabel,
+  Switch,
+  Checkbox,
+} from "@mui/material";
 import {
   Camera,
   X as XIcon,
@@ -22,7 +31,7 @@ const FIELD_TYPES = {
   STRING: "string",
   NUMBER: "number",
   BOOLEAN: "boolean",
-  SELECT: "select"
+  SELECT: "select",
 };
 
 const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
@@ -64,7 +73,7 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
     name: "",
     type: FIELD_TYPES.STRING,
     required: false,
-    options: "" // For select type, comma-separated options
+    options: "", // For select type, comma-separated options
   });
 
   // Edit mode for existing fields
@@ -80,7 +89,10 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
 
       Object.keys(editedEvent).forEach((key) => {
         if (key === "custom_fields") {
-          formData.append("custom_fields", JSON.stringify(editedEvent.custom_fields));
+          formData.append(
+            "custom_fields",
+            JSON.stringify(editedEvent.custom_fields),
+          );
         } else if (key === "date") {
           formData.append("date", editedEvent.date.toISOString());
         } else if (key !== "image_url") {
@@ -134,7 +146,12 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
     }
 
     // Don't allow duplicates
-    if (editedEvent.custom_fields.some(field => field.name === customFieldInput.name.trim()) && editingFieldIndex === -1) {
+    if (
+      editedEvent.custom_fields.some(
+        (field) => field.name === customFieldInput.name.trim(),
+      ) &&
+      editingFieldIndex === -1
+    ) {
       setError("This custom field name already exists");
       return;
     }
@@ -144,24 +161,27 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
       type: customFieldInput.type,
       required: customFieldInput.required,
       ...(customFieldInput.type === FIELD_TYPES.SELECT && {
-        options: customFieldInput.options.split(',').map(opt => opt.trim()).filter(Boolean)
-      })
+        options: customFieldInput.options
+          .split(",")
+          .map((opt) => opt.trim())
+          .filter(Boolean),
+      }),
     };
 
     if (editingFieldIndex >= 0) {
       // Update existing field
       const updatedFields = [...editedEvent.custom_fields];
       updatedFields[editingFieldIndex] = newField;
-      setEditedEvent(prev => ({
+      setEditedEvent((prev) => ({
         ...prev,
-        custom_fields: updatedFields
+        custom_fields: updatedFields,
       }));
       setEditingFieldIndex(-1);
     } else {
       // Add new field
-      setEditedEvent(prev => ({
+      setEditedEvent((prev) => ({
         ...prev,
-        custom_fields: [...prev.custom_fields, newField]
+        custom_fields: [...prev.custom_fields, newField],
       }));
     }
 
@@ -170,7 +190,7 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
       name: "",
       type: FIELD_TYPES.STRING,
       required: false,
-      options: ""
+      options: "",
     });
     setError("");
   };
@@ -180,15 +200,15 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
       name: field.name,
       type: field.type || FIELD_TYPES.STRING,
       required: field.required || false,
-      options: field.options ? field.options.join(',') : ''
+      options: field.options ? field.options.join(",") : "",
     });
     setEditingFieldIndex(index);
   };
 
   const handleRemoveCustomField = (index) => {
-    setEditedEvent(prev => ({
+    setEditedEvent((prev) => ({
       ...prev,
-      custom_fields: prev.custom_fields.filter((_, i) => i !== index)
+      custom_fields: prev.custom_fields.filter((_, i) => i !== index),
     }));
     if (editingFieldIndex === index) {
       setEditingFieldIndex(-1);
@@ -196,7 +216,7 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
         name: "",
         type: FIELD_TYPES.STRING,
         required: false,
-        options: ""
+        options: "",
       });
     }
   };
@@ -554,7 +574,9 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
                     className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                   >
                     <div className="flex items-center space-x-3">
-                      <span className="text-sm text-gray-700">{field.name}</span>
+                      <span className="text-sm text-gray-700">
+                        {field.name}
+                      </span>
                       <div className="flex items-center space-x-2">
                         <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
                           {field.type}
@@ -593,7 +615,12 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
                 <TextField
                   label="Field Name"
                   value={customFieldInput.name}
-                  onChange={(e) => setCustomFieldInput(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) =>
+                    setCustomFieldInput((prev) => ({
+                      ...prev,
+                      name: e.target.value,
+                    }))
+                  }
                   placeholder="Enter field name"
                   fullWidth
                   size="small"
@@ -602,7 +629,12 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
                   <InputLabel>Field Type</InputLabel>
                   <Select
                     value={customFieldInput.type}
-                    onChange={(e) => setCustomFieldInput(prev => ({ ...prev, type: e.target.value }))}
+                    onChange={(e) =>
+                      setCustomFieldInput((prev) => ({
+                        ...prev,
+                        type: e.target.value,
+                      }))
+                    }
                     label="Field Type"
                   >
                     <MenuItem value={FIELD_TYPES.STRING}>Text</MenuItem>
@@ -617,7 +649,12 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
                 <TextField
                   label="Options (comma-separated)"
                   value={customFieldInput.options}
-                  onChange={(e) => setCustomFieldInput(prev => ({ ...prev, options: e.target.value }))}
+                  onChange={(e) =>
+                    setCustomFieldInput((prev) => ({
+                      ...prev,
+                      options: e.target.value,
+                    }))
+                  }
                   placeholder="Option 1, Option 2, Option 3"
                   fullWidth
                   size="small"
@@ -628,7 +665,12 @@ const EditEventForm = ({ initialEvent, event, onSuccess, onCancel }) => {
                 control={
                   <Switch
                     checked={customFieldInput.required}
-                    onChange={(e) => setCustomFieldInput(prev => ({ ...prev, required: e.target.checked }))}
+                    onChange={(e) =>
+                      setCustomFieldInput((prev) => ({
+                        ...prev,
+                        required: e.target.checked,
+                      }))
+                    }
                   />
                 }
                 label="Required field"

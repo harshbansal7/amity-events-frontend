@@ -1,14 +1,7 @@
 import { useState, useEffect } from "react";
 import { getEvents, deleteEvent, getCurrentUserId } from "../../services/api";
 import { format } from "date-fns";
-import {
-  Plus,
-  Edit2,
-  Trash2,
-  Search,
-  Filter,
-  X,
-} from "lucide-react";
+import { Plus, Edit2, Trash2, Search, Filter, X } from "lucide-react";
 import CreateEventForm from "../Events/CreateEventForm";
 import EditEventForm from "../Events/EditEventForm";
 import Toast from "../UI/Toast";

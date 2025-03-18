@@ -6,13 +6,7 @@ import {
   getCurrentUserId,
 } from "../../services/api";
 import { format } from "date-fns";
-import {
-  Search,
-  Filter,
-  UserMinus,
-  CheckCircle,
-  XCircle,
-} from "lucide-react";
+import { Search, Filter, UserMinus, CheckCircle, XCircle } from "lucide-react";
 import Toast from "../UI/Toast";
 
 const Participants = () => {
