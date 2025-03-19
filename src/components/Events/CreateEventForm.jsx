@@ -887,9 +887,7 @@ const CreateEventForm = ({ onSuccess, onCancel }) => {
                   <div className="ml-3">
                     <p className="text-sm text-yellow-700">
                       Custom fields allow you to collect specific information
-                      from participants during registration. Each field will
-                      still be optional for participants to fill when they
-                      register for your event.
+                      from participants during registration.
                     </p>
                   </div>
                 </div>
