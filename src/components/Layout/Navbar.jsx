@@ -36,7 +36,7 @@ const Navbar = () => {
       icon: Settings,
       className: "text-indigo-600 hover:bg-indigo-50",
     },
-    {
+    !isExternal && {
       name: "Whatsapp Group",
       path: "https://chat.whatsapp.com/KbxaESVsBuzDV1JdS6QbIQ",
       icon: MessageCircleQuestion,
