@@ -3,13 +3,17 @@ import { getRegisteredEvents } from "../../services/api";
 import EventCard from "./EventCard";
 import { CircularProgress } from "@mui/material";
 import useRotatingMessage from "../../hooks/useRotatingMessage";
+import { useParams, useNavigate } from "react-router-dom";
+import MetaTagsManager from "../../utils/MetaTagsManager";
 
 const MyEvents = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sortOrder, setSortOrder] = useState("upcoming"); // 'upcoming' or 'past'
-
   const rotatingMessage = useRotatingMessage("myEvents");
+  const { eventId } = useParams(); // For direct navigation to an event
+  const [selectedEventForModal, setSelectedEventForModal] = useState(null);
+  const navigate = useNavigate();
 
   const fetchEvents = async () => {
     try {
@@ -27,9 +31,32 @@ const MyEvents = () => {
     }
   };
 
+  // Handle direct navigation to an event via URL
+  const loadEventDetails = () => {
+    if (!eventId) return;
+
+    if (events.length > 0) {
+      const event = events.find((e) => e._id === eventId);
+      if (event) {
+        setSelectedEventForModal(event);
+      }
+    }
+  };
+
   useEffect(() => {
     fetchEvents();
   }, []);
+
+  useEffect(() => {
+    loadEventDetails();
+  }, [eventId, events]);
+
+  // Handle modal close
+  const handleCloseModal = () => {
+    setSelectedEventForModal(null);
+    // Update the URL to remove the event ID without full page refresh
+    navigate("/my-events", { replace: true });
+  };
 
   if (loading) {
     return (
@@ -51,6 +78,26 @@ const MyEvents = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-100 py-8">
+      {/* Meta Tags Manager - only render when an event is selected */}
+      {selectedEventForModal && (
+        <MetaTagsManager
+          title={`${selectedEventForModal.name} - AUP Events`}
+          description={
+            selectedEventForModal.description?.substring(0, 160) ||
+            "Join this exciting event at Amity University Punjab!"
+          }
+          imageUrl={
+            selectedEventForModal.image_url ||
+            "https://app.aup.events/assets/meta-image.jpeg"
+          }
+          url={
+            selectedEventForModal.custom_slug
+              ? `${window.location.origin}/my-events/${selectedEventForModal.custom_slug}`
+              : `${window.location.origin}/my-events/${selectedEventForModal._id}`
+          }
+        />
+      )}
+
       <div className="container mx-auto px-4">
         <div className="text-center mb-6">
           <h2 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
@@ -161,6 +208,16 @@ const MyEvents = () => {
           </div>
         )}
       </div>
+
+      {/* Event Detail Modal */}
+      {selectedEventForModal && (
+        <EventCard
+          event={selectedEventForModal}
+          onRegister={fetchEvents}
+          showDetailsModal={true}
+          onCloseModal={handleCloseModal}
+        />
+      )}
     </div>
   );
 };

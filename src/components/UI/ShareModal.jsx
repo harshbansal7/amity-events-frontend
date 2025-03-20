@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog } from "@headlessui/react";
 import { Copy, Instagram, X, Check, ExternalLink } from "lucide-react";
+import MetaTagsManager from "../../utils/MetaTagsManager";
 
 const ShareModal = ({ isOpen, onClose, event }) => {
   const [copied, setCopied] = useState(false);
@@ -9,6 +10,17 @@ const ShareModal = ({ isOpen, onClose, event }) => {
   const customShareUrl = event?.custom_slug
     ? `${window.location.origin}/events/${event.custom_slug}`
     : `${window.location.origin}/events/${event._id}`;
+
+  // Ensure meta tags are updated when sharing
+  useEffect(() => {
+    if (isOpen && event) {
+      // Force update meta tags when modal opens for sharing
+      const linkElement = document.querySelector('meta[property="og:url"]');
+      if (linkElement) {
+        linkElement.content = customShareUrl;
+      }
+    }
+  }, [isOpen, event, customShareUrl]);
 
   const copyToClipboard = async () => {
     try {
@@ -84,6 +96,19 @@ const ShareModal = ({ isOpen, onClose, event }) => {
 
   return (
     <Dialog open={isOpen} onClose={onClose} className="relative z-[300]">
+      {/* Update meta tags when the share modal is open */}
+      {isOpen && event && (
+        <MetaTagsManager
+          title={`${event.name} - AUP Events`}
+          description={
+            event.description?.substring(0, 160) ||
+            "Join this exciting event at Amity University Punjab!"
+          }
+          imageUrl={getImageUrlForSharing()}
+          url={customShareUrl}
+        />
+      )}
+
       <div
         className="fixed inset-0 bg-black/60 backdrop-blur-sm"
         aria-hidden="true"

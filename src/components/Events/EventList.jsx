@@ -6,6 +6,7 @@ import { CircularProgress } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import useRotatingMessage from "../../hooks/useRotatingMessage";
 import { useParams, useNavigate } from "react-router-dom";
+import MetaTagsManager from "../../utils/MetaTagsManager";
 
 const EventList = () => {
   const [events, setEvents] = useState([]);
@@ -95,6 +96,26 @@ const EventList = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-100 py-8">
+      {/* Meta Tags Manager - only render when an event is selected */}
+      {selectedEventForModal && (
+        <MetaTagsManager
+          title={`${selectedEventForModal.name} - AUP Events`}
+          description={
+            selectedEventForModal.description?.substring(0, 160) ||
+            "Join this exciting event at Amity University Punjab!"
+          }
+          imageUrl={
+            selectedEventForModal.image_url ||
+            "https://app.aup.events/assets/meta-image.jpeg"
+          }
+          url={
+            selectedEventForModal.custom_slug
+              ? `${window.location.origin}/events/${selectedEventForModal.custom_slug}`
+              : `${window.location.origin}/events/${selectedEventForModal._id}`
+          }
+        />
+      )}
+
       <div className="container mx-auto px-4">
         <div className="text-center mb-6">
           <h2 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
