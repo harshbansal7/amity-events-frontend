@@ -9,6 +9,7 @@ import {
 import EditEventForm from "./EditEventForm";
 import Toast from "../UI/Toast";
 import ShareModal from "../UI/ShareModal";
+import MetaTagsManager from "../UI/MetaTagsManager";
 import {
   CalendarDays,
   MapPin,
@@ -507,8 +508,30 @@ const EventCard = ({
     });
   };
 
+  // Create dynamic meta tags configuration for the current event
+  const getMetaTagsConfig = () => {
+    if (!event) return null;
+
+    const eventUrl = event?.custom_slug
+      ? `${window.location.origin}/events/${event.custom_slug}`
+      : `${window.location.origin}/events/${event._id}`;
+
+    return {
+      title: `${event.name} | aup.events`,
+      description:
+        event.description?.substring(0, 160) ||
+        `Join ${event.name} at ${event.venue} on ${formatFullDate(event.date)}`,
+      imageUrl:
+        event.image_url || `${window.location.origin}/assets/default-event.jpg`,
+      url: eventUrl,
+      type: "event",
+    };
+  };
+
   return (
     <div className="relative group">
+      {showDetailsModalState && <MetaTagsManager {...getMetaTagsConfig()} />}
+
       <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300">
         {/* Admin Tools */}
         <div className="absolute top-4 right-4 z-10 flex space-x-2">
